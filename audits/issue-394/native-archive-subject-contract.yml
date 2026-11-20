@@ -1,0 +1,40 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  status: contract_before_production
+  authority: false
+issue: 394
+workitem: P32-P0-04
+owner: bcf_governance/tooling/dependency_assurance.py
+requirements: [I03, I04, I18, I28, I29, AC19, AC26]
+problem: Native scanner input has exact SBOM pins but the immutable archive-to-manifest-to-config-to-ordered-layer relation has no executable existing-owner query. Docker image IDs may name OCI manifests while Syft imageID names their config; equating these or trusting matching package names is invalid.
+interface:
+  operation: native_archive_subject
+  inputs: Owned immutable archive bytes, independently authenticated archive SHA256 and OCI manifest digest, positive finite archive/expanded/member bounds, optional immutable Syft16.1.13 bytes.
+  output: Pure nonauthoritative exact OCI archive subject and optional config/layer binding; no new receipt family, CLI, default gate or security approval.
+  scope: One Linux image, OCI image-layout1.0.0 and manifest/config1.x with plain-tar or gzip layers; unsupported formats or ambiguous image populations block.
+trust:
+- Protected caller authenticates source pins, platform applicability, budgets and custody; hashing candidate-authored pins authenticates none of them.
+- Archive hash, OCI manifest digest, config digest, ordered compressed layer digests, uncompressed diff IDs and observed normalized SBOM manifest label remain distinct.
+- SBOM normalized manifest label remains explicitly independently_unverified. Config/platform/ordered diff-ID binding alone cannot authenticate that label, package completeness, execution, native security or release custody.
+invariants:
+- Refuse wrong immutable bytes, malformed pins and nonpositive/coercive/unbounded budgets before processing members.
+- Bound member iteration and expanded layer reads before accepting results; never extract files or invoke code/daemon/network.
+- Reject duplicate/noncanonical/escaping paths, links/sparse/PAX members, nonzero trailing archives and unknown/unreferenced files.
+- Authenticate every blob against its address; descriptor type/size and exact one-image index/manifest/config chain must agree.
+- Verify all compressed and uncompressed layer bytes against ordered rootfs diff IDs. Missing/reordered/substituted/truncated/oversize layers block.
+- Optional Docker compatibility projection must reference the same config and layer order; duplicate JSON keys or nonfinite data cannot alter the projection.
+- Optional SBOM must bind config/platform and full ordered diff-ID population; synthetic manifest label is retained without promoting it to the original OCI digest.
+consumer_matrix:
+- Source dependency owner; existing Python/native advisory APIs remain unchanged.
+- Canonically generated template/private/package runtime.
+- SDK-absent fresh/upgrade positive and cause-specific detector controls.
+- Actual retained candidate archive and Syft observation with separately recorded OCI/config/normalized identities; no candidate execution or new scanner run.
+verification:
+- Commit this contract and independent positive/cause-specific fixtures before production changes.
+- Retain preimplementation failures; run affected dependency/native and installed consumers, standard lint/pack/architecture and governance checks on exact subject.
+- Check actual raw archive binding without security or whole-requirement advancement; preserve prior known negative runtime findings.
+remaining:
+- Actual native SBOM capture and independently complete installed file/package provenance.
+- Approved secure runtime and context/lifecycle completeness; baseline approval/targets, P33-P35 and custody.
+- P32 active; all82whole requirements remain open.
