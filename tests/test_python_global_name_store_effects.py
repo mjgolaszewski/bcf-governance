@@ -99,5 +99,7 @@ def test_definition_eager_uncertainty_blocks_without_losing_global_store(tmp_pat
     assert len(unresolved) == 1
     assert unresolved[0]["target"] == target
     assert unresolved[0]["scope"] == "definition_eager"
-    with pytest.raises(SemanticOperationEffectError, match=r"^operation global-name\.query\.v1 contains an unresolved effect at service\.py::query$"):
+    with pytest.raises(SemanticOperationEffectError) as caught:
         validate_operation_effects(_operation(), "service.py::query", inventory)
+
+    assert str(caught.value) == "operation global-name.query.v1 contains an unresolved effect at service.py::query"

@@ -251,3 +251,8 @@ consumer_baseline_recovery:
   production_applied: false
   runtime_qualified: false
   whole_requirement_advancement: false
+
+implementation_boundary_20261120:
+  legacy_message_control: Inspect exact exception str independently of appended neutral notes
+  source_private_parity: canonical pack generator plus byte identity and required pack check
+  acceptance_advancement: false
