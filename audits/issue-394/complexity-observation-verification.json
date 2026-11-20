@@ -53,5 +53,11 @@
   "governance_log_sha256": {
     "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "stderr": "6853cb20d6a3e157651c633d6c986c7166dd0624cb9615e2439e0116ac72010e"
+  },
+  "artifact_manifest_parse_repair": {
+    "subject": "d58289386fbfac1a0a102f99f49e13c532913c9b",
+    "governance_returncode": 1,
+    "governance_stderr_sha256": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f",
+    "disposition": "New fixture row now belongs to existing vendored_artifacts.artifacts; only preexisting workflow projection drift remains at this check. Original malformed-YAML capture retained, unchanged production/test evidence reused."
   }
 }
