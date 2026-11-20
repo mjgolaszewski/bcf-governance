@@ -1,0 +1,22 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/node-security-pin-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitems: [foundation.baseline, dormant.early-checks, certification.distribution]
+scope: Existing exact Node test-toolchain patch pin and canonical graph input
+approved_patch: v22.23.5
+source: https://nodejs.org/en/blog/release/v22.23.5
+before: v22.23.2
+contract:
+  - Bootstrap and canonical graph select the same current security patch
+  - Old patch is refused before installation; ambient sibling selection and offline integrity remain intact
+  - Canonical reconciliation exclusively owns generated workflows and authority commits
+  - A pin update and passing compiler fixtures do not qualify all Node dependencies or current runtime security
+qualification:
+  - Commit contract and three causal controls before pin changes
+  - Run causal controls against previous pins and affected real offline compiler matrix after repair
+  - Attempt canonical reconciliation without bypassing existing runtime-context or interpreter admission blocks
+  - Retain incomplete projection as an open residual; no submission until canonical authority convergence
+forbidden: [main_or_maintenance_changes, manual_workflow_or_authority_changes, security_clean_claim_from_version_string]
