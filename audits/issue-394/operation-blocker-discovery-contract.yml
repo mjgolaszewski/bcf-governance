@@ -1,0 +1,28 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/operation-blocker-discovery-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitems: [foundation.composition, foundation.conformance, dormant.early-checks]
+scope: Opt-in recognized blocker discovery across the existing admitted application-operation population
+problem: First-operation rejection obscures unresolved sibling operations needed for context-qualified work planning
+contract:
+  - Default validation preserves earliest failure type text cause and ordinary CLI behavior
+  - An internal strictly boolean diagnostic option traverses recognized effect blockers after complete structural and public population admission
+  - Diagnostic failure retains sorted immutable operation IDs and operation-qualified existing blocker rows
+  - Scope is recognized strict-validator blockers in admitted operations, not all possible runtime effects or positive context qualification
+  - Missing source malformed inventory contradictory observations and unclassified operations abort without a completed diagnostic population
+  - No new graph registry evaluator broker receipt or CLI grammar; no required gate or authority suppression
+  - Source-only diagnostics preserve their explicit unqualified context
+controls:
+  - Independent real source mapping exposes two separate failing public operations
+  - Reordering preserves canonical blocker population while first error follows original admission order
+  - Default failure remains unchanged and valid operations return existing observations
+  - Malformed later operation discards diagnostic completion even after earlier recognized blockers
+  - Missing operation and invalid diagnostic option refuse before effect traversal
+qualification:
+  - Contract and causal controls committed before implementation
+  - Existing protected operation and source blocker behavior remains qualified
+  - Private consumer parity and package architecture checks required
+  - Full current CLI observation remains separate and cannot close whole requirements
