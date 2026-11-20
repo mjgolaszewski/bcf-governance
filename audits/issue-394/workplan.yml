@@ -304,6 +304,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/independent-store-coverage-verification.json
     - audits/issue-394/separate-policy-source-verification.json
     - audits/issue-394/independent-call-coverage-verification.json
     - audits/issue-394/runtime-context-owner-mapping.yml

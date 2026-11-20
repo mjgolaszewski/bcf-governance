@@ -1,0 +1,62 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "whole_requirement_advancement": false,
+  "baseline_subject": "f1b563935272107805e85521e30a31d6d8684021",
+  "contract_subject": "6a1bb2c873b0cabd11c72eeb2c969e719c1b7317",
+  "implementation_subject": "544a14d2fa24ca670ad73d3609c72a52f2991805",
+  "before": {
+    "tests": 30,
+    "failures": 21,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source": {
+    "tests": 180,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "0a0b49cb5785d62f8bfcebc96c68441dbe729c001bf75315141ed5d32ec95b76",
+    "source": "1e310202cb72b1dc4b4565430e4b275e1a9c65633bdff7802fac113fb02834b3",
+    "installed": "488c4de1403f2fd99ccc3780d02bbcf23e3017e7eab8f1da37cdb899eda3f99d",
+    "architecture": "f5cf0857c902c0069c47470779bf3919f27737224984c56dba4af89bb0381bf7"
+  },
+  "source_sha256": "0d21de084f5300b0e329daa3e92285b6ba076473db2a5bd955eb977bad4d1520",
+  "distribution_subject": "98752d2b078bf391c56e880f67db4a54009b5e18",
+  "actual_source_coverage": {
+    "authority": false,
+    "execution_qualified": false,
+    "runtime_context_qualified": false,
+    "source_commit": "98752d2b078bf391c56e880f67db4a54009b5e18",
+    "source_tree": "fda20761a2add2d485b9a7b6278907442f21f10e",
+    "files": 1317,
+    "functions": 12188,
+    "explicit_calls": 139713,
+    "store_observations": 4976,
+    "elapsed_seconds": 101.57923827099876
+  },
+  "source_reuse": "180 passing cases retained from prior exact canonical implementation; source/tests unchanged, only canonical runtime projections changed. No combined suite claim.",
+  "initial_installed_failure": {
+    "tests": 6,
+    "failures": 4,
+    "errors": 0,
+    "skipped": 0
+  },
+  "scope": "Independently reconstruct source object-store/delete membership, exact spans, expression digests and occurrences in existing eager runtime contexts. Removing observations and paired unresolved effects together cannot erase source. No positive runtime dispatch or receiver assurance.",
+  "limits": "Full ci_commands.main runtime qualification, global semantic checks, secure release runtime, installed full consumer matrix, approved timing targets and all82whole requirements remain open; P32 active/P33-P35 dormant. Installed qualification is SDK-absent fresh/upgrade Lite only.",
+  "governance_stderr_sha256": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+}
