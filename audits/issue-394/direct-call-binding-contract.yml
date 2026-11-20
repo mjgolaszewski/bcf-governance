@@ -1,0 +1,38 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/direct-call-binding-contract.yml
+  status: planned
+  authority: false
+parent_contract: audits/issue-394/runtime-effect-context-foundation-contract.yml
+workitem: P32-P0-04
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: query
+problem: Exact call spans and expression hashes cannot alone prevent an inventory row from redirecting a real source call to a harmless source function. Binding facts must be grounded before positive runtime context can consume them.
+scope:
+- Extend the existing independent exact-source pass to bind call spelling and unambiguous direct module-function source identity.
+- Derive module function candidates from exact AST definitions, conservatively excluding imported, assigned, deleted, duplicate and lexically shadowed names.
+- Preserve imported aliases, methods, lexical aliases and dynamic contexts without inventing source binding authority; existing strict runtime checks remain enabled.
+- Reuse existing source owners and operation validation; add no parallel graph, registry, evaluator or receipt family.
+controls:
+- Retain native mutation witness; redirect only called_symbol to a harmless function while retaining actual expression/span facts; reject before effect credit.
+- Contradict actual call spelling while retaining original digest and location.
+- Preserve ordinary direct calls, Unicode names, parameters, local aliases, nested functions and imported aliases.
+- Installed SDK-absent fresh and upgrade consumers reject the forgery; removing the detector must fail the named control.
+limits:
+- This binds neutral source declarations, not actual mutable globals or runtime dispatch.
+- Unsupported constructor, receiver, native, parser, initialization, descriptor and callback contexts remain unresolved.
+- Full CI operation, secure runtime, approved targets, all82whole requirements and P33-P35 remain open or dormant.
+target_modules:
+- bcf_governance/tooling/semantic_authority_operations.py
+expected_tests:
+- tests/test_direct_call_binding.py
+- tests/test_installed_direct_call_binding.py
+- tests/test_independent_call_coverage.py
+- tests/test_independent_store_coverage.py
+forbidden_surfaces:
+- main, release, maintenance and adopter repositories
+- hand-authored generated workflows or authority pins
+- weakening strict runtime context or claiming a whole semantic pass
+sequence: Commit contract and controls before repair; retain causal baseline, qualify exact source and installed projections through canonical pack generation, then backup feature bytes to declared remote.
