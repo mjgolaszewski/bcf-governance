@@ -1,0 +1,38 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/runtime-subject-migration-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitems: [foundation.admission, foundation.conformance, foundation.baseline, certification.distribution]
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: contract_then_query_and_command
+problem: Release closure and runtime evidence hard-code3.12.14, preventing a separately qualified patched runtime from being represented
+scope: Versioned extension of the existing wheelhouse subject and runtime-evidence contracts; no selected release runtime or security qualification
+migration:
+  legacy_manifest_1_0: Preserve exact CPython3.12.14 ubuntu24.04 linux_x86_64 cp312 semantics
+  new_manifest_1_1: Explicit exact stable patch version in supported CPython3.11-3.14, matching CPython ABI, existing Linux x86_64 platform and exact hash-closed wheels
+  legacy_runtime_reports_1_0_1_1: Preserve original3.12.14 meaning and command requirements
+  new_runtime_report_1_2: Require independent verified dependency closure even for an optional reader; bind environment to its exact Python/platform and preserve all strict1.1 command byte and source guards
+  derivation: Manifest1.0 retains producer report1.1; manifest1.1 derives report1.2, never silently reinterpreting old evidence
+  activation: Existing trusted release roles requiring report1.1 remain unchanged and reject1.2 until separately qualified compatibility migration
+contract:
+  - Reject unsupported minors prereleases malformed versions ABI mismatch and incompatible wheel filename tags before allocating runtime verification outputs
+  - Admit pure and applicable stable-ABI wheels under the explicit target, not controller-interpreter defaults
+  - Producer probes the selected executable and rejects a mismatched version/platform before allocation
+  - Decoder cannot derive expected runtime identity from candidate report fields
+  - Preserve canonical current wheelhouse lock and manifest bytes and ordinary CLI grammar
+  - Runtime representability does not prove actual interpreter or native bytes, provenance, current security, or physical execution
+owners:
+  - bcf_governance/tooling/release_closure.py
+  - bcf_governance/tooling/release_runtime_verification.py
+qualification:
+  - Commit contract and legacy/new positive and cause-specific negative controls before production
+  - Exercise independent expected closure versus self-consistent candidate report claims
+  - Qualify SDK-absent fresh/repaired manifest consumers and a disabled subject guard contrast
+  - Retain required semantic/workflow/security blocks and no whole-requirement advancement
+forbidden:
+  - Main maintenance workflows authority or live-adopter mutations
+  - Selecting a hypothetical test version as a real runtime or declaring it CVE-free
+  - Updating immutable predecessor evidence or weakening current strict release roles
