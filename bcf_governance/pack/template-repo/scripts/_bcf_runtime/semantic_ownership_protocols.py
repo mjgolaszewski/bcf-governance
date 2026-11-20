@@ -88,7 +88,8 @@ def implicit_runtime_protocols(
     boolean_results: frozenset[int] = frozenset(),
 ) -> tuple[str, ...]:
     """Retain unknown runtime dispatch in the existing source call population."""
-    known = lambda value: _native_protocol_value(value, native, boolean_results)
+    def known(value):
+        return _native_protocol_value(value, native, boolean_results)
     if isinstance(node, ast.Match):
         patterns = (ast.MatchValue, ast.MatchSequence, ast.MatchMapping, ast.MatchClass)
         active = any(any(isinstance(value, patterns) for value in ast.walk(case.pattern))

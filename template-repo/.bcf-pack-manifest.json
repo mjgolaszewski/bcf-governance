@@ -1839,7 +1839,7 @@
     },
     "scripts/_bcf_runtime/semantic_ownership_protocols.py": {
       "operation": "copy",
-      "sha256": "32624c8b6a4def7cbdd6fe5743df30ea78a48a676dc114733529d207002af15d"
+      "sha256": "d99ee43686aed5043842943440c7c17a55f200f5b9f375fa4dfa416c87232adc"
     },
     "scripts/_bcf_runtime/semantic_ownership_reference.py": {
       "operation": "copy",
