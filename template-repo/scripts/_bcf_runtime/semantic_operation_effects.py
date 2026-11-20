@@ -34,6 +34,8 @@ MUTATION_CALL_PREFIXES = (
 class SemanticOperationEffectError(ValueError):
     """Raised when an operation bypasses its declared effect boundary."""
 
+    effect_obligations: tuple[tuple[str, str, str, str], ...] = ()
+
 
 
 
@@ -516,6 +518,15 @@ def validated_operation_effect_inventory(
     declared_ports = mutation_ports | authority_ports | non_authoritative_ports
     reached: set[tuple[str, str]] = set()
     unresolved: set[tuple[str, str, str]] = set()
+    blockers: set[tuple[str, str, str, str]] = set()
+    first_failure: str | None = None
+    def reject(caller: str, kind: str, identity: str, reason: str) -> None:
+        nonlocal first_failure
+        if first_failure is None:
+            first_failure = reason
+        blockers.add((caller, kind, identity, reason))
+    write_sources: set[tuple[str, str]] = set()
+    authority_sources: set[tuple[str, str]] = set()
     writes: set[str] = set()
     authority: set[str] = set()
     pending = [(entrypoint, True), *((path + "::<module>", True) for path in source_modules if path + "::<module>" in functions)]
@@ -532,7 +543,7 @@ def validated_operation_effect_inventory(
             module = symbol.split("::", 1)[0] + "::<module>"
             if module in functions and module != symbol:
                 pending.append((module, credit))
-        for effect in function.get("effects", []):
+        for effect_index, effect in enumerate(function.get("effects", [])):
             target = f"{symbol}:{effect.get('line')}:{effect.get('target')}"
             if (effect.get("kind") == "write" and effect.get("scope") == "nonlocal"
                     and function.get("lexical_parent") == entrypoint
@@ -540,31 +551,41 @@ def validated_operation_effect_inventory(
                 continue
             if effect.get("kind") == "write":
                 writes.add(target)
+                write_sources.add((symbol, f"{target}:{effect_index}"))
             elif effect.get("kind") == "authority":
                 authority.add(target)
+                authority_sources.add((symbol, f"{target}:{effect_index}"))
             else:
-                raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect at {symbol}")
+                reject(symbol, "unresolved_effect", f"{target}:{effect_index}", f"operation {operation['id']} contains an unresolved effect at {symbol}")
         if function.get("unresolved"):
-            raise SemanticOperationEffectError(
-                f"operation {operation['id']} contains an unresolved dynamic call path at {symbol}"
-            )
+            for index, failure in enumerate(function["unresolved"]):
+                reject(symbol, "dynamic_call", f"{symbol}:{index}:{failure}",
+                       f"operation {operation['id']} contains an unresolved dynamic call path at {symbol}")
         if any(
             failure.get("port_eligible") is not True
             for failure in function.get("effect_unresolved", [])
         ):
-            raise SemanticOperationEffectError(
-                f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
-            )
+            for index, failure in enumerate(function.get("effect_unresolved", [])):
+                if failure.get("port_eligible") is not True:
+                    reject(symbol, "unresolved_effect", f"{symbol}:{index}:{json.dumps(failure, sort_keys=True)}",
+                           f"operation {operation['id']} contains an unresolved effect call path at {symbol}")
         for call in function.get("calls", []):
             if _implicit_protocol(call, symbol):
                 if require_runtime_context:
-                    raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect runtime protocol at {symbol}")
+                    marker = call["implicit_protocol"]
+                    identity = f"{symbol}:{marker['kind']}:{marker['expression_sha256']}:{marker['occurrence']}"
+                    reject(symbol, "runtime_protocol", identity,
+                           f"operation {operation['id']} contains an unresolved effect runtime protocol at {symbol}")
+                    continue
                 marker = call["implicit_protocol"]
                 identity = f"{symbol}:{marker['kind']}:{marker['expression_sha256']}:{marker['occurrence']}"
                 unresolved.add(("unresolved", "implicit_protocol", identity))
                 continue
             if _runtime_target_origins(call, function):
-                raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect runtime target at {symbol}")
+                identity = f"{symbol}:{call.get('line')}:{call.get('column')}:{call.get('called_symbol')}"
+                reject(symbol, "runtime_target", identity,
+                       f"operation {operation['id']} contains an unresolved effect runtime target at {symbol}")
+                continue
             raw = str(call.get("called_symbol", ""))
             callee = _resolve_function(raw, functions)
             identity = ("function", callee) if callee is not None else ("call", raw)
@@ -573,29 +594,30 @@ def validated_operation_effect_inventory(
                 and call.get("dispatch_port_eligible") is not True
             )
             if hard_dispatch_failure:
-                raise SemanticOperationEffectError(
-                    f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
-                )
+                reject(symbol, "unresolved_call", f"{raw}:{call.get('line')}:{call.get('column')}",
+                       f"operation {operation['id']} contains an unresolved effect call path at {symbol}")
+                continue
             construction_targets, construction_missing = _construction_source_targets(call, functions, classes, function)
             if construction_missing:
-                raise SemanticOperationEffectError(
-                    "source construction requires unresolved runtime provenance: "
-                    + ", ".join(construction_missing)
-                )
+                for missing_context in construction_missing:
+                    reject(symbol, "construction_context", f"{raw}:{call.get('line')}:{call.get('column')}:{missing_context}",
+                           "source construction requires unresolved runtime provenance: " + ", ".join(construction_missing))
             pending.extend((target, False) for target in sorted(construction_targets))
             if identity in declared_ports:
-                if credit:
+                if credit and not construction_missing:
                     reached.add(identity)
                 continue
             if call.get("dispatch_resolution") == "unresolved":
-                raise SemanticOperationEffectError(
-                    f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
-                )
+                reject(symbol, "unresolved_call", f"{raw}:{call.get('line')}:{call.get('column')}",
+                       f"operation {operation['id']} contains an unresolved effect call path at {symbol}")
+                continue
             if call.get("language") == "typescript":
                 if call.get("effect") == "write":
                     writes.add(raw)
+                    write_sources.add((symbol, f"{raw}:{call.get('line')}:{call.get('column')}"))
                 if call.get("authority_effect") is True:
                     authority.add(raw)
+                    authority_sources.add((symbol, f"{raw}:{call.get('line')}:{call.get('column')}"))
                 if callee is not None:
                     pending.append((callee, credit))
                 continue
@@ -611,8 +633,10 @@ def validated_operation_effect_inventory(
             )
             if name in WRITE_CALLS or file_replace or shutil_write or unresolved_mutation:
                 writes.add(raw)
+                write_sources.add((symbol, f"{raw}:{call.get('line')}:{call.get('column')}"))
             if name.lower().startswith(AUTHORITY_CALL_PREFIXES):
                 authority.add(raw)
+                authority_sources.add((symbol, f"{raw}:{call.get('line')}:{call.get('column')}"))
             # Follow every source-resolved call until a declared effect port.
             # Module boundaries are organizational, not effect boundaries; a
             # query cannot conceal a write in an imported helper.
@@ -621,19 +645,22 @@ def validated_operation_effect_inventory(
     missing = declared_ports - reached
     if missing:
         rendered = ", ".join(sorted(value for _, value in missing))
-        raise SemanticOperationEffectError(
-            f"operation {operation['id']} declares unreachable effect ports: {rendered}"
-        )
+        for kind, target in sorted(missing):
+            reject(entrypoint, "unreachable_port", f"{kind}:{target}",
+                   f"operation {operation['id']} declares unreachable effect ports: {rendered}")
     if writes:
-        raise SemanticOperationEffectError(
-            f"operation {operation['id']} has undeclared write effects: "
-            + ", ".join(sorted(writes))
-        )
+        for caller, target in sorted(write_sources):
+            reject(caller, "write", target, f"operation {operation['id']} has undeclared write effects: " + ", ".join(sorted(writes)))
     if authority:
-        raise SemanticOperationEffectError(
-            f"operation {operation['id']} has undeclared authority effects: "
-            + ", ".join(sorted(authority))
-        )
+        for caller, target in sorted(authority_sources):
+            reject(caller, "authority", target, f"operation {operation['id']} has undeclared authority effects: " + ", ".join(sorted(authority)))
+    if first_failure is not None:
+        error = SemanticOperationEffectError(first_failure)
+        error.effect_obligations = tuple(sorted(blockers))
+        error.add_note(json.dumps({"scope": "existing_strict_validator_blockers", "authority": False,
+                                  "execution_qualified": False, "completeness_qualified": False,
+                                  "effect_obligations": error.effect_obligations}, sort_keys=True))
+        raise error
     ports = {
         (classification, target_kind, symbol)
         for classification, ports in (
