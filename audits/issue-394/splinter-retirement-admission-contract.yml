@@ -1,0 +1,32 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/splinter-retirement-admission-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitems: [foundation.conformance, dormant.continuation, dormant.scheduling]
+bounded_context: evidence_assurance
+architectural_layer: tooling
+operation_side: command
+scope: Existing successful splinter proof producer retirement admission and same-byte publication
+problem:
+  - Truthy non-boolean worktree removal claims are laundered into a literal true receipt field
+  - Invalid retirement state and unserializable metadata are rejected only after proof output allocation
+contract:
+  - Require literal true worktree removal at the producer boundary
+  - Validate the complete serialized proof with the existing independent decoder before allocating its output directory or members
+  - Preserve null execution state and valid extended retirement dictionaries under the existing proof version1.0
+  - Capture serialized manifest bytes once and publish those exact validated bytes
+  - Bind the JUnit digest to the already captured and independently validated raw JUnit bytes
+  - Keep source-provider and physical retirement authentication with existing execution and collector owners; supplied claims never create that authority
+qualification:
+  - Commit malformed retirement and native output-presence controls before production changes
+  - Verify invalid retirement and nonserializable state leave no proof output directory
+  - Qualify genuine proof readback reuse and SDK-absent fresh/repaired consumers with a disabled exact-boolean guard control
+  - Retain required semantic governance distribution and actual runtime-context limits without activation
+owners:
+  - bcf_governance/tooling/test_splinter_proofs.py
+forbidden:
+  - New receipt or custody family
+  - Main maintenance release live-adopter workflow or authority mutations
+  - Full runtime-context security or performance qualification claims from these source controls
