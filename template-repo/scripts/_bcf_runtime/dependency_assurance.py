@@ -28,11 +28,11 @@ class InstalledDependencyInventory:
     sha256: str
 
     def payload(self) -> dict[str, Any]:
-        return {
+        return json.loads(json.dumps({
             "roots": list(self.roots),
             "components": list(self.components),
             "dependencies": list(self.dependencies),
-        }
+        }, allow_nan=False))
 
 
 def _declared_requirements(repo_root: Path) -> list[Requirement]:
@@ -163,14 +163,35 @@ def collect_installed_inventory(repo_root: Path) -> InstalledDependencyInventory
     )
 
 
+
+def _validated_inventory_snapshot(inventory: InstalledDependencyInventory) -> tuple[dict[str, Any], str]:
+    """Admit one owned exact payload; stored hashes cannot bless changed rows."""
+    try:
+        canonical = json.dumps(inventory.payload(), sort_keys=True, separators=(",", ":"),
+                               allow_nan=False).encode()
+        snapshot = json.loads(canonical)
+        if (not isinstance(snapshot, dict) or set(snapshot) != {"roots", "components", "dependencies"}
+                or any(not isinstance(snapshot[key], list) for key in snapshot)):
+            raise ValueError("inventory payload shape")
+        identities = [_scanner_dependency_identity(item) for item in snapshot["components"]]
+        if any(value is None for value in identities) or len(set(identities)) != len(identities):
+            raise ValueError("inventory component identities")
+        if type(inventory.sha256) is not str or hashlib.sha256(canonical).hexdigest() != inventory.sha256:
+            raise ValueError("inventory digest")
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise DependencyAssuranceError("dependency inventory payload or digest is not exact") from exc
+    return snapshot, hashlib.sha256(canonical).hexdigest()
+
+
 def write_frozen_requirements(
     inventory: InstalledDependencyInventory, output: Path
 ) -> None:
+    snapshot, _ = _validated_inventory_snapshot(inventory)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(
         "".join(
             f"{component['name']}=={component['version']}\n"
-            for component in inventory.components
+            for component in snapshot["components"]
         ),
         encoding="utf-8",
     )
@@ -202,14 +223,25 @@ def audit_envelope(
 ) -> dict[str, Any]:
     """Classify one complete scanner result; ambiguity never becomes clean."""
 
+    inventory_valid = raw_valid = True
+    try:
+        snapshot, inventory_digest = _validated_inventory_snapshot(inventory)
+    except DependencyAssuranceError as exc:
+        snapshot, inventory_digest, inventory_valid = {"components": []}, inventory.sha256, False
+        diagnostic = str(exc) + (": " + diagnostic if diagnostic else "")
+    try:
+        raw = json.loads(json.dumps(raw, sort_keys=True, separators=(",", ":"), allow_nan=False))
+    except (TypeError, ValueError):
+        raw, raw_valid = None, False
+        diagnostic = "scanner JSON is malformed or nonfinite" + (": " + diagnostic if diagnostic else "")
     dependencies = raw.get("dependencies") if isinstance(raw, dict) else None
     findings = [
         {"name": item.get("name"), "version": item.get("version"), "vulnerabilities": vulns}
         for item in dependencies if isinstance(item, dict)
         and isinstance((vulns := item.get("vulns")), list) and vulns
     ] if isinstance(dependencies, list) else []
-    selected = [_scanner_dependency_identity(item) for item in inventory.components]
-    complete = (all(identity is not None for identity in selected)
+    selected = [_scanner_dependency_identity(item) for item in snapshot["components"]]
+    complete = (inventory_valid and raw_valid and all(identity is not None for identity in selected)
                 and len(set(selected)) == len(selected)
                 and isinstance(dependencies, list))
     observed: set[tuple[str, str]] = set()
@@ -251,8 +283,8 @@ def audit_envelope(
         "status": status,
         "scanner": {"name": "pip-audit", "version": scanner_version},
         "advisory_source": {"service": service, "observed_at": datetime.now(timezone.utc).isoformat()},
-        "inventory_sha256": inventory.sha256,
-        "inventory_component_count": len(inventory.components),
+        "inventory_sha256": inventory_digest,
+        "inventory_component_count": len(snapshot["components"]),
         "raw_result_sha256": raw_digest,
         "raw_result": raw,
         "findings": findings,
@@ -261,11 +293,12 @@ def audit_envelope(
 
 
 def cyclonedx_sbom(inventory: InstalledDependencyInventory) -> dict[str, Any]:
+    snapshot, digest = _validated_inventory_snapshot(inventory)
     return {
         "bomFormat": "CycloneDX",
         "specVersion": "1.5",
         "version": 1,
-        "metadata": {"properties": [{"name": "bcf:inventory_sha256", "value": inventory.sha256}]},
-        "components": list(inventory.components),
-        "dependencies": list(inventory.dependencies),
+        "metadata": {"properties": [{"name": "bcf:inventory_sha256", "value": digest}]},
+        "components": snapshot["components"],
+        "dependencies": snapshot["dependencies"],
     }
