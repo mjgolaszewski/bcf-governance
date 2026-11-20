@@ -1,0 +1,87 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "whole_requirement_advancement": false,
+  "runtime_context_qualified": false,
+  "scope": "Source-bound boolean result consumption in supported call-free parameter/comprehension frames, independently retained child protocols and unchanged store ownership; not whole invocation/lifetime/native qualification",
+  "contract_commit": "b8cc99d6d149025d46b1a6d8523b56d116c3be7b",
+  "implementation_subject": "07b1090227df9dbef3144c1dcd6ebe3cdd446ab3",
+  "test_subject": "07b1090227df9dbef3144c1dcd6ebe3cdd446ab3",
+  "test_tree": "4c298e40f7e0dc565bc1990f2e4e5ed3caa4a777",
+  "before": {
+    "tests": 42,
+    "failures": 13,
+    "errors": 0,
+    "skipped": 0
+  },
+  "earlier_passed_subject": "d27a2583a59cfcd2d43a04c2ed6c197b04c1a686",
+  "earlier_lint_disposition": "E731 local lambda replaced by named function; changed production requalified rather than merging test subjects",
+  "source": {
+    "tests": 479,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "required_semantic": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "e61c75e23f5ddf7a0f2939ecace542a8a4ece3964afe304e587669b0ccaea819",
+    "source": "c52332d3c594ac3f38103f08048685c8134cae487ca381561116db4ab6750d36",
+    "installed": "dc706e12fa7681ce1d370d67d7643b711729006bbf1ed79bd59bd34ba34752ca",
+    "architecture": "6ea4d2adc88ec9f48d2f255bfa3bc4646c507ab30e90e863a8f9b430756e8ad9",
+    "required-semantic": "6f6c1b2464337f0c8f9b790d3df09b7736bbbb0a6a00bc1baa045d3a3724e6c1"
+  },
+  "source_sha256": {
+    "semantic_ownership_protocols.py": "d99ee43686aed5043842943440c7c17a55f200f5b9f375fa4dfa416c87232adc",
+    "semantic_python_calls.py": "63ff5d0e14f1ef7066b20bb742e0a35ae0fa55b249333900f2aa5a3622392f7f"
+  },
+  "unchanged_purity_function_ast_sha256": {
+    "semantic_ownership_protocols.py::_native_literal_value": "fc9e88b029d2c824d4a96752b890b640d2a9f14c8f221e44eff35030e5c38dba",
+    "semantic_python_calls.py::_closed_native_region": "bfd993075d56d2d178e000840606de31e32459ac1531ef44a383ef7366296062",
+    "semantic_python_calls.py::_closed_owned_scalar_cells": "d2159882d09e90dbf5832454a23af7c5cd0f74e8576aafc97457a159cfb1d042"
+  },
+  "unchanged_characterization_sha256": {
+    "tests/fixtures/semantic-python-inventory-before-deconstruction.json": "fe3850476fa70b9fa68facd822ad015d6149b588fbf6058fdb5765b5b58919a0",
+    "tests/fixtures/semantic-python-inventory-source.txt": "e087ab066da9990efe1b7a7174656b7efa39c18b902cd4e74a2d3a759e895c64"
+  },
+  "unqualified_native_call_residual": {
+    "authority": false,
+    "runtime_qualified": false,
+    "strict_scanner_accepts": true,
+    "recognized_port_counts": [
+      0,
+      0
+    ],
+    "native_callback_count": 1,
+    "scope": "Exact direct bool(value) fixture with caller-retained receiver",
+    "remaining": "Native call/input and full lifetime/context qualification required; scanner acceptance is not complete effect authority"
+  },
+  "native_call_observation_sha256": {
+    "callback-before": "f253b7603d543168c25dccd9bbfc811d5bfb63c00feb73f8057574b09eff4a00",
+    "callback-after": "f253b7603d543168c25dccd9bbfc811d5bfb63c00feb73f8057574b09eff4a00"
+  },
+  "limits": "Native witnesses use exact authored fixture contexts with caller-retained receivers. Full input/globals/binding/lifetime/native/whole-operation qualification remains open. Unsupported frames keep prior conservative behavior; source acceptance cannot confer complete effect authority.",
+  "remaining": "Complete native call/input/context model and full lifecycle/distribution/shadow/custody, approved targets, canonical workflow projection and security qualification; all82whole open",
+  "governance_status": "blocked_by_pending_Node_graph_workflow_projection",
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  }
+}
