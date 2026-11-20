@@ -101,28 +101,44 @@ def test_missing_execution_owner_refuses_before_allocation(tmp_path):
 def test_native_admission_refuses_before_scanner_or_output_allocation(tmp_path, mutation):
     case = Case(tmp_path)
     a = case.arguments
-    if mutation == "sbom-hash":a["expected_sbom_sha256"] = "c" * 64
-    elif mutation == "image-manifest":a["expected_image"]["manifestDigest"] = "sha256:" + "c" * 64
-    elif mutation == "image-config":a["expected_image"]["imageID"] = "sha256:" + "c" * 64
-    elif mutation == "inventory-omitted":a["expected_inventory"] = ()
-    elif mutation == "inventory-duplicate":a["expected_inventory"] *= 2
-    elif mutation == "scanner-missing":case.scanner.unlink()
+    if mutation == "sbom-hash":
+        a["expected_sbom_sha256"] = "c" * 64
+    elif mutation == "image-manifest":
+        a["expected_image"]["manifestDigest"] = "sha256:" + "c" * 64
+    elif mutation == "image-config":
+        a["expected_image"]["imageID"] = "sha256:" + "c" * 64
+    elif mutation == "inventory-omitted":
+        a["expected_inventory"] = ()
+    elif mutation == "inventory-duplicate":
+        a["expected_inventory"] *= 2
+    elif mutation == "scanner-missing":
+        case.scanner.unlink()
     elif mutation == "sbom-schema":
         case.sbom["schema"]["version"] = "0.0.0"
         case.refresh()
     elif mutation == "sbom-duplicate":
         a["sbom_bytes"] = b'{"source":{},"source":{}}'
         a["expected_sbom_sha256"] = digest(a["sbom_bytes"])
-    elif mutation == "scanner-hash":a["expected_scanner_sha256"] = "c" * 64
-    elif mutation == "database-hash":a["expected_database_files"]["data"] = "c" * 64
-    elif mutation == "database-extra":(case.database / "extra").write_text("unselected")
-    elif mutation == "database-link":(case.database / "linked").symlink_to(case.database / "data")
-    elif mutation == "stale":a["expected_database_status"]["built"] = (datetime.now(timezone.utc) - timedelta(days=2)).isoformat()
-    elif mutation == "future":a["expected_database_status"]["built"] = (datetime.now(timezone.utc) + timedelta(days=2)).isoformat()
-    elif mutation == "invalid-status":a["expected_database_status"]["valid"] = 1
-    elif mutation == "zero-budget":a["command_seconds"] = 0
-    else:a["command_seconds"] = True
-    with pytest.raises(owner.DependencyAssuranceError):case.invoke()
+    elif mutation == "scanner-hash":
+        a["expected_scanner_sha256"] = "c" * 64
+    elif mutation == "database-hash":
+        a["expected_database_files"]["data"] = "c" * 64
+    elif mutation == "database-extra":
+        (case.database / "extra").write_text("unselected")
+    elif mutation == "database-link":
+        (case.database / "linked").symlink_to(case.database / "data")
+    elif mutation == "stale":
+        a["expected_database_status"]["built"] = (datetime.now(timezone.utc) - timedelta(days=2)).isoformat()
+    elif mutation == "future":
+        a["expected_database_status"]["built"] = (datetime.now(timezone.utc) + timedelta(days=2)).isoformat()
+    elif mutation == "invalid-status":
+        a["expected_database_status"]["valid"] = 1
+    elif mutation == "zero-budget":
+        a["command_seconds"] = 0
+    else:
+        a["command_seconds"] = True
+    with pytest.raises(owner.DependencyAssuranceError):
+        case.invoke()
     assert not case.seen.exists(), "unmatched native input reached scanner"
     assert not a["output_dir"].exists(), "unmatched native inventory allocated scanner"
 
@@ -140,16 +156,26 @@ def test_all_actual_and_suppressed_findings_remain_blocking_observations(tmp_pat
 @pytest.mark.parametrize("change", ["malformed", "duplicate", "nonzero", "source", "version", "database", "filter", "suppression", "artifact", "database-bytes", "scanner-bytes"])
 def test_contradictory_or_incomplete_native_result_never_becomes_no_findings(tmp_path, change):
     case = Case(tmp_path)
-    if change in {"malformed", "duplicate"}:response = {change: True}
-    elif change == "nonzero":response = {"exit_code": 1}
-    elif change == "source":response = {"source": {"type": "image", "target": dict(case.image, imageID="sha256:" + "c" * 64)}}
-    elif change == "version":response = {"version": "0.0.0"}
-    elif change == "database":response = {"db": {"status": dict(case.status, valid=False)}}
-    elif change == "filter":response = {"configuration": {"only-fixed": True}}
-    elif change == "database-bytes":response = {"change_database": True}
-    elif change == "scanner-bytes":response = {"change_scanner": True}
-    elif change == "suppression":response = {"configuration": {"include-matcher-suppressions": False}}
-    else:response = {"matches": [{"artifact": dict(case.artifact, id="forged"), "vulnerability": {"id": "CVE-EXAMPLE"}}]}
+    if change in {"malformed", "duplicate"}:
+        response = {change: True}
+    elif change == "nonzero":
+        response = {"exit_code": 1}
+    elif change == "source":
+        response = {"source": {"type": "image", "target": dict(case.image, imageID="sha256:" + "c" * 64)}}
+    elif change == "version":
+        response = {"version": "0.0.0"}
+    elif change == "database":
+        response = {"db": {"status": dict(case.status, valid=False)}}
+    elif change == "filter":
+        response = {"configuration": {"only-fixed": True}}
+    elif change == "database-bytes":
+        response = {"change_database": True}
+    elif change == "scanner-bytes":
+        response = {"change_scanner": True}
+    elif change == "suppression":
+        response = {"configuration": {"include-matcher-suppressions": False}}
+    else:
+        response = {"matches": [{"artifact": dict(case.artifact, id="forged"), "vulnerability": {"id": "CVE-EXAMPLE"}}]}
     case.response.write_text(json.dumps(response))
     result = case.invoke()
     assert case.seen.exists()
