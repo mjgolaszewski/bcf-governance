@@ -141,5 +141,5 @@ def test_real_git_exact_base_read_change_generates_migration(tmp_path):
     base = _git(tmp_path, "rev-parse", "HEAD")
     path.write_text(yaml.safe_dump(payload(operation())))
     rows = migrations.register_operation_migration(tmp_path, base_sha=base,
-        subject_id=before["id"], owner="fixture", reason="bind read boundary", apply=False)
+        subject_id=before["id"], owner="fixture", reason="bind read boundary", apply=True)
     assert len(rows) == 1 and rows[0]["change"] == "effect_changed"

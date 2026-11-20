@@ -1,0 +1,26 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "implementation_complete": false,
+  "whole_requirement_advancement": false,
+  "scope": "Read-port compatibility construction checkpoint; qualification pending",
+  "test_subject": "d8be7a250b66f931ce8fbf328e2def8a4da67d9f",
+  "source_matrix": {
+    "tests": 471,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_junit_sha256": "5676e2bd88e0b2416a96dd7301e936130ec4133e73cb99c8e0cb8ea1ea908efd",
+  "residual": "Exact-base migration fixture used apply=False check-only mode when it intended to author the record. Corrected to apply=True; corrected case is not yet rerun.",
+  "original_before_disposition": "Original20-case18-failure capture retained. Do not treat the misconfigured migration fixture as completed causal qualification.",
+  "pending": [
+    "corrected real-Git migration case",
+    "installed consumer/control matrix",
+    "lint and architecture",
+    "canonical package/schema parity check",
+    "governance residual capture"
+  ],
+  "remaining": "Full runtime contexts, profiles, distributions, approved performance targets and custody remain open; no dormant activation and all82whole unchanged"
+}
