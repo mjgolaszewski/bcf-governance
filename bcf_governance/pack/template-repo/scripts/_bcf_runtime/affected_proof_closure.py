@@ -11,12 +11,12 @@ import hashlib
 import json
 from pathlib import Path
 import re
-import subprocess
 from typing import Any, Iterable, Mapping
 
 from .evidence_execution import EvidenceError
 from .semantic_derivations import legacy_generated_projections
 from .semantic_ownership_registry import load_registry
+from .semantic_source_paths import _source_git
 
 
 DEPENDENCY_CLASSES = (
@@ -74,36 +74,30 @@ def changed_paths(
     if prior_tree is not None and re.fullmatch(r"[a-f0-9]{40,64}", prior_tree) is None:
         return None
     source = prior_commit
-    commit_type = subprocess.run(
-        ["git", "cat-file", "-t", prior_commit], cwd=repo_root,
-        capture_output=True, text=True, check=False,
-    )
-    if commit_type.returncode == 0 and commit_type.stdout.strip() != "commit":
+    commit_type = _source_git(repo_root, "cat-file", "-t", prior_commit)
+    if commit_type.returncode == 0 and commit_type.stdout.strip() != b"commit":
         return None
-    commit_tree = subprocess.run(
-        ["git", "rev-parse", f"{prior_commit}^{{tree}}"], cwd=repo_root,
-        capture_output=True, text=True, check=False,
-    )
+    commit_tree = _source_git(repo_root, "rev-parse", f"{prior_commit}^{{tree}}")
     if commit_tree.returncode == 0:
-        if prior_tree is not None and commit_tree.stdout.strip() != prior_tree:
+        if prior_tree is not None and commit_tree.stdout.strip() != prior_tree.encode("ascii"):
             return None
     else:
         if prior_tree is None:
             return None
-        tree_type = subprocess.run(
-            ["git", "cat-file", "-t", prior_tree], cwd=repo_root,
-            capture_output=True, text=True, check=False,
-        )
-        if tree_type.returncode or tree_type.stdout.strip() != "tree":
+        tree_type = _source_git(repo_root, "cat-file", "-t", prior_tree)
+        if tree_type.returncode or tree_type.stdout.strip() != b"tree":
             return None
         source = prior_tree
-    result = subprocess.run(
-        ["git", "diff", "--name-only", source, current_tree or "HEAD", "--"], cwd=repo_root,
-        capture_output=True, text=True, check=False,
+    result = _source_git(
+        repo_root, "diff-tree", "-r", "-z", "--no-commit-id", "--name-only",
+        "--no-ext-diff", "--no-textconv", "--no-renames", source, current_tree or "HEAD", "--",
     )
-    if result.returncode:
+    if result.returncode or (result.stdout and not result.stdout.endswith(b"\0")):
         return None
-    return sorted(line for line in result.stdout.splitlines() if line)
+    try:
+        return sorted(value.decode("utf-8") for value in result.stdout.split(b"\0") if value)
+    except UnicodeDecodeError:
+        return None
 
 
 def _projection_rows(repo_root: Path) -> list[dict[str, str]]:
@@ -146,20 +140,18 @@ def _tracked_contract_digest(repo_root: Path, relative: str) -> str | None:
 
 def _assert_current_subject(repo_root: Path, subject: Mapping[str, str]) -> None:
     """Check local Git/working bytes, separately from caller-authenticated authority."""
+    from .ci_graph_audit import _inert_worktree_status
+
     try:
-        identity = subprocess.run(
-            ["git", "rev-parse", "HEAD", "HEAD^{tree}"], cwd=repo_root,
-            capture_output=True, text=True, check=False,
-        )
-        state = subprocess.run(
-            ["git", "status", "--porcelain=v1", "--untracked-files=all", "--ignore-submodules=none"],
-            cwd=repo_root, capture_output=True, text=True, check=False,
-        )
-    except OSError as exc:
+        identity = _source_git(repo_root, "rev-parse", "HEAD", "HEAD^{tree}")
+        values = identity.stdout.decode("ascii").splitlines()
+        state = _inert_worktree_status(repo_root)
+    except (OSError, ValueError) as exc:
         raise EvidenceError("affected proof current subject state cannot be resolved") from exc
-    if (identity.returncode or state.returncode or state.stdout
-            or identity.stdout.splitlines() != [subject["commit_sha"], subject["tree_sha"]]):
+    if (identity.returncode or state["status_entries"]
+            or values != [subject["commit_sha"], subject["tree_sha"]]):
         raise EvidenceError("affected proof current subject does not match the clean repository state")
+
 
 
 def derive_affected_proof_set(

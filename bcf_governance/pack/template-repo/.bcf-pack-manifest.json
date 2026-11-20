@@ -466,7 +466,7 @@
     },
     "scripts/_bcf_runtime/affected_proof_closure.py": {
       "operation": "copy",
-      "sha256": "e28359db8ada2c58258797222c39c1a8a63d19e2a9fc873392984c004d5e50ba"
+      "sha256": "a701af7e8ecff310bdcdd591b1ad2b73a7bbd7aca572f40fcb9b96b62873e898"
     },
     "scripts/_bcf_runtime/application_assurance_graph.py": {
       "operation": "copy",
