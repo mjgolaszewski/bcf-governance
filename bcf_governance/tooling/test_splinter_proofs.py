@@ -199,7 +199,7 @@ def write_successful_proof(
         or any(not isinstance(source[key], str) or not source[key] for key in expected_source)
         or sorted(observed_nodes) != sorted(str(value) for value in splinter["nodes"])
         or not junit.is_file()
-        or not worktree_removed
+        or worktree_removed is not True
     ):
         raise ValueError("successful test splinter proof inputs are incomplete")
     raw_junit = junit.read_bytes()
@@ -209,10 +209,8 @@ def write_successful_proof(
             "node_ids": sorted(observed_nodes), "junit_sha256": hashlib.sha256(raw_junit).hexdigest(),
         }}, raw_junit,
     )
-    destination.mkdir(parents=True, exist_ok=True)
     splinter_id = str(splinter["id"])
     junit_target = destination / f"{splinter_id}.junit.xml"
-    junit_target.write_bytes(raw_junit)
     unsigned = {
         "schema_version": "1.0",
         "kind": KIND,
@@ -221,16 +219,22 @@ def write_successful_proof(
         "result": {
             "returncode": 0,
             "junit_file": junit_target.name,
-            "junit_sha256": _file_sha256(junit_target),
+            "junit_sha256": hashlib.sha256(raw_junit).hexdigest(),
             "node_ids": sorted(observed_nodes),
             "execution_state": execution_state,
             "worktree_removed": True,
         },
     }
-    proof = {**unsigned, "proof_sha256": hashlib.sha256(_canonical(unsigned)).hexdigest()}
+    try:
+        proof = {**unsigned, "proof_sha256": hashlib.sha256(_canonical(unsigned)).hexdigest()}
+        raw_manifest = (json.dumps(proof, indent=2, sort_keys=True) + "\n").encode("utf-8")
+    except (TypeError, ValueError, UnicodeError) as exc:
+        raise ValueError("test splinter proof metadata is not serializable") from exc
+    decode_test_splinter_proof(raw_manifest)
+    destination.mkdir(parents=True, exist_ok=True)
+    junit_target.write_bytes(raw_junit)
     manifest = destination / f"{splinter_id}.proof.json"
-    manifest.write_text(json.dumps(proof, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    load_test_splinter_proof(manifest)
+    manifest.write_bytes(raw_manifest)
     return manifest, junit_target
 
 

@@ -1899,7 +1899,7 @@
     },
     "scripts/_bcf_runtime/test_splinter_proofs.py": {
       "operation": "copy",
-      "sha256": "8db892827ffe3d2f1d64dff5e779429baef6a2cf2dcb28b708bcd5806ddd49fe"
+      "sha256": "fd23181e12dd45953cecc2673136d1565319a878492d67c3995bfde48c9587c5"
     },
     "scripts/_bcf_runtime/trusted_controller_compatibility.py": {
       "operation": "copy",
