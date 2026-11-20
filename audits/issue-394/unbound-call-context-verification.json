@@ -1,0 +1,63 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "whole_requirement_advancement": false,
+  "contract_commit": "9dbdae23b58906460501cb06ab1c0468abc6c4c3",
+  "implementation_subject": "34cedd7e0e5b008761a3042a93f1612e567e55e2",
+  "test_tree": "b83105d898297d19875deb3c143cb5a1ebb9cdee",
+  "populations": {
+    "before": {
+      "tests": 41,
+      "failures": 26,
+      "errors": 0,
+      "skipped": 0
+    },
+    "new-source": {
+      "tests": 41,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "affected-source": {
+      "tests": 562,
+      "failures": 6,
+      "errors": 0,
+      "skipped": 0
+    },
+    "installed": {
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "architecture": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "required-semantic": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "junit_sha256": {
+    "before": "83249d2ecbef9d284ceab2b3e59833d2feba29c25f7cbb54e179326ea22b36af",
+    "new-source": "52f9ee1c87b58de516c3f9e53a77d1abee8f83dc836b58b7a4d11287c5518ef3",
+    "affected-source": "e062da4176028dec7257cdb9879a7a76132d57e6df9f76dad1b1d476747416db",
+    "installed": "373ba83dc5e9ac17169cfc3ff71c826640549a0686f30687f2e6658d0f890dbc",
+    "architecture": "c03e9044e98053b183071edf2335446a29cd4fca0f02eb06d673461b205c9c0f",
+    "required-semantic": "a16067604b1aa1429394b8b492bc7648d81f43a544af992a8d5bab0e4b5d000b"
+  },
+  "scope": "Exact Python source-call binding admission, including native/global calls, opaque external port labels and basename-only guesses; no external/native qualifier is introduced",
+  "limits": "Retain every invalidated consumer premise and required gate failure. Source-backed opaque port input/receiver/lifetime and whole runtime authority remain unqualified; TypeScript behavior unchanged. All82whole requirements open; no activation, speedup or security qualification.",
+  "governance_returncode": 1,
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  }
+}

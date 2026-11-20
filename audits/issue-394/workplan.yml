@@ -304,6 +304,8 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/unbound-call-context-verification.json
+    - audits/issue-394/unbound-call-context-contract.yml
     - audits/issue-394/boolean-result-context-verification.json
     - audits/issue-394/boolean-result-context-contract.yml
     - audits/issue-394/runtime-subject-migration-verification.json
