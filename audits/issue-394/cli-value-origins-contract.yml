@@ -1,0 +1,41 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  status: planned
+  authority: false
+  path: audits/issue-394/cli-value-origins-contract.yml
+parent_contract: audits/issue-394/runtime-effect-context-foundation-contract.yml
+workitem: P32-P0-04
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: test_characterization
+scope:
+- Execute the actual ci_commands.main, ordinary CLI ingress, actual argparse builder and actual Path construction through the existing qualify_release test port.
+- Retain positive concrete argument, partition, key/mapping and returned-path witnesses separately from static completeness and runtime qualification.
+- Prove invalid and duplicate mappings stop before qualification; ordinary invocations own distinct dictionaries.
+- Change only the requested Path constructor and retain a returned-object callback witness; requested and returned types cannot be conflated.
+- Change only real parser argument registration to supply a string-subclass converter; ordinary validated argv can acquire a partition callback after ingress. End-value types alone cannot prove absence of prior effects.
+- Run identical behavior support in SDK source and isolated fresh/upgrade installed private runtime with SDK imports absent.
+classification:
+  characterization: true
+  detector_qualification: false
+  independent_foundation_verification: false
+  positive_runtime_context_qualified: false
+  whole_requirement_advancement: false
+  note: Altered-origin cases demonstrate actual alternatives, not an implemented detector or permission to accept those alternatives. The future context qualifier must account for or reject them.
+target_modules:
+- tests/cli_value_origins_support.py
+- tests/test_cli_value_origins.py
+- tests/test_installed_cli_value_origins.py
+expected_tests:
+- ordinary native CLI reaches the declared qualification port with exact string keys and native returned Path objects
+- invalid and duplicate inputs never reach qualification
+- repeated invocations cannot share a prior mutable mapping
+- constructor substitution returns a different object type and its actual callback is witnessed
+- parser conversion introduces a callback after ordinary ingress and before the qualification port
+forbidden_surfaces:
+- production behavior changes or new CLI grammar
+- real network, installation of maintained adopters, release, main or workflow machinery mutations
+- authority from mocked ports, annotations, source presence, end-value types or one observed execution
+- marking required global semantic checks green or P33 active
+validation: Commit contract and behavior controls, run affected CLI ingress and value-origin source plus installed cases, standard lint/package/architecture and governance checks; retain exact source and raw results. No causal failure baseline is claimed for characterization-only work.
