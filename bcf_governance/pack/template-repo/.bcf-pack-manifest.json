@@ -904,7 +904,7 @@
     },
     "scripts/_bcf_runtime/dependency_assurance.py": {
       "operation": "copy",
-      "sha256": "a4d95613585c5dae74a8ddb384574d2bcb03316d1dbfbef3e8d461646e00fcdb"
+      "sha256": "83269e3105113f5968c9eaf6974e46cb7c60dbbb82957ba5ccbc6d56b3d3271e"
     },
     "scripts/_bcf_runtime/doctor_governance_pack.py": {
       "operation": "copy",

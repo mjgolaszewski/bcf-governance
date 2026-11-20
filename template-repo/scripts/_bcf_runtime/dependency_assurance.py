@@ -55,8 +55,15 @@ def _installed() -> dict[str, metadata.Distribution]:
     result: dict[str, metadata.Distribution] = {}
     for distribution in metadata.distributions():
         name = distribution.metadata.get("Name")
-        if isinstance(name, str) and name:
-            result[canonicalize_name(name)] = distribution
+        if not isinstance(name, str) or not name:
+            raise DependencyAssuranceError("installed dependency name is missing or malformed")
+        try:
+            identity = canonicalize_name(name, validate=True)
+        except InvalidName as exc:
+            raise DependencyAssuranceError("installed dependency name is invalid") from exc
+        if identity in result:
+            raise DependencyAssuranceError(f"ambiguous installed dependency: {identity}")
+        result[identity] = distribution
     return result
 
 
