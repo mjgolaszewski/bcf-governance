@@ -1,0 +1,80 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "security_qualified": false,
+  "whole_requirement_advancement": false,
+  "contract_commit": "84e895b9710b1de5349550cb8bbf6e8976e3b5ef",
+  "fixture_lint_repair": "7e8ac1422cc5033227239935c4915a32c99e800a",
+  "implementation_subject": "deb945c4342896884e14b7713894d6def03e0be0",
+  "test_tree": "ccea6d6dc8afa44bb05ee6016f7fd3805f6eebf0",
+  "before": {
+    "tests": 37,
+    "failures": 37,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source": {
+    "tests": 118,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 16,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "required_semantic": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "4e9622050c21b13bca563ce0d9a8d94d3236f45dccb8e189c5d12d9b346aa874",
+    "source": "b984dc70284b902c54a9fa87d88bad732d80efb490537464294f2484a286af59",
+    "installed": "067b54b7aa60759a3a8cdffecf79f019991f0662a2ffb5120ad21f54eb55288c",
+    "architecture": "b13fdb201906921d99e8ecbc51615c230a6bc89ff9e3ac050ae5aa74e8086342",
+    "required-semantic": "4cb1947dfc2d0fbf1ec5752ffb16da1a73ce09f8eda82cab26f75f1547ad1bf2"
+  },
+  "source_sha256": "9fa6e8a47c41ab65097747dba28ee66e13cce0fb5fa743ce2fdbc8d4ed087ec4",
+  "real_native_construction": {
+    "authority": false,
+    "security_qualified": false,
+    "runtime_context_qualified": false,
+    "status": "scanner_failure",
+    "diagnostic": "Expecting value: line 1 column 1 (char 0)",
+    "inventory_count": 50,
+    "finding_count": 0,
+    "suppressed_count": 0,
+    "result_sha256": "de64ae97708abc6620d3ecdb0187ab25b06e39ab3268a57515cc2f7542b2f476",
+    "stdin_sha256": "6e4fd7c87f333f6bd2c1147bc5541e1f7684efe89e1e78592d9a8807aab3d2ff",
+    "scanner_sha256": "322a7839c1c9f6c1b6ac0aa6b61a7d94139b7f24780b82a05b63caab56d4286b",
+    "database_files": {
+      "6/import.json": "9da8cd424e7dd5e8bf9cc3b69bee4dec9bf9aef18489b3f81b344bca8cd1ef2d",
+      "6/last_update_check": "5571f4cc41c55040b06505773a601737fce00603f3631191a3c6519810d3a527",
+      "6/vulnerability.db": "451e54aa3fee04e22a0c51f75cfb1426e2089fadb594160e2b6bb11c675c1fea"
+    },
+    "database_status": {
+      "schemaVersion": "v6.1.10",
+      "from": "https://grype.anchore.io/databases/v6/vulnerability-db_v6.1.10_2026-11-19T00:22:15Z_1795113665.tar.zst?checksum=sha256%3A757eb920ea050a3b9d145ced71649be659539140a173d159f88eb8afa900e2e4",
+      "built": "2026-11-19T18:41:05Z",
+      "valid": true
+    },
+    "limits": "Construction witness of actual pinned Grype and sealed input only; selected tuples derive from retained SBOM and do not independently authenticate installed-image completeness, provenance or applicability. No image execution, native runtime approval or release qualification."
+  },
+  "scope": "Opt-in native1.1 dependency advisory capture, exact SBOM bytes/package/image inputs and pinned scanner/database, sealed stdin via existing command owner with all suppressions retained",
+  "limits": "No default gate/capability activation or native runtime selection. Protected callers authenticate pins and complete installed inventory. Construction SBOM tuples do not establish independent installed-image completeness. Full native provenance/applicability/runtime context/security/targets/custody and82whole remain open.",
+  "governance_returncode": 1,
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  }
+}
