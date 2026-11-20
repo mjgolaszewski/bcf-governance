@@ -1,0 +1,64 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "whole_requirement_advancement": false,
+  "implementation_subject": "34cedd7e0e5b008761a3042a93f1612e567e55e2",
+  "contract_commit": "2041430a45ffc17b05cfae8ecbbd02633b13bf0d",
+  "revised_test_subject": "fe7866285772c04dd86c2abd34659d1bb6f7b69d",
+  "revised_consumers": {
+    "tests": 252,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "revised_consumer_junit_sha256": "837bc186b0bce8470121f1e15ef4b7534acc60cef3482183f18525c22596fd16",
+  "retained_original_report": "audits/issue-394/unbound-call-context-verification.json",
+  "retained_original_report_sha256": "b9ac470d67f9d227ceebb8c4bb15295e2b2dfe659b6eaff862cbc074d98d2c35",
+  "unchanged_installed_and_new_source_evidence": {
+    "before": {
+      "tests": 41,
+      "failures": 26,
+      "errors": 0,
+      "skipped": 0
+    },
+    "new-source": {
+      "tests": 41,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "affected-source": {
+      "tests": 562,
+      "failures": 6,
+      "errors": 0,
+      "skipped": 0
+    },
+    "installed": {
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "architecture": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "required-semantic": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "reuse_reason": "Only explicit source-projection tests and governed dispositions changed; canonical/private production byte identities identical to original qualification. No installed/architecture/pack/required-semantic rerun for bookkeeping.",
+  "limits": "Six original old fixture failures individually dispositioned across four test files; every revised source-only assertion now has a default strict refusal. Required consumers remain strict. All82whole requirements and native/input/lifetime qualification remain open.",
+  "governance_returncode": 1,
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  }
+}
