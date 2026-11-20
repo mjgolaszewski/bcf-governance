@@ -508,3 +508,103 @@ def validate_timing_capture(repo_root: Path, raw: str | bytes) -> dict[str, Any]
         raise
     except (ValueError, TypeError, KeyError, UnicodeError) as exc:
         raise OperationalObservationError("timing capture is malformed or incomplete") from exc
+
+
+RADON_VERSION = "6.0.1"
+
+
+def python_complexity_observation(repo_root: Path, *, subject: dict[str, str]) -> dict[str, Any]:
+    """Observe all committed named functions; no review or execution authority.
+
+    The caller authenticates repository and source subject. Calculator file identity
+    is recorded, not approved runtime provenance. Lambdas and class aggregates are
+    explicitly outside per-function score scope. Missing facts never mean clean.
+    """
+    import ast
+    import importlib.metadata
+    import platform
+    import time
+    from .semantic_source_paths import committed_python_source_population, committed_regular_blob_capture
+
+    started = time.monotonic_ns()
+    try:
+        population = committed_python_source_population(repo_root, **subject)
+    except (ValueError, TypeError) as exc:
+        raise OperationalObservationError("complexity source subject is incompatible") from exc
+    result = {"schema_version": "1.0", "kind": "python_complexity", "authority": False,
+              "execution_qualified": False, "status": "incomplete", "subject": dict(subject),
+              "scope": "all_named_python_functions_in_exact_git_tree",
+              "tool": {"name": "radon", "required_version": RADON_VERSION,
+                       "observed_version": None, "implementation_sha256": None},
+              "python": {"implementation": platform.python_implementation(), "version": platform.python_version()},
+              "options": {"no_assert": False, "lambda_scores": False, "class_aggregates": False},
+              "files": [], "functions": [], "failures": [], "elapsed_ms": 0}
+    failures = result["failures"]
+    for path, mode, oid in population["unresolved_entries"]:
+        failures.append({"path": path, "reason": "unresolved_source_entry"})
+    try:
+        result["tool"]["observed_version"] = importlib.metadata.version("radon")
+        if result["tool"]["observed_version"] != RADON_VERSION:
+            raise ImportError("unqualified calculator version")
+        import radon.complexity
+        import radon.visitors
+        tool_bytes = b"\0".join(Path(module.__file__).read_bytes()
+                                  for module in (radon.complexity, radon.visitors))
+        result["tool"]["implementation_sha256"] = hashlib.sha256(tool_bytes).hexdigest()
+    except (ImportError, OSError):
+        failures.append({"path": "", "reason": "calculator_unavailable_or_wrong_version"})
+        result["elapsed_ms"] = (time.monotonic_ns() - started) // 1_000_000
+        return result
+
+    for path, mode, oid in population["python_blobs"]:
+        try:
+            _, raw = committed_regular_blob_capture(repo_root, path=path, **subject)
+        except ValueError as exc:
+            raise OperationalObservationError("complexity source subject member is incompatible") from exc
+        member = {"path": path, "sha256": hashlib.sha256(raw).hexdigest(), "named_functions": 0, "lambdas": 0}
+        result["files"].append(member)
+        try:
+            tree = ast.parse(raw.decode("utf-8"), filename=path)
+        except (SyntaxError, UnicodeError, ValueError):
+            failures.append({"path": path, "reason": "invalid_python"})
+            continue
+        member["named_functions"] = sum(isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) for node in ast.walk(tree))
+        member["lambdas"] = sum(isinstance(node, ast.Lambda) for node in ast.walk(tree))
+        if any(type(node).__name__ in {"TryStar", "TypeAlias", "TemplateStr", "Interpolation"}
+               for node in ast.walk(tree)):
+            failures.append({"path": path, "reason": "unsupported_syntax"})
+            continue
+        measured = []
+        class CalculatorPopulationMismatch(ValueError):
+            pass
+        def visit(node, parents):
+            for child in ast.iter_child_nodes(node):
+                scope = parents
+                if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    blocks = radon.complexity.cc_visit_ast(child, no_assert=False)
+                    roots = [row for row in blocks if row.lineno == child.lineno
+                             and row.col_offset == child.col_offset and row.name == child.name]
+                    if len(roots) != 1 or type(roots[0].complexity) is not int or roots[0].complexity < 1:
+                        raise CalculatorPopulationMismatch("calculator population mismatch")
+                    scope = (*parents, child.name)
+                    measured.append({"path": path, "qualified_name": ".".join(scope),
+                                     "line": child.lineno, "column": child.col_offset,
+                                     "end_line": child.end_lineno, "complexity": roots[0].complexity,
+                                     "source_sha256": member["sha256"]})
+                elif isinstance(child, ast.ClassDef):
+                    scope = (*parents, child.name)
+                visit(child, scope)
+        try:
+            visit(tree, ())
+            if len(measured) != member["named_functions"]:
+                raise CalculatorPopulationMismatch("calculator population mismatch")
+        except CalculatorPopulationMismatch:
+            failures.append({"path": path, "reason": "calculator_population_mismatch"})
+            continue
+        except Exception:
+            failures.append({"path": path, "reason": "calculator_failed"})
+            continue
+        result["functions"].extend(measured)
+    result["status"] = "incomplete" if failures else "complete"
+    result["elapsed_ms"] = (time.monotonic_ns() - started) // 1_000_000
+    return result

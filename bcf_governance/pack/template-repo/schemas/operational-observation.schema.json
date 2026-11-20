@@ -245,6 +245,278 @@
           "pattern": "^[a-f0-9]{64}$"
         }
       }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "authority",
+        "execution_qualified",
+        "status",
+        "subject",
+        "scope",
+        "tool",
+        "python",
+        "options",
+        "files",
+        "functions",
+        "failures",
+        "elapsed_ms"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "kind": {
+          "const": "python_complexity"
+        },
+        "authority": {
+          "const": false
+        },
+        "execution_qualified": {
+          "const": false
+        },
+        "status": {
+          "enum": [
+            "complete",
+            "incomplete"
+          ]
+        },
+        "subject": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "commit_sha",
+            "tree_sha"
+          ],
+          "properties": {
+            "commit_sha": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{40}$"
+            },
+            "tree_sha": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{40}$"
+            }
+          }
+        },
+        "scope": {
+          "const": "all_named_python_functions_in_exact_git_tree"
+        },
+        "tool": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "required_version",
+            "observed_version",
+            "implementation_sha256"
+          ],
+          "properties": {
+            "name": {
+              "const": "radon"
+            },
+            "required_version": {
+              "const": "6.0.1"
+            },
+            "observed_version": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "implementation_sha256": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "python": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "implementation",
+            "version"
+          ],
+          "properties": {
+            "implementation": {
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
+          }
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "no_assert",
+            "lambda_scores",
+            "class_aggregates"
+          ],
+          "properties": {
+            "no_assert": {
+              "const": false
+            },
+            "lambda_scores": {
+              "const": false
+            },
+            "class_aggregates": {
+              "const": false
+            }
+          }
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "sha256",
+              "named_functions",
+              "lambdas"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "named_functions": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "lambdas": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "functions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "qualified_name",
+              "line",
+              "column",
+              "end_line",
+              "complexity",
+              "source_sha256"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "qualified_name": {
+                "type": "string"
+              },
+              "line": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "column": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "end_line": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "complexity": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "source_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        },
+        "failures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "reason"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "reason": {
+                "enum": [
+                  "unresolved_source_entry",
+                  "calculator_unavailable_or_wrong_version",
+                  "invalid_python",
+                  "unsupported_syntax",
+                  "calculator_population_mismatch",
+                  "calculator_failed"
+                ]
+              }
+            }
+          }
+        },
+        "elapsed_ms": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "complete"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "failures": {
+                "maxItems": 0
+              },
+              "tool": {
+                "properties": {
+                  "observed_version": {
+                    "const": "6.0.1"
+                  },
+                  "implementation_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "failures": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
     }
   ]
 }

@@ -342,7 +342,7 @@
     },
     "schemas/operational-observation.schema.json": {
       "operation": "copy",
-      "sha256": "c28e35236a3c717c43a73cc7c1332b9c00c7f65f20aefdced249c7e11def1a18"
+      "sha256": "50443a1e8c077331c37767b7b7bccf2fa84624799f62eeb87d530fe2bd33f835"
     },
     "schemas/phase-history.schema.json": {
       "operation": "copy",
@@ -1335,7 +1335,7 @@
     },
     "scripts/_bcf_runtime/operational_observations.py": {
       "operation": "copy",
-      "sha256": "f482b321532bd4869e1cd363cf4a79b77ff31a2be7ecd11f6ee278279a8bc340"
+      "sha256": "6d5b12f77039bc333243c6de2397b42c810879b0a66f1a8bf1aa000ffd0e2744"
     },
     "scripts/_bcf_runtime/ordinary_protection_projection.py": {
       "operation": "copy",
@@ -1623,7 +1623,7 @@
     },
     "scripts/_bcf_runtime/resources/schemas/operational-observation.schema.json": {
       "operation": "copy",
-      "sha256": "c28e35236a3c717c43a73cc7c1332b9c00c7f65f20aefdced249c7e11def1a18"
+      "sha256": "50443a1e8c077331c37767b7b7bccf2fa84624799f62eeb87d530fe2bd33f835"
     },
     "scripts/_bcf_runtime/resources/schemas/phase-history.schema.json": {
       "operation": "copy",
