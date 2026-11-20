@@ -1,0 +1,33 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/affected-proof-inert-bytes-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitems: [foundation.conformance, dormant.continuation, dormant.impact]
+scope: Consume existing inert source observation at affected-proof boundaries and preserve exact changed path population
+problem:
+  - Git status can execute candidate filters or monitors and hide byte differences behind index flags
+  - Rename detection can omit a removed dependency when only the new non-proof path is returned
+contract:
+  - Reuse ci_graph_audit inert worktree status and semantic_source_paths source Git owner; no parallel byte reader
+  - Reject hidden staged or working source differences using actual regular descriptor bytes
+  - Never execute candidate clean filters external diffs or fsmonitor programs during this query
+  - Ignore ambient Git repository redirection and replacements through the existing source Git environment
+  - Compare pinned Git trees with no rename collapsing and NUL-delimited literal paths; retain both added and deleted endpoints
+  - Preserve exact subject checks conservative unknown history and authenticated transported-tree fallback
+  - Preserve index refs configuration and source bytes during read-only derivation
+limits:
+  - Existing inert observer admits only qualified regular resolved source; unsupported links object formats or platforms remain typed blocks
+  - Boundary reauthentication is not an atomic filesystem lease or provider/evaluator authorization
+  - No lifecycle activation or proof suppression from a source observation
+controls:
+  - Real Git assume-unchanged and skip-worktree concealment must fail affected-proof derivation
+  - Native filter and fsmonitor witnesses demonstrate execution capability before the real query proves nonexecution
+  - Source-to-editorial rename retains old required input and exact literal newline path names
+  - Foreign ambient Git namespace cannot redirect the selected checkout
+  - Query leaves native index and refs unchanged
+qualification:
+  - Contract and consumer controls precede production changes
+  - Reuse existing observer qualification and run affected proof planner truth and installed consumer matrices
+  - Preserve all82whole open and pending canonical runtime-context projection
