@@ -28,8 +28,10 @@ args=decode(json.load(sys.stdin));mode=sys.argv[1]
 captured=owner.capture_public_operation_bindings(**args)
 facts=discover_python_source(args["repo_root"],source_subject=args["runtime_subject"],call_contracts_version="1.0")
 if mode=="policy":
- path=args["policy_repo_root"]/"governance/application-operations.yml"
- path.write_text(path.read_text()+"# moved after capture\\n")
+ oid=captured[1]["policy_blob_oid"]
+ path=args["policy_repo_root"]/".git/objects"/oid[:2]/oid[2:]
+ assert path.is_file()
+ path.unlink()
 elif mode=="subject":facts["source_population"]["subject"]=args["policy_subject"]
 if mode=="valid":
  result=owner.validate_public_operation_capture(args["repo_root"],facts,captured)

@@ -73,14 +73,21 @@ def test_same_root_capture_remains_compatible(roots):
     assert result["operations_checked"] == 1
 
 
-@pytest.mark.parametrize("defect", ["policy_bytes", "metadata", "registry", "roots", "runtime_metadata", "later_inventory", "unbound_inventory", "unowned_capture"])
+@pytest.mark.parametrize("defect", ["policy_object", "metadata", "registry", "roots", "runtime_metadata", "later_inventory", "unbound_inventory", "unowned_capture"])
 def test_consuming_capture_reauthenticates_actual_source(roots, defect):
     _, root = roots
+    if defect == "policy_object":
+        path = root / "governance/application-operations.yml"
+        path.write_text(path.read_text() + "# unique loose policy object\n")
+        git(root, "add", ".")
+        git(root, "commit", "-qm", "distinct policy bytes")
     captured = owner.capture_public_operation_bindings(**arguments(root))
     facts = inventory(root)
-    if defect == "policy_bytes":
-        path = root / "governance/application-operations.yml"
-        path.write_text(path.read_text() + "# moved protected policy\n")
+    if defect == "policy_object":
+        oid = captured[1]["policy_blob_oid"]
+        path = root / ".git/objects" / oid[:2] / oid[2:]
+        assert path.is_file()
+        path.unlink()
     elif defect == "metadata":
         captured[1]["registry_sha256"] = "0" * 64
     elif defect == "registry":
@@ -144,13 +151,41 @@ def test_separate_policy_source_rejects_before_catalog_discovery(roots, tmp_path
         owner.capture_public_operation_bindings(**arguments(candidate, expected), policy_repo_root=selected)
 
 
-def test_separate_policy_movement_rejects_after_local_factory_capture(roots):
+def test_separate_policy_uses_immutable_subject_despite_working_policy_edits(roots):
     protected, candidate = roots
     captured = owner.capture_public_operation_bindings(**arguments(candidate), policy_repo_root=protected)
     path = protected / "governance/application-operations.yml"
     path.write_text(path.read_text() + "# moved after capture\n")
-    with pytest.raises(CIGraphError, match="public operation.*policy"):
-        owner.validate_public_operation_capture(candidate, inventory(candidate), captured)
+    result = owner.validate_public_operation_capture(candidate, inventory(candidate), captured)
+    assert result["registry_sha256"] == captured[1]["registry_sha256"]
+    assert result["policy_subject"] == subject(protected)
+
+
+@pytest.mark.parametrize("cause", ["changed_working_file", "missing_working_file", "digest", "missing_digest", "duplicate", "nonbytes"])
+def test_bound_policy_bytes_use_existing_strict_loader(roots, cause):
+    from bcf_governance.tooling import semantic_authority_contracts as contracts
+    protected, _ = roots
+    path = protected / "governance/application-operations.yml"
+    raw = path.read_bytes()
+    if cause == "duplicate":
+        raw += b"schema_version: '1.0'\n"
+    digest = hashlib.sha256(raw).hexdigest()
+    if cause == "changed_working_file":
+        path.write_text("candidate: cannot_replace_committed_bytes\n")
+    elif cause == "missing_working_file":
+        path.unlink()
+    elif cause == "digest":
+        digest = "0" * 64
+    elif cause == "missing_digest":
+        digest = None
+    elif cause == "nonbytes":
+        raw = bytearray(raw)
+    if cause in {"changed_working_file", "missing_working_file"}:
+        registry = contracts.load_application_operations(protected, expected_sha256=digest, source_bytes=raw)
+        assert registry.raw == payload()
+    else:
+        with pytest.raises(contracts.SemanticAuthorityError):
+            contracts.load_application_operations(protected, expected_sha256=digest, source_bytes=raw)
 
 
 def test_candidate_cannot_erase_unclassified_operations_with_its_own_policy(roots):

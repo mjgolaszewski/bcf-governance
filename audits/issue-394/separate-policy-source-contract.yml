@@ -13,12 +13,14 @@ operation_side: contract_then_query
 target_modules:
 - bcf_governance/tooling/ci_graph_composition_operations.py
 - bcf_governance/tooling/ci_graph_composition.py
+- bcf_governance/tooling/semantic_authority_contracts.py
 problem: Existing public-operation capture uses one working root for protected policy and candidate source. Its later consumer accepts the retained tuple without reauthenticating policy bytes or checking that the supplied inventory belongs to the captured runtime subject.
 change:
 - Extend the existing reconstruction interface with optional operation_policy_repo_root, defaulting to the current source root.
 - Load protected policy through its existing committed policy factory in the selected policy root; reconstruct public catalogs and function effects only from the separate candidate root and exact runtime subject.
 - Retain an internal factory-owned binding to roots, immutable subjects, policy identity, declared relationships and lifecycle roots. Do not export machine-local roots in observations.
-- Reauthenticate the protected policy and local capture consistency at effect-binding and public-operation consuming boundaries; bind inventories to the captured runtime subject before effect interpretation.
+- Reauthenticate immutable committed protected policy bytes and local capture consistency at effect-binding and public-operation consuming boundaries; bind inventories to the captured runtime subject before effect interpretation. Do not reread mutable working policy as authority after capture.
+- Extend the existing strict unique-mapping loader with independently digest-bound source bytes; retain its schema, duplicate-key and structural validation rather than introduce another parser.
 - When a separate policy root is selected, observe the exact committed candidate policy digest and its difference from protected policy without parsing candidate policy as authority.
 - Preserve legacy same-root behavior and the existing generic local/unbound semantic APIs. A committed capture itself requires its promised committed runtime inventory.
 authority_limits:
@@ -27,10 +29,10 @@ authority_limits:
 - The returned observation retains authority false and execution_qualified false. Source authentication is not positive native/runtime qualification.
 expected_tests:
 - Real separate Git checkouts allow protected evaluation of candidate source even when candidate policy/schema differ; candidate policy never selects its own rules.
-- Missing or wrong policy root fails before source discovery; moved protected policy, modified capture metadata/registry/roots, wrong or unbound runtime inventory fail at consumption.
+- Missing or wrong policy root fails before source discovery; unavailable committed policy objects, modified capture metadata/registry/roots, wrong or unbound runtime inventory fail at consumption. Later working-file policy edits cannot replace or invalidate captured immutable policy.
 - A source inventory from a later pure-code commit cannot be attached to an earlier capture.
 - Existing same-root, facade, import-root and source-movement behavior remains compatible.
-- Installed SDK-absent fresh/upgrade consumers preserve the separation and reject policy movement; removing only the consuming guard fails a named independent detector.
+- Installed SDK-absent fresh/upgrade consumers preserve separation and reject missing committed policy objects or changed inventory subjects; removing only the consuming guard fails named independent detectors.
 required_checks:
 - Affected reconstruction, public-entrypoint, protected semantic and independent call-coverage controls
 - Canonical pack generation/check, standard lint and architecture boundaries
@@ -45,3 +47,7 @@ status:
   whole_requirement_advancement: false
   p32: active
   p33_p35: dormant
+construction_disposition:
+  subject: 7981f161778d769d6cfc6354adb99eec358c8dfb
+  result: 461 affected source passes and one retained immutable-policy invariant failure.
+  correction: Working-file reread and the newly authored expectation that such an edit must fail were incorrect. Supersede that expectation with committed-object availability checks and preserve the existing immutable-capture test. Original raw evidence remains retained.
