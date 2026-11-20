@@ -161,24 +161,130 @@ def _validate_python_call_source_coverage(repo_root, inventory, functions, sourc
         if Counter(actual) != Counter(expected):
             store_reject()
 
+    from .semantic_ownership_protocols import (
+        _native_literal_value, _native_protocol_value, boolean_result_sites,
+        IMPLICIT_PROTOCOL_KIND_VERSIONS,
+    )
+    from .semantic_python_calls import _closed_native_region, _closed_owned_scalar_cells
+
     class Protocols(Stores):
-        def __init__(self, function, postponed):
+        def __init__(self, function, postponed, parent):
             super().__init__(function, postponed)
             self.call_attributes = {id(node.func) for node in ast.walk(function)
                 if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)}
+            self.native = _closed_native_region(function) or set()
+            self.booleans = boolean_result_sites(function)
+            self.parent_cells = set(_closed_owned_scalar_cells(parent) or ()) if (
+                parent is not None and any(child is function for child in parent.body)) else set()
+            self.occurrences = Counter()
+            self.explicit_occurrences = {}
+
+        def record(self, node, kind):
+            digest = hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest()
+            occurrence = self.occurrences[digest]
+            self.occurrences[digest] += 1
+            self.nodes.append((kind, node.lineno, node.col_offset, node.end_lineno,
+                node.end_col_offset, digest, occurrence))
 
         def visit(self, node):
+            native = self.native | self.parent_cells if isinstance(node, ast.AugAssign) else self.native
+            def known(value):
+                return _native_protocol_value(value, native, self.booleans)
+            # Independent syntax audit; never reuse the producer's classifier.
             kind = None
-            if (isinstance(node, ast.Attribute) and isinstance(node.ctx, ast.Load)
-                    and id(node) not in self.call_attributes):
-                kind = "attribute_read"
+            if isinstance(node, ast.Attribute) and isinstance(node.ctx, ast.Load):
+                if id(node) not in self.call_attributes:
+                    kind = "attribute_read"
+            elif isinstance(node, ast.Subscript) and isinstance(node.ctx, ast.Load):
+                if not known(node):
+                    kind = "subscript_read"
             elif isinstance(node, (ast.With, ast.AsyncWith)):
                 kind = "context_manager"
             elif isinstance(node, ast.Await):
                 kind = "await"
+            elif isinstance(node, ast.Match):
+                patterns = (ast.MatchValue, ast.MatchSequence, ast.MatchMapping, ast.MatchClass)
+                if any(any(isinstance(value, patterns) for value in ast.walk(case.pattern))
+                        or (case.guard is not None and not known(case.guard)) for case in node.cases):
+                    kind = "pattern_match"
+            elif isinstance(node, ast.Dict):
+                if any(not known(value if key is None else key) for key, value in zip(node.keys, node.values)):
+                    kind = "collection"
+            elif isinstance(node, ast.Set):
+                if any(not known(value) for value in node.elts):
+                    kind = "collection"
+            elif isinstance(node, (ast.DictComp, ast.SetComp)):
+                bound = set(native)
+                for generator in node.generators:
+                    if generator.is_async or not known(generator.iter):
+                        kind = "collection"
+                        break
+                    bound.update(value.id for value in ast.walk(generator.target) if isinstance(value, ast.Name))
+                key = node.key if isinstance(node, ast.DictComp) else node.elt
+                if kind is None and not _native_protocol_value(key, bound, self.booleans):
+                    kind = "collection"
+            elif isinstance(node, ast.comprehension):
+                if node.is_async or not known(node.iter):
+                    self.record(node.iter, "iteration")
+            elif isinstance(node, (ast.For, ast.AsyncFor)):
+                if isinstance(node, ast.AsyncFor) or not known(node.iter):
+                    kind = "iteration"
+            elif isinstance(node, ast.Starred) and isinstance(node.ctx, ast.Load):
+                if not known(node.value):
+                    kind = "iteration"
+            elif isinstance(node, ast.Assign) and any(isinstance(value, (ast.Tuple, ast.List)) for value in node.targets):
+                if not known(node.value):
+                    kind = "iteration"
+            elif isinstance(node, ast.YieldFrom):
+                if not known(node.value):
+                    kind = "iteration"
+            elif isinstance(node, ast.Raise) and node.exc is not None:
+                if not known(node.exc):
+                    kind = "exception"
+            elif isinstance(node, ast.UnaryOp):
+                if not known(node.operand):
+                    kind = "truth" if isinstance(node.op, ast.Not) else "operator"
+            elif isinstance(node, ast.Compare):
+                if (not all(isinstance(value, (ast.Is, ast.IsNot)) for value in node.ops)
+                        and not all(known(value) for value in [node.left, *node.comparators])):
+                    kind = "operator"
+            elif isinstance(node, ast.BoolOp):
+                if not all(known(value) for value in node.values[:-1]):
+                    kind = "truth"
+            elif isinstance(node, ast.AugAssign):
+                if not known(node.target) or not known(node.value):
+                    kind = "operator"
+            elif isinstance(node, ast.BinOp):
+                if not known(node.left) or not known(node.right):
+                    kind = "operator"
+            elif isinstance(node, (ast.If, ast.IfExp, ast.While, ast.Assert)):
+                if not known(node.test):
+                    kind = "truth"
+            elif isinstance(node, ast.FormattedValue):
+                if not known(node.value) or (node.format_spec is not None and not known(node.format_spec)):
+                    kind = "format"
             if kind is not None:
-                self.nodes.append((node, kind))
+                self.record(node, kind)
+            if isinstance(node, (ast.ListComp, ast.SetComp, ast.DictComp)):
+                bound = set(native)
+                for generator in node.generators:
+                    closed = not generator.is_async and _native_literal_value(generator.iter, bound)
+                    targets = {value.id for value in ast.walk(generator.target) if isinstance(value, ast.Name)}
+                    bound.difference_update(targets)
+                    if closed:
+                        bound.update(targets)
+                    for guard in generator.ifs:
+                        if not _native_protocol_value(guard, bound, self.booleans):
+                            self.record(guard, "truth")
             return super().visit(node)
+
+        def visit_Call(self, node):  # noqa: N802
+            digest = hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest()
+            site = (node.lineno, node.col_offset, node.end_lineno, node.end_col_offset)
+            self.explicit_occurrences[site] = self.occurrences[digest]
+            if inventory.get("call_contracts_version") == "1.0":
+                self.occurrences[digest] += 1
+            self.generic_visit(node)
 
         def visit_Subscript(self, node):  # noqa: N802
             self.generic_visit(node)
@@ -189,24 +295,32 @@ def _validate_python_call_source_coverage(repo_root, inventory, functions, sourc
         def protocol_reject():
             raise SemanticAuthorityError("Python source implicit protocol coverage contradicts exact source")
 
-        visitor = Protocols(context["function"], postponed)
+        visitor = Protocols(context["function"], postponed, context_sources.get(context["lexical_parent"]))
         visitor.visit(context["function"])
-        expected = [(kind, node.lineno, node.col_offset, node.end_lineno, node.end_col_offset,
-            hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest())
-            for node, kind in visitor.nodes]
         actual = []
         for row in functions[symbol]["calls"]:
             marker = row.get("implicit_protocol")
-            if not isinstance(marker, dict) or marker.get("kind") not in {
-                    "attribute_read", "context_manager", "await"}:
+            if marker is None and not str(row.get("called_symbol", "")).startswith("python-implicit::"):
                 continue
-            span = tuple(row.get(field) for field in fields)
-            if (any(type(value) is not int for value in span) or row.get("caller") != symbol
-                    or row.get("called_symbol") != "python-implicit::" + marker["kind"]):
+            if not isinstance(marker, dict):
                 protocol_reject()
-            actual.append((marker["kind"], *span, marker.get("expression_sha256")))
-        if Counter(actual) != Counter(expected):
+            kind, digest, occurrence = (marker.get(key) for key in ("kind", "expression_sha256", "occurrence"))
+            span = tuple(row.get(field) for field in fields)
+            if (any(type(value) is not int for value in (*span, occurrence)) or row.get("caller") != symbol
+                    or not isinstance(kind, str) or row.get("called_symbol") != "python-implicit::" + kind
+                    or row.get("call_name") != "<implicit>" or marker.get("authority") is not False
+                    or marker.get("execution_qualified") is not False
+                    or marker.get("version") != IMPLICIT_PROTOCOL_KIND_VERSIONS.get(kind, "1.0")
+                    or not isinstance(digest, str)):
+                protocol_reject()
+            contract = row.get("call_contract")
+            expected_contract = dict(authority=False, expression_sha256=digest, occurrence=occurrence, arguments=[])
+            if (inventory.get("call_contracts_version") == "1.0" or contract is not None) and contract != expected_contract:
+                protocol_reject()
+            actual.append((kind, *span, digest, occurrence))
+        if Counter(actual) != Counter(visitor.nodes):
             protocol_reject()
+        return visitor.explicit_occurrences
 
     fields = ("line", "column", "end_line", "end_column")
     for relative, sha in files.items():
@@ -235,13 +349,14 @@ def _validate_python_call_source_coverage(repo_root, inventory, functions, sourc
             for node in ast.walk(tree) if isinstance(node, (ast.Import, ast.ImportFrom))
             for alias in node.names)
         direct_functions = {name for name, count in module_names.items() if count == 1} - shadowed
+        context_sources = {relative + "::" + row["qualified_name"]: row["function"] for row in contexts}
         for context in contexts:
             symbol = relative + "::" + context["qualified_name"]
             if symbol in expected_functions or symbol not in functions:
                 reject()
             expected_functions.add(symbol)
             reconcile_stores(context, symbol, postponed)
-            reconcile_protocols(context, symbol, postponed)
+            protocol_occurrences = reconcile_protocols(context, symbol, postponed)
             visitor = Calls(context["function"], postponed)
             visitor.visit(context["function"])
             expected = {(node.lineno, node.col_offset, node.end_lineno, node.end_col_offset): node
@@ -283,6 +398,8 @@ def _validate_python_call_source_coverage(repo_root, inventory, functions, sourc
                         expression_sha256=digest(value.value)) for slot, value in enumerate(node.keywords))
                     if (not isinstance(contract, dict) or contract.get("authority") is not False
                             or contract.get("expression_sha256") != digest(node)
+                            or type(contract.get("occurrence")) is not int
+                            or contract["occurrence"] != protocol_occurrences[site]
                             or contract.get("arguments") != arguments):
                         reject()
             if Counter(actual) != Counter(expected.keys()):

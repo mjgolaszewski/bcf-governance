@@ -45,7 +45,7 @@ def test_installed_implicit_source_coverage(tmp_path, installed_consumer, isolat
 def test_installed_control_detects_removed_coverage(tmp_path, installed_consumer, isolated_python):
     path = installed_consumer / 'scripts/_bcf_runtime/semantic_authority_operations.py'
     source = path.read_text()
-    guard = '            reconcile_protocols(context, symbol, postponed)\n'
+    guard = '            protocol_occurrences = reconcile_protocols(context, symbol, postponed)\n'
     assert source.count(guard) == 1
     path.write_text(source.replace(guard, ''))
     result = invoke(tmp_path, installed_consumer, isolated_python, 'attribute_read')
