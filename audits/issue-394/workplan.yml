@@ -304,6 +304,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/runtime-security-python311-observation.json
     - audits/issue-394/unbound-call-consumer-verification.json
     - audits/issue-394/unbound-call-consumer-dispositions.json
     - audits/issue-394/unbound-call-context-verification.json
