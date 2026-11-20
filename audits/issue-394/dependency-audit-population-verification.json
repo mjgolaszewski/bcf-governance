@@ -1,0 +1,38 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "implementation_complete": true,
+  "scope": "Exact selected Python dependency audit-response admission only",
+  "contract_commit": "9970ec6d30ed69600207497f396ae186a26d72e9",
+  "test_subject": "dccd4d6d8f545203955c59be9273d9dfd219f940",
+  "test_tree": "00b550438191107f34fb885f523d7d55c5d2a173",
+  "before": {
+    "tests": 23,
+    "failures": 18,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_after": {
+    "tests": 25,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "66a252ef402c0ea5ea21b65f247cef467fdca8bc2023e02f4634c1f7c9ded3fd",
+    "source": "92d63eb447be41fccb7dcea2551ff4d5508665c6e52df1aa5ecb88ec1684691e",
+    "installed": "2c9f5cba86d8f1c54c2a14433e1040ed49956f3407ef1396c5d907735a0c0f1b"
+  },
+  "source_sha256": "a4d95613585c5dae74a8ddb384574d2bcb03316d1dbfbef3e8d461646e00fcdb",
+  "current_runtime_security_qualified": false,
+  "native_node_image_security_qualified": false,
+  "whole_requirement_advancement": false,
+  "remaining": "Qualify current patched runtime/vendor fixes and complete native/image inventories with fresh real scans. Retained17runtime-context failures and all82whole requirements remain open."
+}
