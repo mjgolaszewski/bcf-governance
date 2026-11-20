@@ -15,6 +15,13 @@ from _bcf_runtime.ci_github_identity import GitHubControllerError
 class NextBoundary(Exception):pass
 def reached(*args):raise NextBoundary
 owner._extract_sdist=reached
+native_exits=[]
+original_run=owner.subprocess.run
+def observed_run(*args,**kwargs):
+ result=original_run(*args,**kwargs)
+ native_exits.append(result.returncode)
+ return result
+owner.subprocess.run=observed_run
 owner.verify_archive=lambda *_:None
 owner.verify_wheelhouse=lambda *_:SimpleNamespace(python=platform.python_version(),platform="linux_x86_64",manifest_schema_version="1.1")
 with tempfile.TemporaryDirectory() as directory:
@@ -22,7 +29,7 @@ with tempfile.TemporaryDirectory() as directory:
  inputs={name:root/name for name in ["manifest","lock","wheel","sdist"]}
  for path in inputs.values():path.write_bytes(b"admission-only fixture")
  selected=root/"selected-python"
- selected.write_text("#!"+sys.executable+"\\nimport sys\\nsys.abiflags='t'\\nexec(compile(sys.argv[-1],'<actual-native-probe>','exec'))\\n")
+ selected.write_text("#!"+sys.executable+"\\nimport sys,sysconfig,struct\\nsysconfig.get_config_var('SOABI')\\nsys.abiflags='t'\\nexec(compile(sys.argv[-1],'<actual-native-probe>','exec'))\\n")
  selected.chmod(0o700)
  def invoke(python,output):
   return owner.run_release_runtime_verification(selected_python=python,manifest_path=inputs["manifest"],lock_path=inputs["lock"],wheelhouse=root,wheel=inputs["wheel"],sdist=inputs["sdist"],output_dir=output)
@@ -32,10 +39,12 @@ with tempfile.TemporaryDirectory() as directory:
  except NextBoundary:raise AssertionError("installed incompatible native ABI admitted before allocation")
  else:raise AssertionError("installed incompatible native ABI unexpectedly completed")
  assert not output.exists()
+ assert native_exits==[0],"native ABI fixture failed instead of reaching admission"
  output=root/"actual-standard-output"
  try:invoke(Path(sys.executable),output)
  except NextBoundary:assert output.is_dir()
  else:raise AssertionError("actual standard native ABI did not reach next boundary")
+ assert native_exits==[0,0]
 print("installed-native-abi-admission-qualified")
 '''
 

@@ -37,7 +37,7 @@ def executable(tmp_path, change):
     # change, leaving its version/platform checks and code path intact.
     prelude = "import sys,sysconfig,struct\n"
     config = change.get("config",{})
-    prelude += "saved_config=sysconfig.get_config_var\nconfig=" + repr(config) + "\n"
+    prelude += "saved_config=sysconfig.get_config_var\nsaved_config('SOABI')\nconfig=" + repr(config) + "\n"
     prelude += "sysconfig.get_config_var=lambda name:config[name] if name in config else saved_config(name)\n"
     if "flags" in change:
         prelude += "sys.abiflags=" + repr(change["flags"]) + "\n"
@@ -75,12 +75,27 @@ CASES = {
 }
 
 
+def capture_probe(monkeypatch):
+    original = owner.subprocess.run
+    results = []
+
+    def record(*args, **kwargs):
+        result = original(*args, **kwargs)
+        results.append(result)
+        return result
+
+    monkeypatch.setattr(owner.subprocess,"run",record)
+    return results
+
+
 @pytest.mark.parametrize("case", CASES)
 def test_incompatible_native_abi_stops_before_output_allocation(tmp_path, monkeypatch, case):
     arguments = inputs(tmp_path,monkeypatch)
     selected = executable(tmp_path,CASES[case])
+    results = capture_probe(monkeypatch)
     with pytest.raises(GitHubControllerError,match="interpreter or platform"):
         owner.run_release_runtime_verification(selected_python=selected,**arguments)
+    assert len(results) == 1 and results[0].returncode == 0, results
     assert not arguments["output_dir"].exists()
 
 
@@ -115,6 +130,8 @@ def test_native_identity_response_requires_unambiguous_exact_facts(tmp_path, mon
         body += "print('{\"python\":\"3.0.0\",'+json.dumps(value)[1:])\n"
     selected.write_text("#!" + sys.executable + "\n" + body)
     selected.chmod(0o700)
+    results = capture_probe(monkeypatch)
     with pytest.raises(GitHubControllerError,match="interpreter or platform"):
         owner.run_release_runtime_verification(selected_python=selected,**arguments)
+    assert len(results) == 1 and results[0].returncode == 0, results
     assert not arguments["output_dir"].exists()

@@ -39,3 +39,8 @@ legacy_consumer_dispositions:
   - Capture the two legacy producer failures caused by a mock missing the existing manifest_schema_version python and platform protocol; supply those legacy1.0 fields without changing its producer or report assertions
   - Capture the stale Node22.23.2 expectation and align it with already implemented canonical22.23.5 policy; no Node or workflow production bytes change
   - Require all three corrected cases to pass before applying native ABI production changes; retain their original failures and exact tested subjects
+
+causal_fixture_correction:
+  first_capture: Eight installed cases included two disabled-guard failures; initial adverse flag fixtures could fail while initializing sysconfig before the ABI predicate
+  correction: Initialize the real standard configuration before simulating reported flags and assert the actual probe exits zero; a failed subprocess is not ABI-predicate evidence
+  qualification: Requalify all25 amended native controls and all4 amended installed controls on unchanged producer bytes; retain original captures and reuse only unaffected evidence
