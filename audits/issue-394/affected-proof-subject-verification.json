@@ -1,0 +1,50 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "whole_requirement_advancement": false,
+  "implementation_complete": true,
+  "scope": "Existing affected-proof current Git/working-state coherence and exact pinned comparison",
+  "contract_commit": "c4d66c5c99c29a5f92ce471a456958332eefcca9",
+  "test_subject": "e1be5b0079b8d6fb6004087275b8b8b695abc04a",
+  "test_tree": "e724ea581ae68995fda5814d32cfbbd59c53963d",
+  "before": {
+    "tests": 17,
+    "failures": 13,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_after": {
+    "tests": 181,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "1a9dc801b315b53fde92c3b20eda399a2604ebf1f0a23e531e8556912796fd6e",
+    "source": "189339032e1e94fb6c97400b95acd512b4179a7514798473fa84e62759977e26",
+    "installed": "9b69aa89765684628f500207a5c86290d526be397e5024e35e10573a22253c22",
+    "architecture": "5ff7eb2a85a747251a8a91530c720ecfbd4717276bdb8f685f6cded44776ebf9"
+  },
+  "source_sha256": "e28359db8ada2c58258797222c39c1a8a63d19e2a9fc873392984c004d5e50ba",
+  "limits": "Boundary state checks are not atomic filesystem custody or provider/evaluator authority. Existing independent policy receipt applicability and transaction rules remain required.",
+  "runtime_context_qualified": false,
+  "remaining": "Actual21operation context qualification, complete distributions and dormant lifecycle shadow proof; Node workflow projection blocked by existing semantic-lock refusal; all82whole remain open",
+  "governance_status": "blocked_by_pending_Node_graph_workflow_projection",
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  }
+}
