@@ -1,0 +1,157 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "implementation_complete": false,
+  "test_subject": "fd3a5ca1a77da5cb95c8d1d1e97b764d4efae53a",
+  "installed": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed_junit_sha256": "85f02f1fd11bfbfe0b55c0122a9b04a602b502ddddacd1eff85d6984ac51874c",
+  "matrix": [
+    {
+      "modules": [
+        "tests/test_ci_graph_composition.py",
+        "tests/test_construction_phase_runtime_consumers.py",
+        "tests/test_construction_source_association.py",
+        "tests/test_construction_source_effect_consumption.py",
+        "tests/test_construction_source_lifetime_effects.py",
+        "tests/test_construction_source_obligation_boundaries.py",
+        "tests/test_construction_source_protocol_population.py",
+        "tests/test_decorator_spelling_effect_authority.py",
+        "tests/test_installed_source_continuity.py",
+        "tests/test_lifecycle_public_entrypoint_bindings.py",
+        "tests/test_local_import_reference_context.py",
+        "tests/test_nested_runtime_scope_effect_population.py"
+      ],
+      "counts": {
+        "tests": 725,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "junit_sha256": "d6f6466b2a656a150ebfd5fe1b0b6ba9e6c66e90b4cdb585cfd859b1d85b76bd"
+    },
+    {
+      "modules": [
+        "tests/test_non_call_state_mutation_effects.py",
+        "tests/test_operation_function_admission.py",
+        "tests/test_pack_sync.py",
+        "tests/test_phase_input_temporary_effects.py",
+        "tests/test_private_semantic_schema_ownership.py",
+        "tests/test_python_attribute_store_context.py",
+        "tests/test_python_augmented_assignment.py",
+        "tests/test_python_callback_target_origins.py",
+        "tests/test_python_comprehension_guard_dispatch.py",
+        "tests/test_python_implicit_grammar_effects.py",
+        "tests/test_python_implicit_grammar_metadata.py",
+        "tests/test_python_implicit_protocol_effects.py"
+      ],
+      "counts": {
+        "tests": 234,
+        "failures": 4,
+        "errors": 0,
+        "skipped": 0
+      },
+      "junit_sha256": "c137f5b8abf04c097b7aa96a8666695e0d7f026bebedd478aa931b4aae21b16c"
+    },
+    {
+      "modules": [
+        "tests/test_python_implicit_protocol_metadata.py",
+        "tests/test_python_lexical_class_population.py",
+        "tests/test_python_lexical_context_effects.py",
+        "tests/test_python_object_store_context.py",
+        "tests/test_python_pattern_dispatch.py",
+        "tests/test_python_protocol_owner_extraction.py",
+        "tests/test_semantic_authority.py",
+        "tests/test_semantic_authority_typescript.py",
+        "tests/test_semantic_effect_observation_scope.py",
+        "tests/test_semantic_function_population_identity.py",
+        "tests/test_semantic_method_effects.py",
+        "tests/test_semantic_operation_admission.py"
+      ],
+      "counts": {
+        "tests": 318,
+        "failures": 27,
+        "errors": 0,
+        "skipped": 0
+      },
+      "junit_sha256": "bb71eec8402dc9c1ae87889b2e35c786dfeffae789752a484751bb8e4c917169"
+    },
+    {
+      "modules": [
+        "tests/test_semantic_operation_call_population.py",
+        "tests/test_semantic_operation_deconstruction.py",
+        "tests/test_semantic_operation_inventory.py",
+        "tests/test_semantic_ownership.py",
+        "tests/test_semantic_shape_admission.py",
+        "tests/test_semantic_structural_protocols.py",
+        "tests/test_semantic_typescript_effects.py",
+        "tests/test_semantic_typescript_implicit.py",
+        "tests/test_semantic_typescript_review.py",
+        "tests/test_template_architecture_gate.py",
+        "tests/test_unresolved_callback_effect_authority.py"
+      ],
+      "counts": {
+        "tests": 194,
+        "failures": 4,
+        "errors": 0,
+        "skipped": 0
+      },
+      "junit_sha256": "0b33f321affce97a5078102bda0ddc6f07a8da20edea27c3f9ff2d7d9d5f0c4c"
+    }
+  ],
+  "exact_runtime_residuals_match_baseline": true,
+  "runtime_residual_ids": [
+    "tests.test_phase_input_temporary_effects::test_temporary_phase_write_leaf_is_declared_and_causal[bcf_governance/tooling/trusted_inputs.py::path.parent.mkdir-governance.cli.preflight.v1]",
+    "tests.test_phase_input_temporary_effects::test_temporary_phase_write_leaf_is_declared_and_causal[bcf_governance/tooling/trusted_inputs.py::path.parent.mkdir-governance.cli.truth.v1]",
+    "tests.test_phase_input_temporary_effects::test_temporary_phase_write_leaf_is_declared_and_causal[bcf_governance/tooling/trusted_inputs.py::path.write_bytes-governance.cli.preflight.v1]",
+    "tests.test_phase_input_temporary_effects::test_temporary_phase_write_leaf_is_declared_and_causal[bcf_governance/tooling/trusted_inputs.py::path.write_bytes-governance.cli.truth.v1]",
+    "tests.test_semantic_authority::test_bcf_declares_every_semantic_family_and_public_operation_once",
+    "tests.test_semantic_authority::test_declared_operation_port_must_be_reachable",
+    "tests.test_semantic_authority::test_dynamic_operation_path_fails_closed",
+    "tests.test_semantic_authority::test_projection_implementation_cannot_confer_authority",
+    "tests.test_semantic_authority::test_query_cannot_hide_a_write_behind_an_imported_helper",
+    "tests.test_semantic_authority::test_query_implementation_cannot_hide_a_write",
+    "tests.test_semantic_authority::test_scan_builds_the_python_inventory_once",
+    "tests.test_semantic_authority::test_semantic_lock_is_idempotent_and_source_bound",
+    "tests.test_semantic_operation_admission::test_admitted_operation_population_keeps_effect_order_and_observations",
+    "tests.test_semantic_operation_deconstruction::test_actual_public_operation_observations_match_pre_deconstruction_bytes",
+    "tests.test_semantic_operation_deconstruction::test_import_resolved_operation_effects_preserve_exact_local_environment_port",
+    "tests.test_semantic_ownership::test_current_bcf_registry_is_conformant_and_report_is_compact",
+    "tests.test_semantic_ownership::test_primary_semantic_violation_precedes_derived_lock_freshness"
+  ],
+  "current_security_qualified": false,
+  "toolchain_requalification": {
+    "preflight": {
+      "archive_sha256": "33cd0ee1beaa8c9e9d15a9da836c62ddea4c34a42d7c2d349dbc80d94165d22a",
+      "compiler_files": 140,
+      "lock_sha256": "53adf32fd78f77fac66cd058eb2e0b2b0a14bc342e99800fcb4a464fba33f3d7",
+      "network_requests": 0,
+      "node_executable": "/docker/.superworkspace-tools/coordination/ironwatch-consolidation-20261029/node-fixture-input-20261120-v1/bin/node",
+      "node_executable_sha256": "3517c2df0b2f8cd7f422b4b8450ef81c6889f08eb03e281d6de9079b15e6a327",
+      "node_version": "v22.23.2",
+      "status": "test_toolchain_checked",
+      "typescript_version": "6.0.3"
+    },
+    "original_failed_cases": 18,
+    "results": {
+      "tests": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "junit_sha256": "8610465459f5c8dead0cc207de45c8657b49e3f7fb5a2ead7d89029a6506553d"
+  },
+  "required_gate": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "whole_requirement_advancement": false,
+  "remaining": "Attribute every failure; complete independent population/runtime context, full distribution/profile/adopter qualification; all82whole remain open"
+}

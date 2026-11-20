@@ -304,6 +304,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/effect-blocker-consumer-progress.json
     - audits/issue-394/effect-blocker-implementation-progress.json
     - audits/issue-394/observation-schema-repair-verification.json
     - audits/issue-394/effect-blocker-consumer-baseline.json
