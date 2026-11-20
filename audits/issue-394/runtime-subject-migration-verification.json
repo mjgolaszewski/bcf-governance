@@ -1,0 +1,69 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "whole_requirement_advancement": false,
+  "runtime_context_qualified": false,
+  "security_qualified": false,
+  "selected_release_runtime": null,
+  "scope": "Manifest1.1/report1.2 explicit stable CPython patch-subject representation and independent closure binding; retained manifest1.0/runtime1.0-1.1 and current role requirement1.1 unchanged",
+  "contract_commit": "3049062c886ef2826584e90294a140481a45feca",
+  "implementation_subject": "bbe255b803fa313057eefb556d5126701d258ea4",
+  "test_subject": "bbe255b803fa313057eefb556d5126701d258ea4",
+  "test_tree": "fb91e162bd1bda4f52c90f64441a3c9705ea686c",
+  "ast_equivalent_test_checkpoint": "b74209ae46fee7c607bf2446bef9ec03632cca2a",
+  "before": {
+    "tests": 28,
+    "failures": 14,
+    "errors": 0,
+    "skipped": 0
+  },
+  "before_scope": "New capability expectations and preexisting rejection controls; not all failures represent a preexisting authority bypass",
+  "source": {
+    "tests": 190,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "required_semantic": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "ce5d839660b14e53a140b8988d5f29756c34f1b72d3126acc154b39a52beb111",
+    "source": "8ab729dd54ae65495782ddcae28672e63850fde41185d8824fda9bc25283aab8",
+    "installed": "b78703d090aeb1cd009bf77542df460c8239a7f020b124556c7b24666af4e62c",
+    "architecture": "0240e8542bb9950ad892aa7efcebc18ad685b97ed6d43d437cc295aa654e3d0c",
+    "required-semantic": "e08f07351604071cfea0733cdf6ffeabc0a0f0947544c1235b333b3e145a397b"
+  },
+  "source_sha256": {
+    "release_closure.py": "17bdb7713929468343f3dce1e15cebcbbac69169b9ccd7213004a5d87d859c03",
+    "release_runtime_verification.py": "eeabce4a17626122af02a01251cf96c15b1d756677656f74b35afe8547a7308f"
+  },
+  "unchanged_authority_inputs_sha256": {
+    "release/wheelhouse-manifest.yml": "797ff3cced3b6273d4eadd2f92edc3325f31b7d21e68b9af48959309427a73d1",
+    "release/requirements-cp312-linux-x86_64.lock": "754d5509e74b5ddf32319b62b43e22c94e064687f776f686875c925ddd253392",
+    "bcf_governance/tooling/ci_github_release.py": "079860383448b375f5ca723336a5cf14f8fd14e06d0d4d68f0cc00b6c14b9586"
+  },
+  "limits": "Future patch99 values are hypothetical data fixtures, not selected available secure runtimes. Current3.12.14 test interpreter qualifies compatibility only. Actual new-runtime execution, stdlib/native provenance, CVE assessment, all distribution profiles and trusted-role compatibility remain open.",
+  "remaining": "Positive authenticated runtime-context foundation, full lifecycle/distribution/shadow/custody, approved targets, canonical workflow projection and security qualification; all82whole open",
+  "governance_status": "blocked_by_pending_Node_graph_workflow_projection",
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  }
+}
