@@ -4,64 +4,249 @@
     {
       "type": "object",
       "additionalProperties": false,
-      "required": ["schema_version", "kind", "authority", "execution_id", "sequence", "stage", "state", "monotonic_ms"],
+      "required": [
+        "schema_version",
+        "kind",
+        "authority",
+        "execution_id",
+        "sequence",
+        "stage",
+        "state",
+        "monotonic_ms"
+      ],
       "properties": {
-        "schema_version": {"const": "1.0"},
-        "kind": {"enum": ["prospective_progress", "submission_progress"], "description": "Nonauthoritative progress; submission:<initial commit> is a separate normalization/authority stream with its own sequence and clock from prospective exact-subject execution."},
-        "authority": {"const": false},
-        "execution_id": {"type": "string", "minLength": 1},
-        "sequence": {"type": "integer", "minimum": 1},
-        "stage": {"type": "string", "minLength": 1, "description": "Open stage identity. provider_authority brackets required provider workflow/controller authentication before preflight; events remain non-authoritative."},
-        "state": {"enum": ["started", "complete", "failed"]},
-        "monotonic_ms": {"type": "integer", "minimum": 0}
+        "schema_version": {
+          "const": "1.0"
+        },
+        "kind": {
+          "enum": [
+            "prospective_progress",
+            "submission_progress"
+          ],
+          "description": "Nonauthoritative progress; submission:<initial commit> is a separate normalization/authority stream with its own sequence and clock from prospective exact-subject execution."
+        },
+        "authority": {
+          "const": false
+        },
+        "execution_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "stage": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Open stage identity. provider_authority brackets required provider workflow/controller authentication before preflight; events remain non-authoritative."
+        },
+        "state": {
+          "enum": [
+            "started",
+            "complete",
+            "failed"
+          ]
+        },
+        "monotonic_ms": {
+          "type": "integer",
+          "minimum": 0
+        }
       }
     },
     {
       "type": "object",
       "additionalProperties": false,
-      "required": ["schema_version", "kind", "authority", "repository", "run_id", "run_attempt", "job_id", "runner_labels", "provider_queue_ms", "execution_ms"],
+      "required": [
+        "schema_version",
+        "kind",
+        "authority",
+        "repository",
+        "run_id",
+        "run_attempt",
+        "job_id",
+        "runner_labels",
+        "provider_queue_ms",
+        "execution_ms"
+      ],
       "properties": {
-        "schema_version": {"const": "1.0"},
-        "kind": {"const": "provider_queue"},
-        "authority": {"const": false},
-        "repository": {"type": "string", "pattern": "^[^/]+/[^/]+$"},
-        "run_id": {"type": "integer", "minimum": 1},
-        "run_attempt": {"type": "integer", "minimum": 1},
-        "job_id": {"oneOf": [{"type": "integer", "minimum": 1}, {"const": "unknown"}]},
-        "runner_labels": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
-        "provider_queue_ms": {"oneOf": [{"type": "integer", "minimum": 0}, {"const": "unknown"}]},
-        "execution_ms": {"oneOf": [{"type": "integer", "minimum": 0}, {"const": "unknown"}]}
+        "schema_version": {
+          "const": "1.0"
+        },
+        "kind": {
+          "const": "provider_queue"
+        },
+        "authority": {
+          "const": false
+        },
+        "repository": {
+          "type": "string",
+          "pattern": "^[^/]+/[^/]+$"
+        },
+        "run_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "run_attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "job_id": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "const": "unknown"
+            }
+          ]
+        },
+        "runner_labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "provider_queue_ms": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "const": "unknown"
+            }
+          ]
+        },
+        "execution_ms": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "const": "unknown"
+            }
+          ]
+        }
       }
     },
     {
       "type": "object",
       "additionalProperties": false,
-      "required": ["schema_version", "kind", "authority", "train_id", "subject", "counters", "wall_clock_ms", "compute_ms"],
+      "required": [
+        "schema_version",
+        "kind",
+        "authority",
+        "train_id",
+        "subject",
+        "counters",
+        "wall_clock_ms",
+        "compute_ms"
+      ],
       "properties": {
-        "schema_version": {"const": "1.0"},
-        "kind": {"const": "governance_amplification"},
-        "authority": {"const": false},
-        "train_id": {"type": "string", "minLength": 1},
-        "subject": {"type": "object", "additionalProperties": false, "required": ["commit_sha", "tree_sha"], "properties": {"commit_sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"}, "tree_sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"}}},
-        "counters": {"type": "object"},
-        "wall_clock_ms": {"type": "integer", "minimum": 0},
-        "compute_ms": {"type": "integer", "minimum": 0}
+        "schema_version": {
+          "const": "1.0"
+        },
+        "kind": {
+          "const": "governance_amplification"
+        },
+        "authority": {
+          "const": false
+        },
+        "train_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subject": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "commit_sha",
+            "tree_sha"
+          ],
+          "properties": {
+            "commit_sha": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{40}$"
+            },
+            "tree_sha": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{40}$"
+            }
+          }
+        },
+        "counters": {
+          "type": "object"
+        },
+        "wall_clock_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "compute_ms": {
+          "type": "integer",
+          "minimum": 0
+        }
       }
     },
     {
       "type": "object",
       "additionalProperties": false,
-      "required": ["schema_version", "kind", "authority", "phase_id", "completed_prefix", "predecessor", "current", "successor", "history_owner"],
+      "required": [
+        "schema_version",
+        "kind",
+        "authority",
+        "phase_id",
+        "completed_prefix",
+        "predecessor",
+        "current",
+        "successor",
+        "history_owner"
+      ],
       "properties": {
-        "schema_version": {"const": "1.0"},
-        "kind": {"const": "lifecycle_projection"},
-        "authority": {"const": "lifecycle"},
-        "phase_id": {"type": "string", "minLength": 1},
-        "completed_prefix": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
-        "predecessor": {"type": ["string", "null"]},
-        "current": {"type": ["string", "null"]},
-        "successor": {"type": ["string", "null"]},
-        "history_owner": {"const": "plans/phase-history.yml"}
+        "schema_version": {
+          "const": "1.0"
+        },
+        "kind": {
+          "const": "lifecycle_projection"
+        },
+        "authority": {
+          "const": "lifecycle"
+        },
+        "phase_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "completed_prefix": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "predecessor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "current": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "successor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "history_owner": {
+          "const": "plans/phase-history.yml"
+        }
       }
     },
     {
@@ -517,6 +702,123 @@
           }
         }
       ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "authority",
+        "execution_qualified",
+        "percentile_certification",
+        "protocol_sha256",
+        "repository",
+        "repository_id",
+        "pipeline",
+        "pairs"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "kind": {
+          "const": "pipeline_timing_cohort"
+        },
+        "authority": {
+          "const": false
+        },
+        "execution_qualified": {
+          "const": false
+        },
+        "percentile_certification": {
+          "const": false
+        },
+        "protocol_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "repository": {
+          "type": "string",
+          "pattern": "^[^/\\s]+/[^/\\s]+$"
+        },
+        "repository_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "pipeline": {
+          "enum": [
+            "pr",
+            "exact_main",
+            "controller",
+            "release",
+            "adopter",
+            "publication_to_custody",
+            "dispatch_to_custody",
+            "merge_to_custody",
+            "periodic",
+            "developer_interruption"
+          ]
+        },
+        "pairs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "context_sha256",
+              "baseline",
+              "optimized"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "context_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "baseline": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "capture_sha256",
+                  "observation"
+                ],
+                "properties": {
+                  "capture_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "observation": {
+                    "$ref": "#/oneOf/4"
+                  }
+                }
+              },
+              "optimized": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "capture_sha256",
+                  "observation"
+                ],
+                "properties": {
+                  "capture_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "observation": {
+                    "$ref": "#/oneOf/4"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }

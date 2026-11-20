@@ -608,3 +608,139 @@ def python_complexity_observation(repo_root: Path, *, subject: dict[str, str]) -
     result["status"] = "incomplete" if failures else "complete"
     result["elapsed_ms"] = (time.monotonic_ns() - started) // 1_000_000
     return result
+
+
+def matched_timing_cohort_observation(
+    repo_root: Path, *, protocol_bytes: bytes, expected_protocol_sha256: str,
+    expected_capture_sha256: frozenset[str], captures: Iterable[bytes],
+) -> dict[str, Any]:
+    """Check controlled pairs against independently supplied immutable inputs.
+
+    The protected consumer authenticates the protocol, complete capture population
+    and context facts. Digests bind bytes; they cannot authenticate a provider,
+    approve a protocol, establish secure runtime suitability or confer authority.
+    This dormant query retains every supplied pair and outcome; it computes no
+    percentiles, targets, exclusions, assurance or activation decisions.
+    """
+    def reject(message: str) -> None:
+        raise OperationalObservationError("timing cohort " + message)
+
+    def digest(value: object) -> bool:
+        return type(value) is str and re.fullmatch(r"[a-f0-9]{64}", value) is not None
+
+    def decode(raw: bytes) -> dict[str, Any]:
+        def pairs(items: list[tuple[str, Any]]) -> dict[str, Any]:
+            result: dict[str, Any] = {}
+            for key, value in items:
+                if key in result:
+                    reject("contains duplicate JSON keys")
+                result[key] = value
+            return result
+        if type(raw) is not bytes:
+            reject("requires exact immutable JSON bytes")
+        result = json.loads(raw, object_pairs_hook=pairs,
+                            parse_constant=lambda _value: reject("contains nonfinite JSON"))
+        json.dumps(result, allow_nan=False)
+        if type(result) is not dict:
+            reject("requires JSON objects")
+        return result
+
+    try:
+        if (not digest(expected_protocol_sha256) or type(protocol_bytes) is not bytes
+                or hashlib.sha256(protocol_bytes).hexdigest() != expected_protocol_sha256):
+            reject("protocol bytes differ from the consumer pin")
+        protocol = decode(protocol_bytes)
+        required = {"schema_version", "authority", "scope", "repository", "repository_id",
+                    "pipeline", "baseline_subject", "optimized_subject", "pairs"}
+        if (set(protocol) != required or protocol["schema_version"] != "1.0"
+                or protocol["authority"] is not False or protocol["scope"] != "controlled_pairs"):
+            reject("protocol is incomplete or falsely authoritative")
+        if (type(protocol["repository"]) is not str
+                or re.fullmatch(r"[^/\s]+/[^/\s]+", protocol["repository"]) is None
+                or type(protocol["repository_id"]) is not int or protocol["repository_id"] < 1
+                or protocol["pipeline"] not in PIPELINE_CLOCKS):
+            reject("protocol repository or pipeline is invalid")
+        for role in ("baseline_subject", "optimized_subject"):
+            subject = protocol[role]
+            if (type(subject) is not dict or set(subject) != {"commit_sha", "tree_sha"}
+                    or any(type(v) is not str or _SHA.fullmatch(v) is None for v in subject.values())):
+                reject("protocol subjects are incomplete")
+        if protocol["baseline_subject"] == protocol["optimized_subject"]:
+            reject("treatment subjects are not distinct")
+        if (type(expected_capture_sha256) is not frozenset or not expected_capture_sha256
+                or any(not digest(value) for value in expected_capture_sha256)):
+            reject("independent capture population is absent or invalid")
+        raw_by_digest: dict[str, bytes] = {}
+        for raw in captures:
+            if type(raw) is not bytes:
+                reject("requires immutable capture bytes")
+            identity = hashlib.sha256(raw).hexdigest()
+            if identity in raw_by_digest:
+                reject("capture population contains duplicates")
+            raw_by_digest[identity] = raw
+        if raw_by_digest.keys() != expected_capture_sha256:
+            reject("capture population differs from independent consumer inventory")
+        if type(protocol["pairs"]) is not list or not protocol["pairs"]:
+            reject("protocol pair population is empty")
+        used: set[str] = set()
+        identities: set[str] = set()
+        rows = []
+        context_fields = {"workload_sha256", "required_work_sha256", "profile", "toolchain_sha256",
+                          "environment_sha256", "resource_envelope_sha256", "policy_sha256",
+                          "evaluator_sha256", "cache_state", "adopter_source"}
+        for pair in protocol["pairs"]:
+            if (type(pair) is not dict or set(pair) != {
+                    "id", "baseline_sha256", "optimized_sha256", "context_sha256"}
+                    or type(pair["id"]) is not str or not pair["id"] or pair["id"] in identities
+                    or any(not digest(pair[key]) for key in pair if key != "id")):
+                reject("pair identities or bindings are invalid")
+            identities.add(pair["id"])
+            row: dict[str, Any] = {"id": pair["id"], "context_sha256": pair["context_sha256"]}
+            domains = []
+            for role in ("baseline", "optimized"):
+                identity = pair[role + "_sha256"]
+                if identity not in raw_by_digest or identity in used:
+                    reject("pair capture is missing, overlapping or reused")
+                used.add(identity)
+                capture = decode(raw_by_digest[identity])
+                observation = validate_timing_capture(repo_root, raw_by_digest[identity])
+                context = capture.get("measurement_context")
+                if (type(context) is not dict or set(context) != context_fields
+                        or any(not digest(context[key]) for key in context_fields if key.endswith("_sha256"))
+                        or type(context["profile"]) is not str or not context["profile"]
+                        or context["cache_state"] not in {"cold", "warm"}):
+                    reject("pair context is incomplete or conditions are unknown")
+                adopter = context["adopter_source"]
+                if protocol["pipeline"] == "adopter":
+                    if (type(adopter) is not dict or set(adopter) != {"repository_id", "commit_sha", "tree_sha"}
+                            or type(adopter["repository_id"]) is not int or adopter["repository_id"] < 1
+                            or any(type(adopter[k]) is not str or _SHA.fullmatch(adopter[k]) is None
+                                   for k in ("commit_sha", "tree_sha"))):
+                        reject("adopter source is not exact")
+                elif adopter != "not_applicable":
+                    reject("nonadopter source requires explicit nonapplicability")
+                context_digest = hashlib.sha256(json.dumps(context, sort_keys=True,
+                    separators=(",", ":"), allow_nan=False).encode()).hexdigest()
+                if context_digest != pair["context_sha256"]:
+                    reject("pair context differs from its protocol binding")
+                if (observation["repository"] != protocol["repository"]
+                        or observation["repository_id"] != protocol["repository_id"]
+                        or observation["pipeline"] != protocol["pipeline"]
+                        or observation["subject"] != protocol[role + "_subject"]):
+                    reject("capture repository, pipeline or treatment subject differs")
+                domains.append((observation["clock_basis"], observation["clock_id"]))
+                row[role] = {"capture_sha256": identity, "observation": observation}
+            if domains[0][0] != domains[1][0]:
+                reject("pair clock bases differ")
+            rows.append(row)
+        if used != expected_capture_sha256:
+            reject("protocol omits independently required captures")
+        return {"schema_version": "1.0", "kind": "pipeline_timing_cohort", "authority": False,
+                "execution_qualified": False, "percentile_certification": False,
+                "protocol_sha256": expected_protocol_sha256, "repository": protocol["repository"],
+                "repository_id": protocol["repository_id"], "pipeline": protocol["pipeline"],
+                "pairs": sorted(rows, key=lambda row: row["id"])}
+    except OperationalObservationError:
+        raise
+    except (ValueError, TypeError, KeyError, UnicodeError, AttributeError) as exc:
+        raise OperationalObservationError("timing cohort is malformed or incomplete") from exc
