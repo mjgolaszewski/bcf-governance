@@ -19,9 +19,24 @@ _BOOTSTRAP = (
 )
 
 
+def cli_arguments(argv: object = None) -> list[str]:
+    """Snapshot ordinary CLI strings before argument consumption or parser setup."""
+    raw = sys.argv if argv is None else argv
+    kind = type(raw)
+    if kind is not list and kind is not tuple:
+        raise TypeError("CLI arguments must be an ordinary string list or tuple")
+    values = raw[:]
+    if any(type(value) is not str for value in values):
+        raise TypeError("CLI arguments must contain only ordinary strings")
+    if argv is None:
+        values = values[1:]
+    return values if kind is list else [value for value in values]
+
+
 def exact_nested_cli_command(*arguments: str) -> list[str]:
     """Bind a child CLI to this module's implementation and interpreter."""
 
+    values = cli_arguments(arguments)
     module_root = Path(__file__).resolve().parents[2]
     return [
         str(Path(sys.executable).absolute()),
@@ -29,5 +44,5 @@ def exact_nested_cli_command(*arguments: str) -> list[str]:
         "-c",
         _BOOTSTRAP,
         str(module_root),
-        *arguments,
+        *values,
     ]

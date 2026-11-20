@@ -17,6 +17,7 @@ _SCRIPT_ROOT = Path(__file__).resolve().parent
 if str(_SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_ROOT))
 
+from .nested_cli_runtime import cli_arguments
 from .governance_cleanup.models import (  # noqa: E402
     CleanupAction,
     CleanupReport,
@@ -745,6 +746,7 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     args = _parser().parse_args(argv)
     try:
         report = (

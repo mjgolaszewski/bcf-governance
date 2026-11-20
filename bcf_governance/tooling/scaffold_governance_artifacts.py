@@ -60,7 +60,7 @@ from .hotfix_scaffolding import (
     register_hotfix_log,
     scaffold_hotfix_log,
 )
-from .nested_cli_runtime import exact_nested_cli_command
+from .nested_cli_runtime import cli_arguments, exact_nested_cli_command
 
 def _portable_governed_commands(commands: list[str]) -> list[str]:
     """Reject machine-local command records before any artifact is written."""
@@ -634,6 +634,7 @@ def converge(
 
 
 def reconcile_main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     parser = argparse.ArgumentParser(description="Converge all mechanically derived governance surfaces.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--python", type=Path)
@@ -741,6 +742,7 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     args = _parser().parse_args(argv)
     repo_root = args.repo_root.resolve()
     if args.command == "phase":

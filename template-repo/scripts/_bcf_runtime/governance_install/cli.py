@@ -6,6 +6,7 @@ import argparse
 import sys
 from datetime import UTC, datetime
 
+from ..nested_cli_runtime import cli_arguments
 from ..install_governance_pack import (
     ADOPTION_MODE_CHOICES,
     DEFAULT_RUNNER_LABELS,
@@ -45,6 +46,7 @@ def _finalize_args(
 
 
 def main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     parser = _parser()
     args = _finalize_args(parser.parse_args(argv), parser)
     try:

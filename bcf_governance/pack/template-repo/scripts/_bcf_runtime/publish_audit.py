@@ -8,6 +8,7 @@ import re
 import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from .nested_cli_runtime import cli_arguments
 
 
 @dataclass(frozen=True)
@@ -88,6 +89,7 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     args = _parser().parse_args(argv)
     if not args.history:
         raise SystemExit("publish-audit currently requires --history")

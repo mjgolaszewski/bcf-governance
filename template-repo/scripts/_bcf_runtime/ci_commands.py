@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import sys
 
+from .nested_cli_runtime import cli_arguments
 from .ci_adopt_github import (
     GithubAdoptionError,
     apply_github_adoption,
@@ -278,6 +279,7 @@ def _print(payload: dict[str, object], output_format: str) -> None:
 
 
 def main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     args = _parser().parse_args(argv)
     try:
         if args.operation == "graph":

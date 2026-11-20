@@ -11,10 +11,10 @@ from dataclasses import replace
 import hashlib
 import json
 import subprocess
-import sys
 from pathlib import Path
 from typing import Any
 
+from .nested_cli_runtime import cli_arguments
 from .semantic_ownership_inventory import (
     SemanticInventoryError,
 )
@@ -419,7 +419,7 @@ def run_scan(repo_root: Path) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> None:
-    raw_args = list(sys.argv[1:] if argv is None else argv)
+    raw_args = cli_arguments(argv)
     if raw_args and raw_args[0] in {"scaffold", "adopt", "lock", "migrate-operation"}:
         authority_main(raw_args)
         return

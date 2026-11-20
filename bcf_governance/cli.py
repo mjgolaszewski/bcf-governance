@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import argparse
-import sys
 
+from bcf_governance.tooling.nested_cli_runtime import cli_arguments
 from bcf_governance import __version__
 from bcf_governance.tooling import (
     check_governance_exposure,
@@ -69,7 +69,7 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> None:
-    args = list(sys.argv[1:] if argv is None else argv)
+    args = cli_arguments(argv)
     parser = _parser()
     if not args:
         parser.print_help()

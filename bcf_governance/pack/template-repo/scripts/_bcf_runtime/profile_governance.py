@@ -9,6 +9,7 @@ import sys
 import tempfile
 from pathlib import Path
 
+from .nested_cli_runtime import cli_arguments
 from .governance_install.transaction import apply_transaction, copy_repository_shadow
 from .governance_profiles import apply_profile_contract, promote
 from .semantic_authority_commands import _apply_config, _load_config
@@ -86,7 +87,7 @@ def _check(
 
 
 def main(argv: list[str] | None = None) -> None:
-    raw_args = list(sys.argv[1:] if argv is None else argv)
+    raw_args = cli_arguments(argv)
     if raw_args and raw_args[0] == "promote":
         raw_args = raw_args[1:]
     parser = argparse.ArgumentParser(

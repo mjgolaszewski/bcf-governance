@@ -11,6 +11,7 @@ from typing import Any
 
 import yaml  # type: ignore[import-untyped]
 
+from .nested_cli_runtime import cli_arguments
 from .ci_graph_yaml import GraphYAMLError, load_yaml_bytes
 from .check_governance_exposure import PATTERNS as GOVERNANCE_EXPOSURE_PATTERNS
 from .evidence_execution import _selected_python
@@ -639,6 +640,7 @@ def update_all(
 
 
 def main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     parser = argparse.ArgumentParser(description="Check or update exact pytest manifests.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("operation", choices=("check", "update"))

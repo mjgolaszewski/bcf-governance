@@ -8,6 +8,7 @@ import json
 import subprocess
 from pathlib import Path
 from typing import Any
+from .nested_cli_runtime import cli_arguments
 
 try:
     from . import validate_governance_yaml as validator
@@ -311,6 +312,7 @@ def _emit_text(report: dict[str, Any]) -> None:
 
 
 def main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     parser = argparse.ArgumentParser(description="Diagnose governance pack adoption gaps.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--format", choices=sorted(DOCTOR_OUTPUT_FORMATS), default="text")

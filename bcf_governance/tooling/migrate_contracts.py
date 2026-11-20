@@ -12,6 +12,7 @@ from typing import Any
 
 import yaml
 
+from .nested_cli_runtime import cli_arguments
 from .governance_install.transaction import apply_transaction
 from .governance_profiles import apply_profile_contract, load_contract, promote
 from .profile_governance import MANAGED_PROFILE_PATHS
@@ -178,6 +179,7 @@ def apply_contract_migration(repo_root: Path) -> ContractMigrationPlan:
 
 
 def main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     parser = argparse.ArgumentParser(description="Migrate readable legacy BCF contracts.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     mode = parser.add_mutually_exclusive_group(required=True)

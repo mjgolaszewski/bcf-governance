@@ -17,6 +17,7 @@ import tomllib
 from packaging.markers import default_environment
 from packaging.requirements import InvalidRequirement, Requirement
 
+from .nested_cli_runtime import cli_arguments
 from .ci_github_bootstrap import verify_controller_inventory
 
 
@@ -130,11 +131,12 @@ def _materialize_installed_source(repo_root: Path, destination: Path) -> Path:
         """from __future__ import annotations
 import sys
 from .tooling import ci_commands, ci_github_commands
+from .tooling.nested_cli_runtime import cli_arguments
 
 COMMANDS = {"ci": ci_commands.main, "ci-github": ci_github_commands.main}
 
 def main(argv=None):
-    args = list(sys.argv[1:] if argv is None else argv)
+    args = cli_arguments(argv)
     if not args or args[0] not in COMMANDS:
         print("usage: bcf {ci,ci-github} ...", file=sys.stderr)
         raise SystemExit(2)
@@ -242,6 +244,7 @@ def build(
 
 
 def main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path("."))
     parser.add_argument("--output", type=Path, required=True)

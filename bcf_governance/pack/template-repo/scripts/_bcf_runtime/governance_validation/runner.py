@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 
+from ..nested_cli_runtime import cli_arguments
 from ..ci_graph_contracts import CIGraphError, validate_ci_graph
 from ..ci_graph_render import check_ci_graph
 from ..public_contracts import PublicContractError, validate_public_contracts
@@ -312,6 +313,7 @@ def validate_repo_root(
 
 
 def main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     parser = argparse.ArgumentParser(description="Validate governed YAML artifacts.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument(

@@ -9,6 +9,7 @@ import sys
 import tarfile
 import zipfile
 
+from .nested_cli_runtime import cli_arguments
 from .ci_github_api import GitHubAPIError
 from .evidence_storage_contracts import (
     EvidenceStorageError,
@@ -150,6 +151,7 @@ def run(args: argparse.Namespace) -> None:
 
 
 def main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     try:
         run(_parser().parse_args(argv))
     except (

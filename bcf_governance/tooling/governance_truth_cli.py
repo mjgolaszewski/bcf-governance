@@ -7,12 +7,14 @@ import json
 import os
 from pathlib import Path
 
+from .nested_cli_runtime import cli_arguments
 from .ci_authority_preflight import provider_context_for_checkout
 from .ci_github_api import GitHubAPIError
 from .release_receipts import ReleaseReceiptError, build_release_receipt, emit_release_receipt
 
 
 def main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     from .governance_truth import TruthfulnessError, derive_truth
 
     parser = argparse.ArgumentParser(description="Derive governance truth from evidence.")

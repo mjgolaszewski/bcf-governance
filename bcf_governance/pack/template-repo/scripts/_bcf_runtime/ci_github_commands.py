@@ -6,8 +6,8 @@ from dataclasses import asdict
 import hashlib
 import json
 from pathlib import Path
-import sys
 from typing import Any
+from .nested_cli_runtime import cli_arguments
 from .ci_authority_certification import CICertificationError
 from .ci_authority_contracts import CIAuthorityContractError
 from .ci_github_api import GitHubAPIError
@@ -634,7 +634,7 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> None:
-    raw = list(sys.argv[1:] if argv is None else argv)
+    raw = cli_arguments(argv)
     try:
         if raw and raw[0] in {
             "automation", "pr", "prior-evidence", "protection", "scheduled-control"

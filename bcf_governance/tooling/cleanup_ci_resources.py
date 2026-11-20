@@ -11,6 +11,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Callable
 
+from .nested_cli_runtime import cli_arguments
 from .evidence_session_cleanup import (
     SessionCleanupError,
     apply_session_cleanup,
@@ -136,6 +137,7 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     args = _parser().parse_args(argv)
     try:
         if args.prune_evidence_sessions:

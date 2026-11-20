@@ -17,6 +17,7 @@ from typing import Any
 
 import yaml  # type: ignore[import-untyped]
 
+from .nested_cli_runtime import cli_arguments
 from .evidence_attestation import attest_bundle, bundle_digest
 from .ci_graph_timeouts import INTERPRETER_PROBE_TIMEOUT_SECONDS
 from .evidence_execution import (
@@ -42,9 +43,8 @@ from .evidence_sessions import (
     allocate_session,
     bind_session,
     local_producer_identity,
-    select_session,
+    select_session, receipt_workflow_identity,
 )
-from .evidence_sessions import receipt_workflow_identity
 from .evidence_session_inputs import bind_current_session_inputs
 from .evidence_storage_projection import install_durable_inputs as _install_durable_inputs
 from .evidence_test_adapters import (
@@ -723,6 +723,7 @@ def capture_gate(
 
 
 def main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     parser = argparse.ArgumentParser(description="Capture or attest governance evidence.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     subparsers = parser.add_subparsers(dest="operation", required=True)

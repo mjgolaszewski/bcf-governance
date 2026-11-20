@@ -12,6 +12,7 @@ import os
 import re
 import shutil
 import subprocess
+from .nested_cli_runtime import cli_arguments
 from .evidence_process_supervisor import run_admitted_command
 import sys
 import tomllib
@@ -728,6 +729,7 @@ def _sha256_text(value: str) -> str:
 
 
 def main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     parser = argparse.ArgumentParser(
         description="Check or apply the governed interpreter dependency projection."
     )

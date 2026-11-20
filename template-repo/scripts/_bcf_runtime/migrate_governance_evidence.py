@@ -14,6 +14,7 @@ from typing import Any
 
 import yaml  # type: ignore[import-untyped]
 
+from .nested_cli_runtime import cli_arguments
 from .governance_install.transaction import apply_transaction
 
 
@@ -381,6 +382,7 @@ def apply_migration_transaction(repo_root: Path) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     parser = argparse.ArgumentParser(description="Migrate governance lifecycle to computed evidence state.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     mode = parser.add_mutually_exclusive_group(required=True)

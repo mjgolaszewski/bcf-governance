@@ -6,6 +6,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+- Snapshot native string arguments before public CLI parsing and nested/controller dispatch; reject custom Python sequences and values without invoking their argument hooks.
+
 - Check selected executable ABI before new-profile release verification allocates outputs; refuse free-threaded, debug, foreign and ambiguous identities under the standard GNU x86_64 subject.
 
 - Reject incompatible or malformed installed dependency versions before constructing security inventory; retain every root and transitive constraint through duplicate and cyclic traversal.

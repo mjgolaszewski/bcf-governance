@@ -16,6 +16,7 @@ from typing import Any, Callable, Mapping
 
 import yaml  # type: ignore[import-untyped]
 
+from .nested_cli_runtime import cli_arguments
 from .evidence_process_supervisor import run_admitted_command
 from .evidence_execution import _selected_python
 from .evidence_workitem_lifecycle import (
@@ -726,6 +727,7 @@ def preflight_mode_for_evaluation(evaluation_mode: str | None) -> str:
 
 
 def main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     parser = argparse.ArgumentParser(description="Run cheap governance preflight.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--mode", choices=("release", "pr"))

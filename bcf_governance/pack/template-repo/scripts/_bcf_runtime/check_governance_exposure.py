@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml  # type: ignore[import-untyped]
+from .nested_cli_runtime import cli_arguments
 
 
 OUTPUT_FORMATS = {"text", "json"}
@@ -196,6 +197,7 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> None:
+    argv = cli_arguments(argv)
     args = _parser().parse_args(argv)
     report = scan_exposures(args.repo_root, paths=args.path)
     if args.output_format == "json":
