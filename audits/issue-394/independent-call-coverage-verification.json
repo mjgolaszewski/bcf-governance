@@ -1,0 +1,248 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "whole_requirement_advancement": false,
+  "contract_commit": "afa8340d60b2ff84fb1d01db392babe0c57c5a53",
+  "implementation_subject": "75b0efa971e1b08c49945f097c52b669ff065756",
+  "test_tree": "cf1c67ffa7ca4decdee1621a09697e2c6ad7f004",
+  "before": {
+    "tests": 46,
+    "failures": 30,
+    "errors": 0,
+    "skipped": 0
+  },
+  "before_dispositions": [
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[erase-None]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[erase-1.0]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[duplicate-None]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[duplicate-1.0]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[line-None]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[line-1.0]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[end_column-None]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[end_column-1.0]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[caller-None]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[caller-1.0]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[function-None]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[function-1.0]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[file-None]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[file-1.0]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[duplicate_file-None]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[duplicate_file-1.0]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[member_sha-None]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[member_sha-1.0]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[changed_bytes-None]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[changed_bytes-1.0]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[unsafe_path-None]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_actual_consumer_rejects_independent_source_coverage_defects[unsafe_path-1.0]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_removed_edge_cannot_hide_independently_witnessed_write[None]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_removed_edge_cannot_hide_independently_witnessed_write[1.0]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_inner_call_cannot_be_omitted_while_outer_call_remains[None]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_inner_call_cannot_be_omitted_while_outer_call_remains[1.0]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_explicit_call_contract_is_bound_to_its_actual_expression[expression]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_explicit_call_contract_is_bound_to_its_actual_expression[arguments]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_explicit_call_contract_is_bound_to_its_actual_expression[missing]",
+      "outcome": "omission_or_contradiction_accepted"
+    },
+    {
+      "case": "test_ordinary_source_scope_and_call_shapes_remain_compatible[None-def helper():\\n    return 1\\ndef work():\\n    return helper()\\nCOMMANDS = {'work': work}\\n]",
+      "outcome": "ordinary_behavior_preserved"
+    },
+    {
+      "case": "test_ordinary_source_scope_and_call_shapes_remain_compatible[None-def helper():\\n    return 1\\ndef work():\\n    helper()\\n    return helper()\\nCOMMANDS = {'work': work}\\n]",
+      "outcome": "ordinary_behavior_preserved"
+    },
+    {
+      "case": "test_ordinary_source_scope_and_call_shapes_remain_compatible[None-def h\\xe9lper():\\n    return 1\\ndef work():\\n    return h\\xe9lper()\\nCOMMANDS = {'work': work}\\n]",
+      "outcome": "ordinary_behavior_preserved"
+    },
+    {
+      "case": "test_ordinary_source_scope_and_call_shapes_remain_compatible[None-def helper():\\r\\n    return 1\\r\\ndef work():\\r\\n    return helper()\\r\\nCOMMANDS = {'work': work}\\r\\n]",
+      "outcome": "ordinary_behavior_preserved"
+    },
+    {
+      "case": "test_ordinary_source_scope_and_call_shapes_remain_compatible[None-def work():\\n    def child():\\n        return 1\\n    return child()\\nCOMMANDS={'work':work}\\n]",
+      "outcome": "ordinary_behavior_preserved"
+    },
+    {
+      "case": "test_ordinary_source_scope_and_call_shapes_remain_compatible[None-from __future__ import annotations\\ndef other(value: annotation() = default()) -> result():\\n    local: annotation() = 1\\n    return (lambda x=default(): deferred())\\ndef work():\\n    return 1\\nCOMMANDS={'work':work}\\n]",
+      "outcome": "ordinary_behavior_preserved"
+    },
+    {
+      "case": "test_ordinary_source_scope_and_call_shapes_remain_compatible[None-@decorate(factory())\\ndef other(value=default()):\\n    class Local:\\n        @decorate(factory())\\n        def method(self, arg=default()):\\n            return invoked()\\n    return (lambda value=default(): deferred())\\ndef work():\\n    return 1\\nCOMMANDS={'work':work}\\n]",
+      "outcome": "ordinary_behavior_preserved"
+    },
+    {
+      "case": "test_ordinary_source_scope_and_call_shapes_remain_compatible[None-def other(values, item, kwargs):\\n    return helper(*values, named=item, **kwargs)\\ndef work():\\n    return 1\\nCOMMANDS={'work':work}\\n]",
+      "outcome": "ordinary_behavior_preserved"
+    },
+    {
+      "case": "test_ordinary_source_scope_and_call_shapes_remain_compatible[1.0-def helper():\\n    return 1\\ndef work():\\n    return helper()\\nCOMMANDS = {'work': work}\\n]",
+      "outcome": "ordinary_behavior_preserved"
+    },
+    {
+      "case": "test_ordinary_source_scope_and_call_shapes_remain_compatible[1.0-def helper():\\n    return 1\\ndef work():\\n    helper()\\n    return helper()\\nCOMMANDS = {'work': work}\\n]",
+      "outcome": "ordinary_behavior_preserved"
+    },
+    {
+      "case": "test_ordinary_source_scope_and_call_shapes_remain_compatible[1.0-def h\\xe9lper():\\n    return 1\\ndef work():\\n    return h\\xe9lper()\\nCOMMANDS = {'work': work}\\n]",
+      "outcome": "ordinary_behavior_preserved"
+    },
+    {
+      "case": "test_ordinary_source_scope_and_call_shapes_remain_compatible[1.0-def helper():\\r\\n    return 1\\r\\ndef work():\\r\\n    return helper()\\r\\nCOMMANDS = {'work': work}\\r\\n]",
+      "outcome": "ordinary_behavior_preserved"
+    },
+    {
+      "case": "test_ordinary_source_scope_and_call_shapes_remain_compatible[1.0-def work():\\n    def child():\\n        return 1\\n    return child()\\nCOMMANDS={'work':work}\\n]",
+      "outcome": "ordinary_behavior_preserved"
+    },
+    {
+      "case": "test_ordinary_source_scope_and_call_shapes_remain_compatible[1.0-from __future__ import annotations\\ndef other(value: annotation() = default()) -> result():\\n    local: annotation() = 1\\n    return (lambda x=default(): deferred())\\ndef work():\\n    return 1\\nCOMMANDS={'work':work}\\n]",
+      "outcome": "ordinary_behavior_preserved"
+    },
+    {
+      "case": "test_ordinary_source_scope_and_call_shapes_remain_compatible[1.0-@decorate(factory())\\ndef other(value=default()):\\n    class Local:\\n        @decorate(factory())\\n        def method(self, arg=default()):\\n            return invoked()\\n    return (lambda value=default(): deferred())\\ndef work():\\n    return 1\\nCOMMANDS={'work':work}\\n]",
+      "outcome": "ordinary_behavior_preserved"
+    },
+    {
+      "case": "test_ordinary_source_scope_and_call_shapes_remain_compatible[1.0-def other(values, item, kwargs):\\n    return helper(*values, named=item, **kwargs)\\ndef work():\\n    return 1\\nCOMMANDS={'work':work}\\n]",
+      "outcome": "ordinary_behavior_preserved"
+    },
+    {
+      "case": "test_erased_edge_and_paired_test_inventory_still_fail_committed_membership",
+      "outcome": "omission_or_contradiction_accepted"
+    }
+  ],
+  "source": {
+    "tests": 139,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "42cde2a631e2f4498c0e0376ea7701fa92b4e11fca077c165753a189ed91db19",
+    "source": "a31f42200786ab16d18c6d4dbce258dad8cdda9415766dd1433dccf89a2d5157",
+    "installed": "b178c13c5a1725e1dbe417a9fbc6bac8ccf3656de8558f1b8cbffb82e761d24c",
+    "architecture": "8a464e69db931464ebee7c0a291bb0edf021221e641818c6992c945ce70dbbf4"
+  },
+  "actual_source_coverage": {
+    "authority": false,
+    "execution_qualified": false,
+    "runtime_context_qualified": false,
+    "source_commit": "75b0efa971e1b08c49945f097c52b669ff065756",
+    "source_tree": "cf1c67ffa7ca4decdee1621a09697e2c6ad7f004",
+    "files": 1312,
+    "functions": 12139,
+    "explicit_calls": 139262,
+    "elapsed_seconds": 99.45893267900101
+  },
+  "source_sha256": {
+    "semantic_authority_operations.py": "d36f3d744fdba0fc10c8e3e94266067240b33b853d28de37f3facc380c8946a6",
+    "semantic_operation_python.py": "ff1df4661680b0bee59841175ce123557eb0b3bf4f9f509bb2af46eb21d86476"
+  },
+  "required_semantic": {
+    "executed_for_this_slice": false,
+    "retained_prior": "Required CLI positive runtime-context qualifier absent; no semantic-green claim",
+    "reference": "audits/issue-394/runtime-effect-context-foundation-contract.yml"
+  },
+  "scope": "Independently reparse exact Python source through existing source and function-identity owners; reconcile explicit call membership/spans and optional expression/argument facts before effect traversal. Includes independent native hidden-write witness and committed edge-plus-paired-test omission control.",
+  "limits": "Not independent function-identity qualification, implicit/runtime/native/callback/initialization completeness or a positive runtime-context qualifier. Caller authenticates source/policy scope. Fresh/upgrade installed private Lite contexts only; P32 active, P33-P35 dormant, all82whole open.",
+  "governance_returncode": 1,
+  "governance_stderr_sha256": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+}
