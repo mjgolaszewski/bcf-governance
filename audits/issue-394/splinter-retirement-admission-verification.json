@@ -1,0 +1,56 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "whole_requirement_advancement": false,
+  "runtime_context_qualified": false,
+  "scope": "Existing producer exact-boolean retirement admission and complete serialized proof validation before output allocation; unchanged version1.0 proof",
+  "contract_commit": "e246bc44ce412b44ec011f057860f7be620eb5d9",
+  "implementation_subject": "926c481d077d5a324658eca204c5b5af89068158",
+  "test_subject": "926c481d077d5a324658eca204c5b5af89068158",
+  "test_tree": "19f65b7faab6531e93fe9ccb3a688cc069c3e920",
+  "before": {
+    "tests": 17,
+    "failures": 13,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source": {
+    "tests": 91,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "required_semantic": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "39fbc0a5d244c03fec99619a30c51e226b512260bea377dc57b976368e52ea03",
+    "source": "f7652d072b6a08b4941c126daf040d9739256151431985cb353fa58584130c51",
+    "installed": "c3dbd0fc38d3efab12318c52ee67c722bce85044bf69579ed615885bd0c283a8",
+    "architecture": "d887a904b15899601dc00ae66c7bae9ad5fceaf91c3341fb81206753256b3703",
+    "required-semantic": "fdc9bf8e0b378de33f0fae6c20ea50272bf3bcdf98fe034aba41d2f23fec0cfb"
+  },
+  "source_sha256": "fd23181e12dd45953cecc2673136d1565319a878492d67c3995bfde48c9587c5",
+  "remaining": "Actual runtime context foundation, full lifecycle/distribution/shadow/custody, approved targets, canonical workflow projection and security qualification; all82whole open",
+  "governance_status": "blocked_by_pending_Node_graph_workflow_projection",
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  }
+}
