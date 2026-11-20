@@ -1,0 +1,137 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "security_qualified": false,
+  "whole_requirement_advancement": false,
+  "contract_commit": "5ef5a2c581f7c4285250840864a4c11c9c1a84e2",
+  "implementation_subject": "f84242fb55747b2302e4b5c425fe05f4ea6770df",
+  "test_tree": "9f6b63091fd154fa0f1da347162af8909e4a8cb8",
+  "before": {
+    "tests": 56,
+    "failures": 56,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source": {
+    "tests": 94,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "bc066bd9b71dce1ee1e6e66feb8f9c9ebbe47e1a24c908ade0d04944560f662a",
+    "source": "9a3e511b38ff79c88e31502466e0ef79817b4721045b49b13a8577b22ee385a5",
+    "installed": "fdb46a0ef2ba0f5c85c2c15e00f98700c6e1158d4aa175e0f223fd9e8946685d",
+    "architecture": "828f85845bd875fc5797505aca1054f16ecb60a0a72838ad9139cc5dea1adf9f"
+  },
+  "source_sha256": "18beda78ff6e557f9552d4478d6ab812244ff20104684832444469677cea5225",
+  "real_archive_binding": {
+    "authority": false,
+    "security_qualified": false,
+    "archive_sha256": "376dd553e419836a443aa61cab48f3419092ddbc506b05ae6d5ba1fbe30555ef",
+    "archive_manifest_digest": "sha256:bb1b750b8616cf54158db2174e39ac43f32b88b3649633f930fa6de470252a38",
+    "config_digest": "sha256:e9c02b1e6289d43e82dd5a41c227d9878e1a8c6f4707a48c37d88a20716017bc",
+    "architecture": "amd64",
+    "os": "linux",
+    "layers": [
+      {
+        "digest": "sha256:8ab1c64b01ded616ecf6ce3488d351f2fcee1be991765bd9b6e2550b69a20545",
+        "diff_id": "sha256:4b52a7239ad634a030c345da49bb5212fecc0cc77eef58d8e7e91939e551c472",
+        "size_bytes": 3361424,
+        "expanded_bytes": 7251968
+      },
+      {
+        "digest": "sha256:7a4877cecca890677d2aeeaaaa4a4659cff0e5b2db98ca578583621e510cc657",
+        "diff_id": "sha256:81ac36f4bee4102128a3f1f63d1a2a057922351d656f4a4fcdb1b92cd28a95f2",
+        "size_bytes": 2938749,
+        "expanded_bytes": 7305728
+      },
+      {
+        "digest": "sha256:f4265a56de30c1b9e087ad6d1fe2e30c7904cee15fe2b91ff2a46177a6cdd7de",
+        "diff_id": "sha256:7f3cc23f95424a2268090e9d9f9a2e0ac29f2410e2d67e26a001b20f28576fc7",
+        "size_bytes": 513554,
+        "expanded_bytes": 1140224
+      },
+      {
+        "digest": "sha256:82087d46dc9d24d8d866b734cf1a5bdeb870f6b7af4e0a1e76e891c3e869d280",
+        "diff_id": "sha256:6e407bcb887726ad7e338d379446cbf49f43f2fd46cfa16e15d9d792b459704b",
+        "size_bytes": 355528,
+        "expanded_bytes": 816640
+      },
+      {
+        "digest": "sha256:f53829540a90766dc673f2a4d258003b3d6d0644d4a71bb303e2ab9a006e0fb9",
+        "diff_id": "sha256:24f670d1e337828fb932901ca6194de50c22b1327ee9a684bc1318e7bdbfd1f7",
+        "size_bytes": 425351,
+        "expanded_bytes": 715776
+      },
+      {
+        "digest": "sha256:dc2b2c4d05a68e22036d6b3acf944b702e8b98eaad7a732254734d0b61bc08eb",
+        "diff_id": "sha256:9a5af3c2653f7d6d3a12beb2f639b46246b03c9def6fbf03653bcdc2fbf769be",
+        "size_bytes": 178516,
+        "expanded_bytes": 394752
+      },
+      {
+        "digest": "sha256:386404bbcc5eb496e5f3a585e97e2b5c1a80371bc704877b879116b95cd73c57",
+        "diff_id": "sha256:c77049249d91fe78f3e8aebf20efb151aa6ff5a0d3dd938af712a4aa6e8eee6c",
+        "size_bytes": 97921,
+        "expanded_bytes": 236032
+      },
+      {
+        "digest": "sha256:81aee3040b675a25e4f0b1ca91348e134c9d25e69d42d2f50d0af52b49ab0ae3",
+        "diff_id": "sha256:5215e8ec94700a54bbbbbf967cb192ef56ab5ea8ba6abdf2fa2ca6b64fd09be6",
+        "size_bytes": 95799,
+        "expanded_bytes": 217088
+      },
+      {
+        "digest": "sha256:53abc9c206651e9f8631d1ab1d470ecc0f6908f0733fa51e225c7d1cb340abcd",
+        "diff_id": "sha256:2af97d351f066d95be4835564d4e9445047a023e1f572d129b8462635b998e05",
+        "size_bytes": 107901,
+        "expanded_bytes": 197632
+      },
+      {
+        "digest": "sha256:62bd281d892293b183ff1c659c7dfb91aec40e35247697218b2159ea2c1f7677",
+        "diff_id": "sha256:423bcdcc810594481f8f5b6e9b549a4f6aab9a288e121b25ec3b727eda6a13d6",
+        "size_bytes": 78636,
+        "expanded_bytes": 203264
+      },
+      {
+        "digest": "sha256:d19ee864df38805eb925a20e9bb1d8744af1363c7e63bb9d6d67850e57745ee2",
+        "diff_id": "sha256:2d53f52bb0117d1d8c10b99db662aaae27498ed75370db0f2dd0cf7e28247c4f",
+        "size_bytes": 14841,
+        "expanded_bytes": 183296
+      },
+      {
+        "digest": "sha256:efab3f2ec4f44f0e7f797f710fdd172054fa32205b8d02f9074a0f92c9d977d2",
+        "diff_id": "sha256:540f3355a8613c1064325614a570faf5404a88b614457d8d506a349c7613486b",
+        "size_bytes": 19537586,
+        "expanded_bytes": 52617216
+      }
+    ],
+    "sbom_binding": {
+      "sbom_sha256": "5091c66dd621433edd56b6c770ca13555208a3a9cb190d5bfe4df66ac06fda6e",
+      "normalized_manifest_digest": "sha256:7f53ee3d11927ecea8bd8168c817b1861732749aa47bcf3fcce41fbaafb93921",
+      "normalized_manifest_independently_verified": false
+    }
+  },
+  "required_semantic": {
+    "executed_for_this_slice": false,
+    "retained_prior": "Required CLI runtime-context qualifier absent; no current semantic-green claim",
+    "reference": "audits/issue-394/runtime-effect-context-foundation-contract.yml"
+  },
+  "scope": "Pure exact OCI archive query: immutable raw pin, one manifest/config chain, all compressed hashes and expanded ordered diff IDs, bounded member/expanded reads, optional Docker/Syft config/layer projection. No extraction, process or network.",
+  "limits": "Caller authenticates pins/custody; normalized SBOM manifest label remains independently unverified. No installed package/file completeness, native applicability, secure runtime or release approval. P32 active, P33-P35 dormant, all82whole open.",
+  "governance_returncode": 1,
+  "governance_stderr_sha256": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+}

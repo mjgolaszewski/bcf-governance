@@ -82,3 +82,11 @@ implementation_evidence:
   - audits/issue-394/runtime-security-python311-observation.json
   - audits/issue-394/runtime-vendor-status-review.json
   - audits/issue-394/observations/runtime-vendor-vex-20261120.json.gz
+
+candidate_identity_disposition:
+  status: exact_archive_manifest_config_layers_bound_security_unqualified
+  historical_initial_vendor_status: source_recipe_only_not_pulled_installed_scanned_or_qualified
+  disposition: Existing Wolfi candidate was built and scanned with unresolved findings; initial source-recipe observation is historical, not current status. Docker-reported OCI manifest, config and Syft normalized manifest labels remain distinct.
+  evidence: audits/issue-394/native-archive-subject-verification.json
+  release_runtime_selected: null
+  security_qualified: false
