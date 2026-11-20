@@ -1,0 +1,55 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "security_qualified": false,
+  "whole_requirement_advancement": false,
+  "contract_commit": "4be9d969e8c2054bc103dcb363924ca61bb027ca",
+  "implementation_subject": "6507d140aa76a45f31e2aa402be82450f5753f23",
+  "test_tree": "586861b67fdc4fe29fb0502eca0271427bc9e903",
+  "before": {
+    "tests": 23,
+    "failures": 22,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source": {
+    "tests": 73,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "required_semantic": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "efa4876259742466ecc71adfc849e7b93dff4023937b5955713a23b8d3346670",
+    "source": "0a3b55c231056bd03ab422f2e9771068ee503142fc04b62bbb9fa69a30739550",
+    "installed": "524aca7a8110da94c4abe36dac845c8809b0be8c0060bc964dfa0f3bf074be97",
+    "architecture": "1585c12976faf64ff38ea4ee81b5b56b3290f71b8716451ed8628933d2fd32de",
+    "required-semantic": "6a8da1c19f7b266799d0c4598147530e0d6a0e93ccf69200af07e61cd78591a8"
+  },
+  "source_sha256": "f1c6656dd420e73a307d0f49922af0113291e1f00052bf2b43751476164aec0b",
+  "scope": "Owned canonical dependency snapshots rehashed before frozen requirement export, CycloneDX construction and advisory classification; scanner JSON detached before digest/findings/status",
+  "legacy_fixture_disposition": "Replaced dummy inventory digests with the same existing canonical payload hash before production; existing population/vulnerability and causal predicate assertions unchanged",
+  "limits": "In-memory payload integrity is not independent installed provenance, actual native scanner execution/input binding, vendor applicability or full runtime context. Required semantic/projection, approved native runtime/security/targets/custody and82whole remain open.",
+  "governance_returncode": 1,
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  }
+}
