@@ -3,9 +3,7 @@ from __future__ import annotations
 import copy
 import dataclasses
 import hashlib
-import importlib.util
 import json
-import os
 from pathlib import Path
 
 import pytest
@@ -19,25 +17,12 @@ from bcf_governance.tooling.semantic_ownership_inventory import (
     resolve_python_imports,
 )
 from bcf_governance.tooling.semantic_ownership_registry import load_registry
-
+from tests import semantic_authority_test_support as _support
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
-def _load_contracts():
-    module_path = os.environ.get("BCF_SEMANTIC_AUTHORITY_MODULE_PATH")
-    if module_path is None:
-        from bcf_governance.tooling import semantic_authority_contracts
-
-        return semantic_authority_contracts
-    spec = importlib.util.spec_from_file_location(
-        "semantic_authority_contracts", Path(module_path)
-    )
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"unable to load semantic authority module from {module_path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+_load_contracts = _support.load_contracts
 
 
 contracts = _load_contracts()
@@ -161,88 +146,24 @@ def test_command_mutation_requires_declared_port(source_inventory: dict) -> None
         contracts._validate_operations(REPO_ROOT, payload, source_inventory)
 
 
-def test_declared_operation_port_must_be_reachable(source_inventory: dict) -> None:
-    payload = _yaml("governance/application-operations.yml")
-    operation = next(
-        row for row in payload["operations"] if row["id"] == "governance.cli.install.v1"
-    )
-    operation["allowed_mutation_ports"] = [
-        "bcf_governance/tooling/install_governance_pack.py::missing_port"
-    ]
-
-    with pytest.raises(SemanticAuthorityError, match="unreachable effect ports"):
-        contracts._validate_operations(REPO_ROOT, payload, source_inventory)
+def test_declared_operation_port_must_be_reachable(tmp_path: Path) -> None:
+    _support.unreachable_port(tmp_path, contracts)
 
 
-def test_query_implementation_cannot_hide_a_write(source_inventory: dict) -> None:
-    payload = _yaml("governance/application-operations.yml")
-    mutated = copy.deepcopy(source_inventory)
-    function = next(
-        row for row in mutated["functions"]
-        if row["symbol"] == "bcf_governance/tooling/doctor_governance_pack.py::main"
-    )
-    function["calls"].append({
-        "called_symbol": "bcf_governance/tooling/doctor_governance_pack.py::state.write_text",
-        "call_name": "write_text",
-    })
-
-    with pytest.raises(SemanticAuthorityError, match="undeclared write effects"):
-        contracts._validate_operations(REPO_ROOT, payload, mutated)
+def test_query_implementation_cannot_hide_a_write(tmp_path: Path) -> None:
+    _support.query_write(tmp_path, contracts)
 
 
-def test_query_cannot_hide_a_write_behind_an_imported_helper(
-    source_inventory: dict,
-) -> None:
-    payload = _yaml("governance/application-operations.yml")
-    mutated = copy.deepcopy(source_inventory)
-    function = next(
-        row for row in mutated["functions"]
-        if row["symbol"] == "bcf_governance/tooling/doctor_governance_pack.py::main"
-    )
-    helper_symbol = "bcf_governance/tooling/query_fixture_helper.py::inspect"
-    function["calls"].append({"called_symbol": helper_symbol, "call_name": "inspect"})
-    mutated["functions"].append({
-        "symbol": helper_symbol,
-        "calls": [{
-            "called_symbol": "bcf_governance/tooling/query_fixture_helper.py::state.write_text",
-            "call_name": "write_text",
-        }],
-        "unresolved": [],
-    })
-
-    with pytest.raises(SemanticAuthorityError, match="undeclared write effects"):
-        contracts._validate_operations(REPO_ROOT, payload, mutated)
+def test_query_cannot_hide_a_write_behind_an_imported_helper(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _support.imported_write(tmp_path, contracts, monkeypatch)
 
 
-def test_projection_implementation_cannot_confer_authority(
-    source_inventory: dict,
-) -> None:
-    payload = _yaml("governance/application-operations.yml")
-    mutated = copy.deepcopy(source_inventory)
-    function = next(
-        row for row in mutated["functions"]
-        if row["symbol"] == "bcf_governance/tooling/publish_audit.py::main"
-    )
-    function["calls"].append({
-        "called_symbol": "bcf_governance/tooling/publish_audit.py::publish_status",
-        "call_name": "publish_status",
-    })
-
-    with pytest.raises(SemanticAuthorityError, match="undeclared authority effects"):
-        contracts._validate_operations(REPO_ROOT, payload, mutated)
+def test_projection_implementation_cannot_confer_authority(tmp_path: Path) -> None:
+    _support.projection_authority(tmp_path, contracts)
 
 
-def test_dynamic_operation_path_fails_closed(source_inventory: dict) -> None:
-    payload = _yaml("governance/application-operations.yml")
-    mutated = copy.deepcopy(source_inventory)
-    function = next(
-        row for row in mutated["functions"]
-        if row["symbol"] == "bcf_governance/tooling/doctor_governance_pack.py::main"
-    )
-    function["unresolved"].append({"kind": "dynamic_call", "line": 1})
-
-    with pytest.raises(SemanticAuthorityError, match="unresolved dynamic call path"):
-        contracts._validate_operations(REPO_ROOT, payload, mutated)
+def test_dynamic_operation_path_fails_closed(tmp_path: Path) -> None:
+    _support.dynamic_path(tmp_path, contracts)
 
 
 def test_source_population_cannot_be_evaded_by_path_placement(
