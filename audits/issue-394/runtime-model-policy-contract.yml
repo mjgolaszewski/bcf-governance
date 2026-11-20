@@ -1,0 +1,46 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  status: planned
+  authority: false
+  path: audits/issue-394/runtime-model-policy-contract.yml
+workitem: P32-P0-04
+parent: audits/issue-394/runtime-effect-context-foundation-contract.yml
+source_subject: 858fd6c82fcefba542b1b26f1fcce34e91e972b0
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: query
+purpose: Bind operation native-model qualification declarations to the existing protected canonical claim owner before runtime context admission.
+targets:
+- schemas/application-operations.schema.json
+- bcf_governance/tooling/ci_graph_composition_operations.py
+- bcf_governance/tooling/semantic_authority_operations.py
+contract:
+  migration: Application operations 1.0 remains accepted unchanged. Version 1.1/document 1.1.0 permits optional runtime_qualifications; version 1.0 forbids the new field. No automatic policy upgrade or activation.
+  declaration: Each qualification identifies a model, model version, nonempty unique canonical claim IDs and applicable existing normal/regulated/self profiles. No inline evidence, implementation identities or candidate authority flags.
+  uniqueness: A model/profile pair has one declaration per operation; overlapping versions are ambiguous and rejected.
+  source_authority: Resolve referenced claims from committed governance/gate-contracts.yml at the same protected subject as application policy, never candidate working bytes.
+  applicability: Every referenced claim must exist, support every declared profile, have subject qualification scope and an executable non-preflight producer. Canonical claim parsing remains owned by evidence_planning.
+  reauthentication: Retain exact protected gate-contract SHA in the public operation capture and re-read committed bytes at every existing capture consumer. Missing or changed objects block before source effect credit.
+  credit: Policy admission is only a prerequisite. It cannot qualify effects, native implementations, frames, inputs or evidence. Keep strict runtime context enforcement unchanged.
+acceptance:
+- Legacy source/private consumers preserve exact metadata when no new declarations exist.
+- Version mismatch, malformed/empty/extra declaration fields and overlapping model/profile scopes fail.
+- Unknown, detector-only, preflight or profile-incompatible claim references fail before source discovery.
+- Candidate gate-contract changes cannot supply protected qualification authority.
+- Removed/replaced protected gate objects and modified capture metadata fail at consumption.
+- Valid declarations remain runtime-unqualified; required semantic gates retain unknown effects.
+verification:
+  source: tests/test_runtime_model_policy.py plus protected-policy and composition consumer suites
+  installed: Fresh and upgrade SDK-absent fixtures through existing installation owner; full native profile qualification remains separate.
+  checks: Canonical pack generation/check, affected architecture, lint and governance; preserve known unwaived baseline failures.
+forbidden:
+- Main/release/maintenance/adopter mutations or manual workflow/authority pins
+- New claim registry, evaluator, receipt family or native-purity shortcut
+- Qualification from verified booleans, diagnostic receipts, model names or source hashes alone
+status:
+  production_implemented: false
+  native_context_qualified: false
+  whole_requirement_advancement: false
+  all_whole_requirements_open: 82
+  phase: P32
