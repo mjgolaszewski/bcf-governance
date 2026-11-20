@@ -1,0 +1,105 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "whole_requirement_advancement": false,
+  "runtime_context_qualified": false,
+  "security_qualified": false,
+  "scope": "New-profile selected native ABI admission before release verification output allocation; no native image custody or full package execution qualified",
+  "contract_commit": "6e1982408c4d711e97bec2819dce713dd95449e6",
+  "legacy_fixture_subject": "f270739d980ae5e6e7e467e0572ef49ed9916637",
+  "implementation_subject": "94c92e2aa5177ca729c332dfa6292c6c590e2319",
+  "test_subject": "9f836cb3b709fea85ad51de70c5dd86ce9d1cc75",
+  "test_tree": "f3ea43d1795e51594882c9adcefd3a6adff051f7",
+  "before": {
+    "tests": 25,
+    "failures": 21,
+    "errors": 0,
+    "skipped": 0
+  },
+  "legacy_before": {
+    "tests": 3,
+    "failures": 3,
+    "errors": 0,
+    "skipped": 0
+  },
+  "legacy_after": {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source": {
+    "tests": 25,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "required_semantic": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "legacy-before": "01689e8d46af6603ae0a4c29992322bc32531c1aa8f4fe91fea033967a1aa1f3",
+    "legacy-after": "14786448db0b1276c2f5482b58eb65b439686a23b55b99f718805258a7bdfc7f",
+    "before": "8100ac4bf03a8ba2c5482ddfccccd1eaab2ca268acd10f78bd355ce31d6d9911",
+    "source": "5b459099402c552e19077cb94ac4774841507370582c255bdb8355015c1c01a5",
+    "installed": "d19ef14985faea248a1a604bc0f9fb55e7f3a4100327863e077ab0bc08e34599",
+    "architecture": "b2fe725cea36908c534695019986441f51f0aba8721d2e5f08437049dfb2cdb6",
+    "required-semantic": "1b3353a0b949a3335e81a90d857c2175f82caa95cedabc6ec20e87ceb022fd71"
+  },
+  "source_sha256": "0ed2a8ec255bc80643bffd11f10dcf8c9a7b96ce719b7ef8f9ed005fb8b740b2",
+  "native_scope": "One actual standard selected interpreter admission witness; free-threaded/debug/foreign cases are adversarial executable-response fixtures, not actual executions of those native builds",
+  "limits": "Reported facts do not authenticate a lying executable, its stdlib/native-library bytes or security. Actual context factory and complete invocation profiles remain open. Manifest1.0 and legacy reports/roles unchanged;82whole open/P32active/P33-P35dormant.",
+  "historical_before_subject": "f270739d980ae5e6e7e467e0572ef49ed9916637",
+  "corrected_controls_subject": "9f836cb3b709fea85ad51de70c5dd86ce9d1cc75",
+  "retained_unaffected_source": {
+    "tests": 133,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "retained_unaffected_installed": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "original_partial_source": {
+    "tests": 158,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "original_partial_installed": {
+    "tests": 8,
+    "failures": 2,
+    "errors": 0,
+    "skipped": 0
+  },
+  "original_partial_junit_sha256": {
+    "source": "22ce85375f3560d048f0ef5b9479ea43e4daf74a915f96139d04289f4ec126e1",
+    "installed": "fb794d41a5e63ab1371e96560dd3587fb729fc6fb5845b63016f23bef9d1917a"
+  },
+  "causal_fixture_disposition": "Original flag fixtures could fail before ABI evaluation. Corrected controls initialize native configuration first and require actual probe exit0; only unchanged non-ABI controls are reused. Production bytes identical to94c92e2.",
+  "retained_evidence_scope": "133 unchanged source and4 unchanged manifest consumers retained by exact source identity. Requalified25 amended native controls and4 amended installed controls; not a full158/8 rerun.",
+  "governance_returncode": 1,
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  }
+}
