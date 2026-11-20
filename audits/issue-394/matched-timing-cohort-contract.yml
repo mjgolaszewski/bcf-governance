@@ -1,0 +1,44 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  status: contract_before_production
+  authority: false
+issue: 394
+workitem: P32-P0-06
+owner: bcf_governance/tooling/operational_observations.py
+requirements: [I03, I04, I11, I18, I30, I32, AC10, AC23, AC30]
+problem: Individual retained capture validation exists; no executable controlled-pair population/context consumer exists. Historical unmatched captures cannot establish matched improvements.
+interface:
+  operation: matched_timing_cohort_observation
+  inputs:
+  - Immutable protocol bytes and independently authenticated expected SHA256.
+  - Independently authenticated complete capture SHA256 population, separate from proposed pairs.
+  - Exact retained capture bytes with existing timing arithmetic/integrity and explicit measurement context.
+  output: Additive pipeline_timing_cohort operational observation; no receipt, registry, CLI or default gate.
+  version: '1.0'
+trust_boundary:
+- Protected consumer authenticates protocol origin, complete input population, source/context facts and applicability before invoking this pure query. Hash equality alone authenticates none of those facts.
+- No consumer is activated by this slice. Supplying candidate-authored expected pins cannot establish authority.
+- Query validates the supplied context and population; it does not approve protocol, targets, statistical adequacy, runtime security, real-adopter selection or provider custody.
+contract:
+- Exact nonauthoritative controlled-pair protocol binds repository ID/name, one canonical pipeline, distinct baseline/optimized commit/tree and complete pair population.
+- Every independent input capture occurs exactly once; reject duplicates, overlap, missing/extra bytes and pair omission even when proposed pair and corresponding candidate check disappear together.
+- Validate every original capture with existing validate_timing_capture; retain original capture digest and whole observation, including failed/cancelled/superseded/skipped intervals and slow durations. No exclusion input.
+- Both sides bind equal protocol-pinned workload, required assurance population, profile, toolchain, environment, resource envelope, policy, evaluator, observed cold/warm state and applicable exact adopter source.
+- Different clock IDs may belong to valid separate observations. Clock basis must agree; do not subtract timestamps across observations or confuse clock domain with execution identity.
+- Reject duplicate JSON keys, nonfinite values, mutable byte substitutes, coercive repository IDs, missing contexts, unknown cache conditions, changed protocol or wrong treatment/pipeline/repository.
+- Output deterministic pair order and detached JSON values with authority, execution qualification and percentile certification false. No percentile, target, improvement, matching-authority or phase/release certification.
+consumer_matrix:
+- Source query and existing timing/capture consumers.
+- Canonically generated private runtime and packaged private runtime.
+- SDK-absent fresh and upgraded consumers, positive and omitted-population control.
+- Existing schema union additive member; all prior observation schemas and CLI behavior unchanged.
+verification:
+- Commit this contract and executable controls before production mutation.
+- Demonstrate missing API failures, then affected behavioral/cause-specific controls and SDK-absent parity.
+- Preserve original capture bytes and all known required governance/semantic blocks; use standard lint, architecture and canonical pack checks.
+remaining:
+- Authenticate real matched captures under an approved patched runtime and independently selected exact consumers.
+- Review and freeze cohort sizes, exclusions, statistical treatment and all separate targets/budgets after baseline review.
+- Implement independently approved statistical/target evaluation and qualify full pipeline populations before optimization claims.
+- P32 remains active, P33-P35 dormant, all82whole requirements open.
