@@ -1,0 +1,41 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/complexity-observation-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitem: P32-P0-06
+bounded_context: operations
+architectural_layer: tooling
+operation_side: query
+owners: [bcf_governance/tooling/operational_observations.py, schemas/operational-observation.schema.json]
+scope: First advisory pinned-Radon exact-committed-source observation through existing operational observations
+contract:
+  - Discover every committed Python blob through the existing exact-subject source owner and read committed bytes rather than worktree contents
+  - Enumerate named functions independently with Python AST including async functions methods nested functions and nested classes; use only Radon for complexity calculation
+  - Record every source member digest named-function identity and per-function score; never use a class or repository average to hide a hotspot
+  - Retain the hash-pinned upstream wheel under the existing vendored test-fixture owner; unpack only inside disposable tests without installing its CLI dependencies or changing the default SDK dependency closure
+  - Pin calculator version6.0.1 and record actual interpreter and calculator source-file digest; this is not approved native-runtime or package-security provenance
+  - Missing or wrong-version tooling invalid syntax unsupported TryStar or TypeAlias and unresolved tree entries yield an explicitly incomplete observation rather than a clean result
+  - Scope excludes standalone lambda scores and class aggregates explicitly; record lambda counts rather than implying complete behavioral or cross-language coverage
+  - Preserve original operation schema variants and current CLI grammar; no default gate installation dependency or automatic activation
+  - Observation timing measures only this scan and cannot certify pipeline speedups
+qualification:
+  - Contract and independent cause-specific controls precede production
+  - Real pinned Radon branch fixtures establish scores; independent function enumeration checks nested and async populations
+  - Retain wrong subject changed worktree missing or wrong calculator unsupported syntax and omitted calculator-result controls
+  - Qualify optional-tool absence and positive actual Radon behavior in SDK-absent fresh and repaired installed consumers
+  - Keep required semantic and workflow projection failures and all82whole requirements open
+remaining:
+  - Protected policy approval and optional toolchain installation projection
+  - Complete exact-baseline delta review including additions deletions renames and stale or forged-score recomputation
+  - Supported interpreter syntax matrix and current secure runtime before matched baseline qualification
+  - Independently reviewed thresholds exceptions enforcement consumer composition and source/wheel/sdist distribution qualification
+forbidden:
+  - Numeric enforcement or score-based test suppression
+  - New calculator graph evaluator registry broker receipt family or parallel operational schema
+  - Main generated workflows authority maintenance or maintained adopter mutation
+references:
+  - audits/issue-394/complexity-heuristic-plan.yml
+  - https://pypi.org/project/radon/6.0.1/
+  - https://radon.readthedocs.io/en/latest/api.html

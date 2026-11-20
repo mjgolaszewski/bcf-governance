@@ -26,6 +26,7 @@ nested_governance:
   - {path: bcf_governance/pack/template-repo/, source_repo: self, refresh_policy: generated_exact_copy, ownership: bcf_governance}
   - {path: tests/fixtures/, source_repo: self, refresh_policy: contract_test_fixture, ownership: bcf_governance_tests}
 vendored_artifacts:
+  - {artifact_path: tests/fixtures/radon-toolchain/radon-6.0.1-py2.py3-none-any.whl, source_repo: 'git+https://github.com/rubik/radon.git', source_commit: 5061d86a649223bdc5490c5dcc113743cc5b47f5, artifact_sha256: 632cc032364a6f8bb1010a2f6a12d0f14bc7e5ede76585ef29dc0cecf4cd8859, refresh_policy: 'Explicit Radon fixture update; verify PyPI wheel digest and upstream tag identity, qualify real scores and supported syntax; no reproducible-build or release-security claim'}
   required_fields: [artifact_path, source_repo, source_commit, artifact_sha256, refresh_policy]
   artifacts:
   - {artifact_path: tests/fixtures/typescript-toolchain/typescript-6.0.3.tgz, source_repo: 'git+https://github.com/microsoft/TypeScript.git', source_commit: 050880ce59e30b356b686bd3144efe24f875ebc8, artifact_sha256: 33cd0ee1beaa8c9e9d15a9da836c62ddea4c34a42d7c2d349dbc80d94165d22a, refresh_policy: 'explicit locked test compiler update with npm integrity, real-compiler regression tests and package verification'}
