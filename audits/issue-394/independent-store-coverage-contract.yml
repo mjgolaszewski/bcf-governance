@@ -1,0 +1,41 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  status: planned
+  authority: false
+  path: audits/issue-394/independent-store-coverage-contract.yml
+parent_contract: audits/issue-394/runtime-effect-context-foundation-contract.yml
+workitem: P32-P0-04
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: query
+subject: f1b563935272107805e85521e30a31d6d8684021
+problem: The consuming store checker validates agreement between store observations and paired unresolved effects. Removing both can hide a real assignment. Explicit call coverage alone cannot independently detect an omitted object store.
+scope:
+- Extend the existing independent source-coverage pass to reconstruct object store and delete sites from exact source, including the actual ci_commands.main assignment.
+- Reconcile source span, caller, expression digest, occurrence and store/delete kind for every Python runtime function context before effect credit.
+- Preserve eager definition and class bodies, deferred lambda/function bodies, postponed annotations, comprehension target ownership, Unicode and CRLF semantics.
+- Keep the existing producer and typed effect populations; no new graph, registry, evaluator or receipt family.
+controls:
+- Remove store observation and its paired effect together; independent source must still reject.
+- Remove repeated stores, duplicate or relocate rows, alter digest, occurrence, kind or caller.
+- Retain a real mutation witness and independently reconstructed source after removing the corresponding inventory rows.
+- Ordinary closed local dictionary/list stores remain accepted; unsupported object protocols remain unresolved.
+qualification:
+  native_runtime_qualified: false
+  whole_requirement_advancement: false
+  actual_main_context_remains_open: true
+  limitation: Source membership is necessary but does not authorize positive receiver, parser, constructor or native context. Existing strict runtime checks remain enabled.
+target_modules:
+- bcf_governance/tooling/semantic_authority_operations.py
+expected_tests:
+- tests/test_independent_store_coverage.py
+- tests/test_independent_call_coverage.py
+- tests/test_python_object_store_context.py
+- tests/test_python_attribute_store_context.py
+forbidden_surfaces:
+- main and predecessor machinery
+- generated workflows and authority pins
+- maintenance or adopter repositories
+- turning require_runtime_context off for required consumers
+sequence: Commit this contract and executable controls before production repair; preserve the failing causal baseline, then run affected source, installed parity, architecture, lint and package checks. Remote feature backup is separate from governed submission.
