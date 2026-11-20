@@ -1,0 +1,50 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "whole_requirement_advancement": false,
+  "implementation_complete": true,
+  "scope": "Opt-in recognized strict-validator blockers across admitted operations only",
+  "contract_commit": "2fba8693fd7aa4a820bc8e29994063c2d6865d07",
+  "test_subject": "2c2d3bdcb29e22e908abe6c68cd178b59f8fe729",
+  "test_tree": "32ebef68a9f91601a987b6462cfedf7861752cc6",
+  "before": {
+    "tests": 12,
+    "failures": 11,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_after": {
+    "tests": 67,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "1b3b8ef40794c8d8bc115a5037074ebf246949ca0b299e1466e7e1983fa986b6",
+    "source": "627c573a52976515f8c1fe3bf5922e3a28d3974a21a9df425cba51fd1cffeef7",
+    "installed": "4fc08bbe231fc32f05339d931361ec090a9b6fd38a9dacb2179d1d41d5a260f7",
+    "architecture": "6a4dc981d72a9f8572e92ec1ef38581563b029491615cc78dac8ab63395fddc4"
+  },
+  "source_sha256": "76ae6bed22dc62c2ec9f4620ae12f2149db7437dc80f24d08d70acf0886c81fb",
+  "default_earliest_failure_preserved": true,
+  "runtime_context_qualified": false,
+  "remaining": "Use explicit diagnostic query on frozen actual operation population; independently qualify exact runtime contexts, recovery/terminal effects and full distributions. Known semantic-lock and Node projection remain open; all82whole unchanged",
+  "governance_status": "blocked_by_pending_Node_graph_workflow_projection",
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  }
+}
