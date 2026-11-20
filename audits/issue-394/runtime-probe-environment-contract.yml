@@ -1,0 +1,35 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/runtime-probe-environment-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitem: P32-P0-04
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: command
+owners: [bcf_governance/tooling/release_runtime_verification.py]
+scope: Existing selected-interpreter identity probes for both supported wheelhouse manifest versions
+contract:
+  - Construct the existing runtime_environment before probing and explicitly supply it to both identity subprocesses
+  - Use isolated Python invocation with bytecode disabled for legacy and native ABI probes
+  - Anchor probe working directory to the already authenticated regular manifest parent; do not inherit ambient working directory
+  - Use that existing parent as HOME without creating the output directory or allocating a disposable environment
+  - Preserve exact subject checks report schemas release roles command receipts canonical runtime lock and ordinary CLI grammar
+  - Exclude ambient provider credentials Python startup configuration loader variables and unrelated application configuration according to the existing closed environment owner
+  - Preserve the existing explicit PATH locale and TMPDIR allowances; this does not authenticate their referenced executables directories or native files
+qualification:
+  - Commit contract and controls before production
+  - Execute actual child probes for both manifest branches and observe their environments before the probe runs
+  - Exercise each excluded variable independently and retain ordinary positive admission to the next allocation boundary
+  - Qualify SDK-absent fresh and repaired consumers; removing explicit probe environment binding must fail the named leakage control
+  - Retain native ABI controls ordinary producer and reader tests package parity architecture standard lint and required semantic and governance outcomes on exact source
+limits:
+  - Selected executable witnesses capture their own environment; they do not authenticate a dishonest executable or prove absence of all native effects
+  - Dynamic-loader variables are removed before process launch but no malicious shared library is loaded by the controls
+  - Existing allowlisted host inputs executable stdlib native library global initialization lifetime and complete runtime-context qualification remain open
+  - All82 whole requirements stay open and P33-P35 dormant
+forbidden:
+  - Main generated workflow authority adopter or predecessor mutation
+  - New graph registry evaluator broker receipt family or source-only gate substitution
+  - Security qualification inferred from environment isolation or reported ABI facts
