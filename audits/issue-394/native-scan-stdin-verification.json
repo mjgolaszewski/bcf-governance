@@ -1,0 +1,95 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "security_qualified": false,
+  "whole_requirement_advancement": false,
+  "contract_commit": "2f7c24790fc89af788389b5a0a4b0e89d81cd4e2",
+  "implementation_subject": "0cd95b0f7ec28446b94658413f9155a5ac7f7ece",
+  "test_tree": "e8297a6df2cfa8b3350b4eff6040117b0e7f2283",
+  "before": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source": {
+    "tests": 38,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "a68467912faef443cdbdce1e0198dd01bf602ce09fa298b124b8a6be183771ae",
+    "source": "1b1cca657577de26728fc93c863b016c946d089bd329e020bb96314d0226de25",
+    "installed": "127044da55a01ebd50ef69f3c803a8f143624bafe75d5c04d37f97decc415210",
+    "architecture": "57df62072c86994cd0f999d198176feca8c2826cd3172b5682c67e9224c2f523"
+  },
+  "source_sha256": "f1cdb8e9f17a464c0fa4785c6be40441937b76dfb4fb7d48a0754ebf3184268a",
+  "real_native_construction": {
+    "authority": false,
+    "security_qualified": false,
+    "runtime_context_qualified": false,
+    "status": "findings_present",
+    "diagnostic": "",
+    "inventory_count": 50,
+    "finding_count": 16,
+    "suppressed_count": 0,
+    "result_sha256": "4bd81a587cfeb938fe2c33c9f26377ccb1bf30b633c05a27ce8d17263a169a55",
+    "stdin_sha256": "6e4fd7c87f333f6bd2c1147bc5541e1f7684efe89e1e78592d9a8807aab3d2ff",
+    "scanner_sha256": "322a7839c1c9f6c1b6ac0aa6b61a7d94139b7f24780b82a05b63caab56d4286b",
+    "database_files": {
+      "6/import.json": "9da8cd424e7dd5e8bf9cc3b69bee4dec9bf9aef18489b3f81b344bca8cd1ef2d",
+      "6/last_update_check": "5571f4cc41c55040b06505773a601737fce00603f3631191a3c6519810d3a527",
+      "6/vulnerability.db": "451e54aa3fee04e22a0c51f75cfb1426e2089fadb594160e2b6bb11c675c1fea"
+    },
+    "database_status": {
+      "schemaVersion": "v6.1.10",
+      "from": "https://grype.anchore.io/databases/v6/vulnerability-db_v6.1.10_2026-11-19T00:22:15Z_1795113665.tar.zst?checksum=sha256%3A757eb920ea050a3b9d145ced71649be659539140a173d159f88eb8afa900e2e4",
+      "built": "2026-11-19T18:41:05Z",
+      "valid": true
+    },
+    "limits": "Construction witness of actual pinned Grype and sealed input only; selected tuples derive from retained SBOM and do not independently authenticate installed-image completeness, provenance or applicability. No image execution, native runtime approval or release qualification."
+  },
+  "reused_unchanged_python_library": {
+    "source": {
+      "original_subject": "deb945c4342896884e14b7713894d6def03e0be0",
+      "cases": 81,
+      "full_junit_sha256": "b984dc70284b902c54a9fa87d88bad732d80efb490537464294f2484a286af59",
+      "excluded_changed_consumer": "test_native_scan_capture"
+    },
+    "installed": {
+      "original_subject": "deb945c4342896884e14b7713894d6def03e0be0",
+      "cases": 12,
+      "full_junit_sha256": "067b54b7aa60759a3a8cdffecf79f019991f0662a2ffb5120ad21f54eb55288c",
+      "excluded_changed_consumer": "test_installed_native_scan_capture"
+    }
+  },
+  "reuse_basis": "Only explicit native command source literal changed; original Python declaration prefix and listed fixture bytes unchanged. Original JUnit subsets reused, not rerun or recertified under this commit.",
+  "required_semantic": {
+    "executed_for_this_slice": false,
+    "retained_prior_result": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "original_subject": "deb945c4342896884e14b7713894d6def03e0be0",
+    "scope": "Whole runtime context remains unresolved; no semantic-green claim"
+  },
+  "scope": "Correct actual Grype0.122.1 source to Linux sealed /proc/self/fd/0 rather than file named minus; preserve direct owned stdin and explicit source selection",
+  "limits": "No runtime or native security approval, independently installed completeness, default activation, approved targets or custody; all82whole remain open.",
+  "governance_returncode": 1,
+  "governance_stderr_sha256": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+}
