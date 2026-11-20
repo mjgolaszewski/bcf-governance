@@ -3,8 +3,9 @@ import subprocess
 
 import test_installed_evidence_storage as _fixture_owner
 from test_installed_evidence_storage import _environment
-from test_complexity_observation import radon_tool  # noqa: F401
+import test_complexity_observation as _radon_fixture_owner
 
+radon_tool = _radon_fixture_owner.radon_tool
 installed_consumer = _fixture_owner.installed_consumer
 isolated_python = _fixture_owner.isolated_python
 PROBE = '''import importlib.metadata,importlib.util,subprocess,sys,tempfile
