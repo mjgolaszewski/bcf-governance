@@ -87,3 +87,15 @@ forbidden:
 - Candidate-owned rows or caller booleans supplying protected authority.
 - Turning strict runtime context off or treating this mapping as executable evidence.
 - Main machinery changes, phase activation, custody or performance claims from this artifact.
+
+qualified_source_prerequisites:
+  status: partial_context_inputs_only
+  source_checkpoint: 163e0232acee13a15b99d8277f73bf091364d97f
+  evidence:
+  - audits/issue-394/separate-policy-source-verification.json
+  - audits/issue-394/independent-call-coverage-verification.json
+  - audits/issue-394/independent-store-coverage-verification.json
+  retained_results: Protected immutable policy and candidate source captures are separated at consumers; independent committed call/store source membership is checked. These are scoped inputs, not a positive native context qualifier.
+  next_construction: Derive the actual CLI frame and parser value origins through the existing source and strict effect owners; bind authorized interpreter/library/profile implementations before discharging runtime obligations. Preserve unsupported alternatives and whole-operation failures.
+  open_authority: The protected caller must still authenticate provider/evaluator/policy selection. Source hashes, local capture classes and candidate declarations cannot supply that authority.
+  acceptance_advancement: false
