@@ -1,0 +1,57 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "whole_requirement_advancement": false,
+  "runtime_context_qualified": false,
+  "security_qualified": false,
+  "scope": "Declared installed Python root and transitive version constraints before SBOM/audit inventory construction; existing scope and output schema retained",
+  "contract_commit": "0d1a2eada2bd287107ddb34bed6ca7105b8dbdbf",
+  "implementation_subject": "e1426fc34efe975b1084e601d918f77c2e7c103b",
+  "test_subject": "e1426fc34efe975b1084e601d918f77c2e7c103b",
+  "test_tree": "f51863a2dc11cea924271622df821416c17518e0",
+  "before": {
+    "tests": 25,
+    "failures": 20,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source": {
+    "tests": 59,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "required_semantic": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "9f97350236cee913dea1190f682f6a0801772fd6f4b6ba67506e3e0ed560041c",
+    "source": "545746ed3da637ce2f873bdb90db5125b33fac765c0dfc2e564baca1fc5a21d0",
+    "installed": "a7643536b124e97d5a1e9f79e86c388fa12b5f3c2b9cce6e5e5339b8c105f70c",
+    "architecture": "39a9a2729cc73a58e906a3bb0df8737d223538e1dc2c9d505a8163e427d86e51",
+    "required-semantic": "138845ea794f3083d75200b4efca0a822504e3f3e077f581ca732f081962a170"
+  },
+  "source_sha256": "3d37106451b1e15aec9e544c35feb14060e305b24296164deb506cc751e8be9a",
+  "limits": "Version constraint admission is not direct-URL artifact provenance, native/runtime security or whole-operation qualification. All applicable known findings, full native/input/lifetime and source/profile assurance, matched targets and custody remain open;82whole open/P32active/P33-P35dormant.",
+  "governance_returncode": 1,
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  }
+}
