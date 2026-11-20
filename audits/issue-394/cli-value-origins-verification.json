@@ -1,0 +1,166 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "whole_requirement_advancement": false,
+  "characterization_only": true,
+  "detector_qualified": false,
+  "production_changed": false,
+  "baseline_subject": "e3d506c00dab9f94a1ba83b9b4da21d25ae652d9",
+  "test_subject": "e52e3c79d1ee13d43d7c055eb7ca7656a2124aae",
+  "development_interpreter": "3.12.14 (main, Sep  1 2026, 14:16:52) [Clang 22.1.3 ]",
+  "secure_runtime_selected": false,
+  "source": {
+    "tests": 193,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 16,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_observations": [
+    {
+      "authority": false,
+      "events": [],
+      "mode": "ordinary",
+      "qualification_port_calls": 1,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "invalid",
+      "qualification_port_calls": 0,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "ownership",
+      "qualification_port_calls": 2,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [
+        "requested-constructor",
+        "returned-object-fspath"
+      ],
+      "mode": "constructor",
+      "qualification_port_calls": 1,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [
+        "parser-converter-partition"
+      ],
+      "mode": "parser",
+      "qualification_port_calls": 1,
+      "runtime_context_qualified": false
+    }
+  ],
+  "installed_observations": [
+    {
+      "authority": false,
+      "events": [],
+      "mode": "ordinary",
+      "qualification_port_calls": 1,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "invalid",
+      "qualification_port_calls": 0,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "ownership",
+      "qualification_port_calls": 2,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [
+        "requested-constructor",
+        "returned-object-fspath"
+      ],
+      "mode": "constructor",
+      "qualification_port_calls": 1,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [
+        "parser-converter-partition"
+      ],
+      "mode": "parser",
+      "qualification_port_calls": 1,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "ordinary",
+      "qualification_port_calls": 1,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "invalid",
+      "qualification_port_calls": 0,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "ownership",
+      "qualification_port_calls": 2,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [
+        "requested-constructor",
+        "returned-object-fspath"
+      ],
+      "mode": "constructor",
+      "qualification_port_calls": 1,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [
+        "parser-converter-partition"
+      ],
+      "mode": "parser",
+      "qualification_port_calls": 1,
+      "runtime_context_qualified": false
+    }
+  ],
+  "junit_sha256": {
+    "source": "1c07d2ad8bd0b072bba1d21945ed6f4b3a22a187e7129fad88d9f8d73c5cd95c",
+    "installed": "bd7e50c2801a68a2cf91147e23e2713d57f921553f8dc32da8efaff4df2bdfdf",
+    "architecture": "56167acea23f150726d8dc20f80b6d63b99e7b598170b8361b80261bef6b3499"
+  },
+  "source_sha256": {
+    "ci_commands.py": "ad609f50d5315461775c851d92e75f9228e95a8ce3ef9fef9b7efdfd511b79d7",
+    "nested_cli_runtime.py": "c4140646f8d5aa1e980f30b480839acb8e3aea13806e1ec65282495ef6769ae0"
+  },
+  "scope": "Actual ordinary ingress, parser construction, partition, mapping ownership and returned Path values through the existing qualification test port. Controlled constructor-return callback and post-ingress parser-converter callback alternatives are genuinely executed and retained.",
+  "limits": "Mocked qualification port confers no release/adopter authority. Concrete positive executions are not source completeness or a qualified detector/native model; altered-origin cases remain mandatory unresolved/rejection obligations for future context qualification. Compatibility3.12 scope; no approved native closure, whole semantic success, secure release runtime, performance target or82whole advancement. P32 active/P33-P35 dormant.",
+  "governance_stderr_sha256": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+}
