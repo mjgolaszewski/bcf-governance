@@ -1,0 +1,39 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  status: planned
+  authority: false
+  path: audits/issue-394/native-cookie-remediation-contract.yml
+parent_contract: audits/issue-394/native-cookie-runtime-contract.yml
+workitem: P32-P0-04
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: controlled_native_test_and_observation
+subject: 7cea9610d6a68e6c2ebb1139d60ea4abd6b57a28
+problem: The retained candidate accepts all36 cookie-attribute injection routes. Its vendor builds unchecked-hash bytecode, so a changed source file cannot by itself establish what a fresh interpreter executes.
+scope:
+- Reauthenticate exact retained archive/config/layers, vendor source bytes, original cached bytecode and the existing public-API probe before allocation.
+- Compare only the four changed Morsel methods to merged upstream commit27026842f6774c167295f4b59972589f12ec5987. Independently verify all unrelated target-module AST remains unchanged.
+- The proposed3.14 backport is unmerged. Treat its bytes as an experimental proposal, not vendor-approved packaging or new authority.
+- In one disposable offline/no-mount/no-capability builder container, replace only the target module and its corresponding cache. Preserve the original shared image and archive.
+- Compare fresh source-only and rebuilt checked-hash-bytecode executions. Source-only must retain the observed old behavior; rebuilding must reject all36 injection routes while preserving the six cookie-expiry and five benign controls.
+- Commit bounded contract and test driver first; record exact source/bytecode/flags and both outcomes with source/build scope limits before feature backup.
+constraints:
+- No image publication, persistent candidate image, package installation, network, shared service or host/source mount, main/maintenance/adopter change or release adoption.
+- Builder root filesystem is writable only in its owned disposable namespace; container is explicitly stopped and removed before fence release. No forced cancellation or automatic proof retry.
+- A create/start capture failure requires exact named/manifest-owned resource reconciliation and observation of any existing work, not a new allocation.
+- No native package/SBOM vendor attestation or whole dependency/security approval follows from two modified files. A supported reproducible package build and fresh complete scan remain required.
+expected_tests:
+- tests/native_cookie_remediation.py in the pinned native environment
+- tests/native_cookie_probe.py in fresh child interpreters for both counterfactuals
+- Standard lint and governed YAML validation; unchanged SDK/installed evidence retains only its prior scope
+qualification:
+  authority: false
+  security_qualified: false
+  runtime_context_qualified: false
+  package_build_qualified: false
+  whole_requirement_advancement: false
+  release_runtime_selected: null
+  p32: active
+  p33_p35: dormant
+  open_whole_requirements: 82
