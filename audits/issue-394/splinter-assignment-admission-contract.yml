@@ -1,0 +1,34 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/splinter-assignment-admission-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitems: [foundation.conformance, dormant.continuation, dormant.scheduling]
+bounded_context: evidence_assurance
+architectural_layer: tooling
+operation_side: query
+scope: Existing test-splinter compiler and plan/result admission before execution allocation or proof applicability
+problem:
+  - An exact aggregate node union does not establish the assigned per-splinter execution population
+  - A self-consistent digest does not authenticate malformed inventory selectors identity or empty assignments
+contract:
+  - Preserve the existing version1.0 plan shape and stable duration-aware algorithm for valid inputs
+  - Admit only nonempty string node identities and selectors with one unique selector per node
+  - Require exact nonempty identity fields and supported fallback reasons; authenticate the duration digest syntax
+  - Validate canonical sorted distinct nonempty inventory and nonempty per-splinter assignment before downstream allocation
+  - Require unique selectors across all assignments and the exact disjoint assigned node union
+  - Require each result population to equal its own planned assignment even when swapped results preserve the global union
+  - Preserve result order independence and finite iterable result support without mutating caller inputs
+  - Keep malformed metrics on existing conservative monolithic fallback; invalid inventory and identity remain typed admission errors
+qualification:
+  - Commit contract and behavioral controls before production repair
+  - Exercise self-consistently rehashed invalid plans through independent plan and proof-applicability consumers
+  - Qualify fresh and repaired SDK-absent consumers with a disabled per-assignment guard cause control
+  - Retain required governance failures and scope limitations; no phase activation or whole-requirement advancement
+owners:
+  - bcf_governance/tooling/evidence_scheduling.py
+forbidden:
+  - New plan schema receipt family scheduler registry or evaluator
+  - Workflow authority main maintenance release or live-adopter mutations
+  - Treating these source controls as actual runtime-context or performance qualification
