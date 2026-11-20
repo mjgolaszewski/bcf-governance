@@ -12,7 +12,7 @@ import tomllib
 from typing import Any
 
 from packaging.requirements import Requirement
-from packaging.utils import canonicalize_name
+from packaging.utils import InvalidName, canonicalize_name
 
 
 class DependencyAssuranceError(ValueError):
@@ -150,6 +150,21 @@ def write_frozen_requirements(
     )
 
 
+def _scanner_dependency_identity(item: Any) -> tuple[str, str] | None:
+    """Identify one selected or scanned distribution without accepting missing fields."""
+    if not isinstance(item, dict):
+        return None
+    name, version = item.get("name"), item.get("version")
+    if not isinstance(name, str) or not isinstance(version, str) or not version.strip():
+        return None
+    if version != version.strip():
+        return None
+    try:
+        return canonicalize_name(name, validate=True), version
+    except InvalidName:
+        return None
+
+
 def audit_envelope(
     *,
     inventory: InstalledDependencyInventory,
@@ -162,20 +177,43 @@ def audit_envelope(
     """Classify one complete scanner result; ambiguity never becomes clean."""
 
     dependencies = raw.get("dependencies") if isinstance(raw, dict) else None
-    if returncode not in {0, 1} or not isinstance(dependencies, list):
+    findings = [
+        {"name": item.get("name"), "version": item.get("version"), "vulnerabilities": vulns}
+        for item in dependencies if isinstance(item, dict)
+        and isinstance((vulns := item.get("vulns")), list) and vulns
+    ] if isinstance(dependencies, list) else []
+    selected = [_scanner_dependency_identity(item) for item in inventory.components]
+    complete = (all(identity is not None for identity in selected)
+                and len(set(selected)) == len(selected)
+                and isinstance(dependencies, list))
+    observed: set[tuple[str, str]] = set()
+    if isinstance(dependencies, list):
+        for item in dependencies:
+            identity = _scanner_dependency_identity(item)
+            if identity is None or identity in observed or not isinstance(item, dict):
+                complete = False
+                continue
+            observed.add(identity)
+            vulnerabilities = item.get("vulns")
+            if "skip_reason" in item or not isinstance(vulnerabilities, list):
+                complete = False
+                continue
+            if any(not isinstance(row, dict) or not isinstance(row.get("id"), str)
+                   or not row["id"].strip() for row in vulnerabilities):
+                complete = False
+    complete = complete and observed == set(selected)
+    if isinstance(raw, dict) and "fixes" in raw and raw["fixes"] != []:
+        complete = False
+    if type(returncode) is not int or returncode not in {0, 1} or not complete:
         status = "scanner_failure"
-        findings: list[dict[str, Any]] = []
+        diagnostic = diagnostic or "scanner result does not account for the exact selected inventory"
+    elif returncode == 0 and not findings:
+        status = "clean"
+    elif returncode == 1 and findings:
+        status = "vulnerable"
     else:
-        findings = [
-            {"name": item.get("name"), "version": item.get("version"), "vulnerabilities": vulns}
-            for item in dependencies
-            if isinstance(item, dict)
-            and isinstance((vulns := item.get("vulns")), list)
-            and vulns
-        ]
-        status = "vulnerable" if findings or returncode == 1 else "clean"
-        if (status == "clean") != (returncode == 0):
-            status = "scanner_failure"
+        status = "scanner_failure"
+        diagnostic = diagnostic or "scanner exit and vulnerability population contradict each other"
     raw_digest = hashlib.sha256(
         json.dumps(raw, sort_keys=True, separators=(",", ":")).encode()
         if raw is not None
