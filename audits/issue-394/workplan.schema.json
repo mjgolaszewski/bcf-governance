@@ -1325,6 +1325,76 @@
           "const": "audits/issue-394/release-train-provider-budget-readiness.json"
         }
       }
+    },
+    "maintenance_release_lessons": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "report",
+        "sha256",
+        "scope",
+        "source_subject_before",
+        "whole_requirement_advancement"
+      ],
+      "properties": {
+        "report": {
+          "const": "audits/issue-394/maintenance-release-lessons.yml"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_subject_before": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "whole_requirement_advancement": {
+          "const": false
+        }
+      }
+    },
+    "named_source_population_observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "report",
+        "sha256",
+        "subject",
+        "authority",
+        "execution_qualified",
+        "scope",
+        "whole_requirement_advancement"
+      ],
+      "properties": {
+        "report": {
+          "const": "audits/issue-394/named-source-population-accounting.json"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "subject": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "authority": {
+          "const": false
+        },
+        "execution_qualified": {
+          "const": false
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "whole_requirement_advancement": {
+          "const": false
+        }
+      }
     }
   }
 }

@@ -251,8 +251,9 @@ def test_source_population_cannot_be_evaded_by_path_placement(
     payload = _yaml("governance/application-operations.yml")
     original = contracts._discover_population
 
-    def discover(repo_root: Path, population: dict) -> dict[str, str]:
-        found = original(repo_root, population)
+    def discover(repo_root: Path, population: dict, inventory: dict | None = None,
+                 *, source_subject=None) -> dict[str, str]:
+        found = original(repo_root, population, inventory, source_subject=source_subject)
         return {**found, "path-hidden-command": "bcf_governance/tooling/doctor_governance_pack.py::main"}
 
     monkeypatch.setattr(contracts, "_discover_population", discover)
