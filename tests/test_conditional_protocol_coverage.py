@@ -30,7 +30,7 @@ def test_producer_removal_cannot_remove_independent_obligation(tmp_path, part, m
     if part == 'classifier':
         target = patch.object(producer, 'implicit_runtime_protocols', return_value=())
     else:
-        target = patch.object(producer.FunctionVisitor, '_record_implicit_protocol', return_value=None)
+        target = patch.object(producer._FunctionVisitor, '_record_implicit_protocol', return_value=None)
     with target:
         facts = facts_for(tmp_path, mode)
     assert work(facts)['calls'] == []
@@ -157,3 +157,18 @@ def test_actual_conditional_callback_remains_visible_after_erasure(tmp_path, mod
         'dict_collection':'hash','subscript':'getitem','format':'format'}[mode]]
     with pytest.raises(SemanticAuthorityError, match='Python source implicit protocol coverage'):
         consume(tmp_path, erased(tmp_path, mode))
+
+
+@pytest.mark.parametrize('postponed', [False, True])
+def test_root_definition_calls_preserve_source_occurrences(tmp_path, postponed):
+    source = ('from __future__ import annotations\n' if postponed else '')
+    source += ('def helper():\n    return 1\n@helper()\n'
+        'def work(value: helper() = helper()):\n    return helper()\nCOMMANDS={"work":work}\n')
+    facts = capture(tmp_path, source, '1.0')
+    rows = work(facts)['calls']
+    assert len(rows) == (3 if postponed else 4)
+    assert [row['call_contract']['occurrence'] for row in rows] == list(range(len(rows)))
+    audit(tmp_path, facts)
+    rows[-1]['call_contract']['occurrence'] += 1
+    with pytest.raises(SemanticAuthorityError, match='Python source call coverage'):
+        audit(tmp_path, facts)

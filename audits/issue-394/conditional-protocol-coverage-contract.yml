@@ -42,3 +42,10 @@ forbidden_surfaces:
 - generated workflows and authority pins
 - source-only green substitution or disabling strict context
 sequence: Commit bounded contract and controls first; preserve genuine red omissions before production. Then affected source, exact committed population, installed parity, architecture/lint/package, coupled ledgers and feature backup; keep global required blocks explicit.
+
+first_execution_disposition:
+  fixture_target: The first emitter control targeted FunctionVisitor instead of the actual private _FunctionVisitor;12 before cases never exercised the intended behavior. Preserve the raw capture and do not count those as accepted unsafe cases.
+  genuine_baseline: 24 erased-row and12 removed-classifier cases were accepted before repair;8 scope/native membership controls passed.
+  repair_boundary: Explicit calls in root definition defaults/decorators remain observed outside the operation-protocol frame. Reconstruct their source ordinals while withholding protocol credit outside the eager operation scope.
+  control_update: Correct the existing fixture target and add postponed/nonpostponed root-definition occurrence controls before this production correction.
+  qualification_advancement: false
