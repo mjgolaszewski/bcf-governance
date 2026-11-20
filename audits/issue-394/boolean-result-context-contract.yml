@@ -1,0 +1,35 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/boolean-result-context-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitem: P32-P0-04
+bounded_context: semantic_ownership
+architectural_layer: tooling
+operation_side: query
+scope: Existing Python implicit protocol consumer result domains in supported call-free parameter/comprehension frames; no general runtime context qualifier
+problem: Consumers currently conflate a language-guaranteed boolean result with possible effects of evaluating its operands, producing false outer protocol obligations
+contract:
+  - Derive source-bound result sites independently from supported call-free return/conditional expression frames and actual parameter/comprehension bindings; unsupported syntax or globals preserve prior conservative behavior
+  - Derive exact boolean result eligibility only for not and comparisons containing exclusively is/is-not
+  - Derive BoolOp result eligibility only when all possible returned operand values are eligible
+  - Preserve independent ordinary child traversal and all operand call descriptor truth rich-comparison and dynamic obligations
+  - Keep rich equality result unknown because it may return a custom object
+  - Preserve the existing native literal predicate and closed native-region/store ownership admission exactly
+  - Use result-domain facts only at existing implicit consumption and comprehension guard boundaries
+  - Preserve strict default runtime-context checks and existing metadata authority false; no candidate annotation or boolean claim supplies qualification
+qualification:
+  - Commit contract and independent native/metadata/strict-consumer controls before production
+  - Actual arbitrary objects with raising truth equality/hash hooks cannot affect identity-only operations
+  - Native nested-not property and rich-comparison effects must remain detected; omitting child descent must fail the installed named control
+  - Qualify source and SDK-absent fresh/repaired consumers and unchanged characterization goldens
+  - Retain remaining whole-operation native/input/lifecycle context requirements; no phase activation or acceptance advancement
+owners:
+  - bcf_governance/tooling/semantic_ownership_protocols.py
+  - bcf_governance/tooling/semantic_python_calls.py
+forbidden:
+  - Changing _native_literal_value or treating result-domain eligibility as expression purity or store ownership
+  - Disabling required runtime-context mode or removing child obligations
+  - Editing immutable characterization fixtures
+  - Main maintenance workflows authority release or live-adopter mutations
