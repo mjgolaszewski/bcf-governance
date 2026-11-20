@@ -102,19 +102,21 @@ class RepresentationProvenance:
     exception_count: int
 
 
-def _load_yaml(path: Path, *, expected_sha256: str | None = None) -> dict[str, Any]:
+def _load_yaml(path: Path, *, expected_sha256: str | None = None, source_bytes: bytes | None = None) -> dict[str, Any]:
     if expected_sha256 is not None and (
         not isinstance(expected_sha256, str) or len(expected_sha256) != 64
         or any(value not in "0123456789abcdef" for value in expected_sha256)
     ):
         raise SemanticAuthorityError("protected registry digest is malformed")
-    if not path.is_file() or path.is_symlink():
+    if source_bytes is not None and (type(source_bytes) is not bytes or expected_sha256 is None):
+        raise SemanticAuthorityError("protected registry source bytes require bytes and an independent digest")
+    if source_bytes is None and (not path.is_file() or path.is_symlink()):
         raise SemanticAuthorityError(f"required semantic contract must be a regular file: {path}")
     try:
         if expected_sha256 is None:
             payload = load_unique_mapping(path)
         else:
-            raw = path.read_bytes()
+            raw = path.read_bytes() if source_bytes is None else source_bytes
             if sha256_bytes(raw) != expected_sha256:
                 raise SemanticAuthorityError("semantic registry differs from protected digest")
             payload = load_unique_mapping_text(raw.decode("utf-8"))
@@ -156,9 +158,9 @@ def load_semantic_families(repo_root: Path) -> SemanticFamilyRegistry:
 
 
 def load_application_operations(
-    repo_root: Path, *, expected_sha256: str | None = None,
+    repo_root: Path, *, expected_sha256: str | None = None, source_bytes: bytes | None = None,
 ) -> ApplicationOperationRegistry:
-    payload = _load_yaml(repo_root / OPERATIONS_PATH, expected_sha256=expected_sha256)
+    payload = _load_yaml(repo_root / OPERATIONS_PATH, expected_sha256=expected_sha256, source_bytes=source_bytes)
     _schema(repo_root, "application-operations.schema.json", payload, consumer_owned=expected_sha256 is not None)
     if expected_sha256 is not None:
         _validate_operation_structure(payload)

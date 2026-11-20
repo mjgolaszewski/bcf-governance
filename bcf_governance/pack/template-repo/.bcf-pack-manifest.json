@@ -748,7 +748,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_composition_operations.py": {
       "operation": "copy",
-      "sha256": "f07381f2dbb1e3454a2b95ef9dd62359067389c945b3a5eea8d5eb5d51e1e8bf"
+      "sha256": "e67448e0967e761584b715b17adf9973b6eeffc9525765560a3d6c31916d5cf7"
     },
     "scripts/_bcf_runtime/ci_graph_composition_populations.py": {
       "operation": "copy",
@@ -1795,7 +1795,7 @@
     },
     "scripts/_bcf_runtime/semantic_authority_contracts.py": {
       "operation": "copy",
-      "sha256": "1088c391f7030bcc58f7c1422a4e352710d27fc733874c905711132da32e5566"
+      "sha256": "515eddc49b5e06649f4c9bebd048e5c940602dd7d36207fe537e3c719f6b1dba"
     },
     "scripts/_bcf_runtime/semantic_authority_migrations.py": {
       "operation": "copy",

@@ -10,7 +10,7 @@ from typing import Any, NamedTuple
 
 from .ci_graph_errors import CIGraphError
 from .semantic_authority_contracts import (
-    SemanticAuthorityError, load_committed_application_operations,
+    SemanticAuthorityError, load_application_operations, load_committed_application_operations,
     _required_operation_population, _discover_population,
 )
 
@@ -33,15 +33,18 @@ class _PublicOperationCapture(NamedTuple):
 def _reauthenticate_public_operation_capture(capture, *, repo_root=None, inventory=None):
     """Recheck concrete source bindings, never a candidate authority assertion."""
     from .semantic_operation_python import _inventory_source_subject
-    from .semantic_source_paths import committed_application_registry_identity
+    from .semantic_source_paths import committed_application_registry_identity, committed_regular_blob_capture
 
     if type(capture) is not _PublicOperationCapture:
         raise CIGraphError("public operation capture is incompatible")
     policy_subject = dict(zip(("commit_sha", "tree_sha"), capture.policy_subject))
     runtime_subject = dict(zip(("commit_sha", "tree_sha"), capture.runtime_subject))
     try:
-        registry, identity = load_committed_application_operations(capture.policy_root,
-            policy_commit_sha=policy_subject["commit_sha"], policy_tree_sha=policy_subject["tree_sha"])
+        identity, raw = committed_regular_blob_capture(capture.policy_root,
+            path="governance/application-operations.yml", **policy_subject)
+        identity["registry_sha256"] = identity.pop("sha256")
+        registry = load_application_operations(capture.policy_root,
+            expected_sha256=capture.registry_sha256, source_bytes=raw)
     except (SemanticAuthorityError, OSError, ValueError) as exc:
         raise CIGraphError(f"public operation protected policy moved after capture: {exc}") from exc
     if identity["registry_sha256"] != capture.registry_sha256 or registry != capture.registry:
