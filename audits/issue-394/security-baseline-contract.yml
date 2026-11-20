@@ -2,7 +2,7 @@ schema_version: '1.0'
 document:
   kind: affected_surface_contract
   path: audits/issue-394/security-baseline-contract.yml
-  status: planned_before_implementation
+  status: candidate_screening_in_progress_no_runtime_selected
   authority: false
 owner: home:bcf-governance:bcf-394-ironwatch
 bounded_context: ci_authority
@@ -77,4 +77,8 @@ forbidden:
   - Prerelease interpreter substitution merely to evade an advisory version range
   - Silent scan exclusions reduced severity threshold or current-security claims from historical passing tests
   - Unverified private patched interpreter as a new distribution commitment
-implementation_evidence: []
+implementation_evidence:
+  - audits/issue-394/runtime-security-candidate-observations.json
+  - audits/issue-394/runtime-security-python311-observation.json
+  - audits/issue-394/runtime-vendor-status-review.json
+  - audits/issue-394/observations/runtime-vendor-vex-20261120.json.gz

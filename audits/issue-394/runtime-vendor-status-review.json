@@ -1,0 +1,396 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "security_qualified": false,
+  "runtime_context_qualified": false,
+  "whole_requirement_advancement": false,
+  "release_runtime_selected": null,
+  "scope": "Fresh primary-vendor status review for every distinct vulnerability in the retained exact Hummingbird Python3.14 candidate screen; not a new scan or final applicability determination",
+  "scan_sha256": "2f05f43a3b94d172b62d34815ea0d6c82091ddabf33c94ee5fc977ad3162b3a7",
+  "image_manifest_digest": "sha256:525cc0c2e1f921abd3712f99cd86b03bbaf3d353b152945f1a69283817231a71",
+  "image_repository_digest": "sha256:1ac4921724237d985a35cc23bbcd779fd5b984089e039182bf8e22cd108490d6",
+  "match_occurrences": 16,
+  "distinct_cves": 8,
+  "primary_records_captured": 5,
+  "records": [
+    {
+      "cve": "CVE-2025-12781",
+      "source": "https://security.access.redhat.com/data/csaf/v2/vex/2025/cve-2025-12781.json",
+      "source_sha256": "3669a4314fae447737b36164502a9d3ef1e6b9694d9501283546b6301f229968",
+      "retrieved_at_utc": "2026-11-20T07:55:05.701075+00:00",
+      "vendor_revision": "3",
+      "vendor_current_release_date": "2026-11-07T04:26:33+00:00",
+      "image_product_status": {
+        "known_affected": [
+          "red_hat_hardened_images:python3.11.src",
+          "red_hat_hardened_images:python3.12.src",
+          "red_hat_hardened_images:python3.13.src",
+          "red_hat_hardened_images:python3.14.src"
+        ]
+      },
+      "image_remediations": [
+        {
+          "category": "workaround",
+          "product_ids": [
+            "red_hat_hardened_images:python3.11.src",
+            "red_hat_hardened_images:python3.12.src",
+            "red_hat_hardened_images:python3.13.src",
+            "red_hat_hardened_images:python3.14.src"
+          ],
+          "url": null
+        },
+        {
+          "category": "no_fix_planned",
+          "product_ids": [
+            "red_hat_hardened_images:python3.11.src",
+            "red_hat_hardened_images:python3.12.src",
+            "red_hat_hardened_images:python3.13.src",
+            "red_hat_hardened_images:python3.14.src"
+          ],
+          "url": null
+        }
+      ],
+      "references": [
+        "https://access.redhat.com/security/cve/CVE-2025-12781",
+        "https://bugzilla.redhat.com/show_bug.cgi?id=2431736",
+        "https://www.cve.org/CVERecord?id=CVE-2025-12781",
+        "https://nvd.nist.gov/vuln/detail/CVE-2025-12781",
+        "https://github.com/python/cpython/issues/125346",
+        "https://github.com/python/cpython/pull/141128",
+        "https://mail.python.org/archives/list/security-announce@python.org/thread/KRI7GC6S27YV5NJ4FPDALS2WI5ENAFJ6/"
+      ],
+      "scan_matches": [
+        {
+          "package": "python-unversioned-command",
+          "version": "3.14.10-1.5.hum1",
+          "purl": "pkg:rpm/redhat/python-unversioned-command@3.14.10-1.5.hum1?arch=noarch&distro=hummingbird-20251124&upstream=python3.14-3.14.10-1.5.hum1.src.rpm",
+          "scanner_fix": {
+            "versions": [],
+            "state": ""
+          }
+        },
+        {
+          "package": "python3",
+          "version": "3.14.10-1.5.hum1",
+          "purl": "pkg:rpm/redhat/python3@3.14.10-1.5.hum1?arch=x86_64&distro=hummingbird-20251124&upstream=python3.14-3.14.10-1.5.hum1.src.rpm",
+          "scanner_fix": {
+            "versions": [],
+            "state": ""
+          }
+        },
+        {
+          "package": "python3-libs",
+          "version": "3.14.10-1.5.hum1",
+          "purl": "pkg:rpm/redhat/python3-libs@3.14.10-1.5.hum1?arch=x86_64&distro=hummingbird-20251124&upstream=python3.14-3.14.10-1.5.hum1.src.rpm",
+          "scanner_fix": {
+            "versions": [],
+            "state": ""
+          }
+        }
+      ],
+      "disposition": "Unresolved exact binary/application applicability; vendor source-product status is retained without a severity, no-fix or version-based waiver."
+    },
+    {
+      "cve": "CVE-2026-100290",
+      "source": "https://security.access.redhat.com/data/csaf/v2/vex/2026/cve-2026-100290.json",
+      "source_sha256": "1f0216f266599280b483b2c55e24426d4ab0d9eac97402691204a0dd9f02ce35",
+      "retrieved_at_utc": "2026-11-20T07:55:06.239987+00:00",
+      "vendor_revision": "3",
+      "vendor_current_release_date": "2026-11-18T01:50:42+00:00",
+      "image_product_status": {
+        "known_affected": [
+          "red_hat_hardened_images:glibc.src"
+        ],
+        "known_not_affected": [
+          "red_hat_hardened_images:filesystem.src"
+        ]
+      },
+      "image_remediations": [
+        {
+          "category": "workaround",
+          "product_ids": [
+            "red_hat_hardened_images:glibc.src"
+          ],
+          "url": null
+        },
+        {
+          "category": "none_available",
+          "product_ids": [
+            "red_hat_hardened_images:glibc.src"
+          ],
+          "url": null
+        }
+      ],
+      "references": [
+        "https://access.redhat.com/security/cve/CVE-2026-100290",
+        "https://bugzilla.redhat.com/show_bug.cgi?id=2571751",
+        "https://www.cve.org/CVERecord?id=CVE-2026-100290",
+        "https://nvd.nist.gov/vuln/detail/CVE-2026-100290",
+        "https://sourceware.org/bugzilla/show_bug.cgi?id=31935",
+        "https://sourceware.org/bugzilla/show_bug.cgi?id=34991",
+        "https://sourceware.org/git/?p=glibc.git;a=blob_plain;f=advisories/GLIBC-SA-2026-0028"
+      ],
+      "scan_matches": [
+        {
+          "package": "glibc",
+          "version": "2.43-9.3.hum1",
+          "purl": "pkg:rpm/redhat/glibc@2.43-9.3.hum1?arch=x86_64&distro=hummingbird-20251124&upstream=glibc-2.43-9.3.hum1.src.rpm",
+          "scanner_fix": {
+            "versions": [],
+            "state": ""
+          }
+        },
+        {
+          "package": "glibc-common",
+          "version": "2.43-9.3.hum1",
+          "purl": "pkg:rpm/redhat/glibc-common@2.43-9.3.hum1?arch=x86_64&distro=hummingbird-20251124&upstream=glibc-2.43-9.3.hum1.src.rpm",
+          "scanner_fix": {
+            "versions": [],
+            "state": ""
+          }
+        },
+        {
+          "package": "glibc-minimal-langpack",
+          "version": "2.43-9.3.hum1",
+          "purl": "pkg:rpm/redhat/glibc-minimal-langpack@2.43-9.3.hum1?arch=x86_64&distro=hummingbird-20251124&upstream=glibc-2.43-9.3.hum1.src.rpm",
+          "scanner_fix": {
+            "versions": [],
+            "state": ""
+          }
+        }
+      ],
+      "disposition": "Unresolved exact binary/application applicability; vendor source-product status is retained without a severity, no-fix or version-based waiver."
+    },
+    {
+      "cve": "CVE-2026-107496",
+      "source": "https://security.access.redhat.com/data/csaf/v2/vex/2026/cve-2026-107496.json",
+      "status": "primary_source_unavailable_or_incompatible",
+      "error_type": "HTTPError",
+      "scan_matches": [
+        {
+          "package": "openssl-fips-provider-upstream",
+          "version": "1:3.5.9-0.4.hum1"
+        },
+        {
+          "package": "openssl-libs",
+          "version": "1:3.5.9-0.4.hum1"
+        }
+      ],
+      "disposition": "Unresolved; absent primary data cannot qualify clean."
+    },
+    {
+      "cve": "CVE-2026-115819",
+      "source": "https://security.access.redhat.com/data/csaf/v2/vex/2026/cve-2026-115819.json",
+      "source_sha256": "6c5fa40688ee166fb89eeb3169615cf544954f82d8087c3f57a530b618918764",
+      "retrieved_at_utc": "2026-11-20T07:55:06.744418+00:00",
+      "vendor_revision": "3",
+      "vendor_current_release_date": "2026-11-18T02:24:28+00:00",
+      "image_product_status": {
+        "known_affected": [
+          "red_hat_hardened_images:glibc.src"
+        ],
+        "known_not_affected": [
+          "red_hat_hardened_images:filesystem.src"
+        ]
+      },
+      "image_remediations": [
+        {
+          "category": "workaround",
+          "product_ids": [
+            "red_hat_hardened_images:glibc.src"
+          ],
+          "url": null
+        },
+        {
+          "category": "none_available",
+          "product_ids": [
+            "red_hat_hardened_images:glibc.src"
+          ],
+          "url": null
+        }
+      ],
+      "references": [
+        "https://access.redhat.com/security/cve/CVE-2026-115819",
+        "https://bugzilla.redhat.com/show_bug.cgi?id=2571745",
+        "https://www.cve.org/CVERecord?id=CVE-2026-115819",
+        "https://nvd.nist.gov/vuln/detail/CVE-2026-115819",
+        "https://sourceware.org/bugzilla/show_bug.cgi?id=34989",
+        "https://sourceware.org/git/?p=glibc.git;a=blob_plain;f=advisories/GLIBC-SA-2026-0027"
+      ],
+      "scan_matches": [
+        {
+          "package": "glibc",
+          "version": "2.43-9.3.hum1",
+          "purl": "pkg:rpm/redhat/glibc@2.43-9.3.hum1?arch=x86_64&distro=hummingbird-20251124&upstream=glibc-2.43-9.3.hum1.src.rpm",
+          "scanner_fix": {
+            "versions": [],
+            "state": ""
+          }
+        },
+        {
+          "package": "glibc-common",
+          "version": "2.43-9.3.hum1",
+          "purl": "pkg:rpm/redhat/glibc-common@2.43-9.3.hum1?arch=x86_64&distro=hummingbird-20251124&upstream=glibc-2.43-9.3.hum1.src.rpm",
+          "scanner_fix": {
+            "versions": [],
+            "state": ""
+          }
+        },
+        {
+          "package": "glibc-minimal-langpack",
+          "version": "2.43-9.3.hum1",
+          "purl": "pkg:rpm/redhat/glibc-minimal-langpack@2.43-9.3.hum1?arch=x86_64&distro=hummingbird-20251124&upstream=glibc-2.43-9.3.hum1.src.rpm",
+          "scanner_fix": {
+            "versions": [],
+            "state": ""
+          }
+        }
+      ],
+      "disposition": "Unresolved exact binary/application applicability; vendor source-product status is retained without a severity, no-fix or version-based waiver."
+    },
+    {
+      "cve": "CVE-2026-119586",
+      "source": "https://security.access.redhat.com/data/csaf/v2/vex/2026/cve-2026-119586.json",
+      "source_sha256": "da4e2a891786ad0684b00f3724f36196c42a48d8be7734d79ae732732a26f7ad",
+      "retrieved_at_utc": "2026-11-20T07:55:07.040602+00:00",
+      "vendor_revision": "3",
+      "vendor_current_release_date": "2026-11-19T23:21:52+00:00",
+      "image_product_status": {
+        "known_affected": [
+          "red_hat_hardened_images:sqlite.src"
+        ]
+      },
+      "image_remediations": [
+        {
+          "category": "workaround",
+          "product_ids": [
+            "red_hat_hardened_images:sqlite.src"
+          ],
+          "url": null
+        },
+        {
+          "category": "none_available",
+          "product_ids": [
+            "red_hat_hardened_images:sqlite.src"
+          ],
+          "url": null
+        }
+      ],
+      "references": [
+        "https://access.redhat.com/security/cve/CVE-2026-119586",
+        "https://bugzilla.redhat.com/show_bug.cgi?id=2563931",
+        "https://www.cve.org/CVERecord?id=CVE-2026-119586",
+        "https://nvd.nist.gov/vuln/detail/CVE-2026-119586",
+        "https://abraxaslabs.tech/research/sqlite-cli-recover",
+        "https://github.com/sqlite/sqlite",
+        "https://github.com/sqlite/sqlite/blob/version-3.54.1/ext/recover/sqlite3recover.c#L1221-L1223",
+        "https://github.com/sqlite/sqlite/blob/version-3.54.1/src/shell.c.in#L7877-L7891",
+        "https://www.vulncheck.com/advisories/sqlite-cli-through-3.54.1-command-injection-via-recover-output"
+      ],
+      "scan_matches": [
+        {
+          "package": "sqlite-libs",
+          "version": "3.54.1-1.hum1",
+          "purl": "pkg:rpm/redhat/sqlite-libs@3.54.1-1.hum1?arch=x86_64&distro=hummingbird-20251124&upstream=sqlite-3.54.1-1.hum1.src.rpm",
+          "scanner_fix": {
+            "versions": [],
+            "state": ""
+          }
+        }
+      ],
+      "disposition": "Unresolved exact binary/application applicability; vendor source-product status is retained without a severity, no-fix or version-based waiver."
+    },
+    {
+      "cve": "CVE-2026-128241",
+      "source": "https://security.access.redhat.com/data/csaf/v2/vex/2026/cve-2026-128241.json",
+      "status": "primary_source_unavailable_or_incompatible",
+      "error_type": "HTTPError",
+      "scan_matches": [
+        {
+          "package": "expat",
+          "version": "2.10.0-0.2.hum1"
+        }
+      ],
+      "disposition": "Unresolved; absent primary data cannot qualify clean."
+    },
+    {
+      "cve": "CVE-2026-53615",
+      "source": "https://security.access.redhat.com/data/csaf/v2/vex/2026/cve-2026-53615.json",
+      "source_sha256": "a1ae92402c7ad656eca3d77d936894ff98fa6cdf59f87e938b6e6a7afafc80df",
+      "retrieved_at_utc": "2026-11-20T07:55:07.595360+00:00",
+      "vendor_revision": "3",
+      "vendor_current_release_date": "2026-11-12T10:19:41+00:00",
+      "image_product_status": {
+        "known_affected": [
+          "red_hat_hardened_images:util-linux.src"
+        ]
+      },
+      "image_remediations": [
+        {
+          "category": "workaround",
+          "product_ids": [
+            "red_hat_hardened_images:util-linux.src"
+          ],
+          "url": null
+        },
+        {
+          "category": "none_available",
+          "product_ids": [
+            "red_hat_hardened_images:util-linux.src"
+          ],
+          "url": null
+        }
+      ],
+      "references": [
+        "https://access.redhat.com/security/cve/CVE-2026-53615",
+        "https://bugzilla.redhat.com/show_bug.cgi?id=2552551",
+        "https://www.cve.org/CVERecord?id=CVE-2026-53615",
+        "https://nvd.nist.gov/vuln/detail/CVE-2026-53615",
+        "https://github.com/util-linux/util-linux/commit/05c2dbadf34cc74192287f377904afaaf4061623",
+        "https://github.com/util-linux/util-linux/commit/a2d858176b609ab5b8535021a3af9cd302d23d31",
+        "https://github.com/util-linux/util-linux/commit/e9d544d013267ea86b70ee8ff78abd280e6641af",
+        "https://github.com/util-linux/util-linux/releases/tag/v2.41.4",
+        "https://github.com/util-linux/util-linux/security/advisories/GHSA-h4rw-gv36-wmp5"
+      ],
+      "scan_matches": [
+        {
+          "package": "libuuid",
+          "version": "2.42.4-2.1.hum1",
+          "purl": "pkg:rpm/redhat/libuuid@2.42.4-2.1.hum1?arch=x86_64&distro=hummingbird-20251124&upstream=util-linux-2.42.4-2.1.hum1.src.rpm",
+          "scanner_fix": {
+            "versions": [],
+            "state": ""
+          }
+        }
+      ],
+      "disposition": "Unresolved exact binary/application applicability; vendor source-product status is retained without a severity, no-fix or version-based waiver."
+    },
+    {
+      "cve": "CVE-2026-95691",
+      "source": "https://security.access.redhat.com/data/csaf/v2/vex/2026/cve-2026-95691.json",
+      "status": "primary_source_unavailable_or_incompatible",
+      "error_type": "HTTPError",
+      "scan_matches": [
+        {
+          "package": "openssl-fips-provider-upstream",
+          "version": "1:3.5.9-0.4.hum1"
+        },
+        {
+          "package": "openssl-libs",
+          "version": "1:3.5.9-0.4.hum1"
+        }
+      ],
+      "disposition": "Unresolved; absent primary data cannot qualify clean."
+    }
+  ],
+  "raw_sources_sha256": "effd8f9cd9468816a7ed6bb7253073c7127f07d81c67f468009232b506684d4b",
+  "compressed_sources_sha256": "a05820c99d06dd7422f9a55f23ae0c73a8ec59247792959d9da87062cc41c59a",
+  "next_action": "Use exact vendor remediation references to identify maintained fixed builds, then qualify actual immutable runtime bytes and complete installed inventory. Do not repeat scans on unchanged inputs or classify source-product status as exact binary/application applicability. A full approved native execution context and positive runtime-context qualifier remain open; no environment selected, old runtime qualified, exclusion added or target invented.",
+  "compressed_sources_path": "audits/issue-394/observations/runtime-vendor-vex-20261120.json.gz",
+  "review_source_subject": {
+    "commit_sha": "fbf657c337d4fcdf21a763648881dd3fa6cf932b",
+    "tree_sha": "5544dff66d5c3ea79ac07ac2dc3d11e038af8c6f"
+  },
+  "governance_returncode": 1,
+  "governance_stderr_sha256": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+}
