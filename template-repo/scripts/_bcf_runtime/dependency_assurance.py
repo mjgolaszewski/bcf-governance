@@ -302,3 +302,255 @@ def cyclonedx_sbom(inventory: InstalledDependencyInventory) -> dict[str, Any]:
         "components": snapshot["components"],
         "dependencies": snapshot["dependencies"],
     }
+
+
+def _native_scan_json(raw: bytes) -> dict[str, Any]:
+    """Decode one unambiguous JSON document without accepting hidden fields."""
+    def mapping(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("duplicate native scan JSON field")
+            result[key] = value
+        return result
+    value = json.loads(raw, object_pairs_hook=mapping,
+                       parse_constant=lambda value: (_ for _ in ()).throw(ValueError("nonfinite native JSON")))
+    if not isinstance(value, dict):
+        raise ValueError("native scan JSON must be an object")
+    return value
+
+
+def _native_component_identity(row) -> tuple[str, str, str]:
+    values = tuple(row.get(key) for key in ("purl", "name", "version")) if isinstance(row, dict) else ()
+    if (len(values) != 3 or any(type(value) is not str or not value or value != value.strip()
+                              or "\0" in value for value in values) or not values[0].startswith("pkg:")):
+        raise DependencyAssuranceError("native package identity is missing or malformed")
+    return values
+
+
+def _native_file_digest(path: Path, deadline: float) -> str:
+    import stat
+    import time
+    try:
+        if path.is_symlink() or not stat.S_ISREG(path.stat().st_mode):
+            raise DependencyAssuranceError("native scan input must be a regular nonsymlink file")
+        digest = hashlib.sha256()
+        with path.open("rb") as stream:
+            while True:
+                if time.monotonic() >= deadline:
+                    raise DependencyAssuranceError("native scan admission budget exhausted")
+                chunk = stream.read(1024 * 1024)
+                if not chunk:
+                    break
+                digest.update(chunk)
+        return digest.hexdigest()
+    except OSError as exc:
+        raise DependencyAssuranceError("native scan input file is unavailable") from exc
+
+
+def _native_database_binding(root: Path, expected, deadline: float) -> dict[str, str]:
+    if type(expected) is not dict or not expected or root.is_symlink() or not root.is_dir():
+        raise DependencyAssuranceError("native database requires an exact file inventory")
+    if any(type(key) is not str or not key or key.startswith("/") or "\\" in key
+           or any(part in {"", ".", ".."} for part in key.split("/"))
+           or type(value) is not str or len(value) != 64
+           or any(character not in "0123456789abcdef" for character in value)
+           for key, value in expected.items()):
+        raise DependencyAssuranceError("native database file inventory is malformed")
+    actual = {}
+    for path in sorted(root.rglob("*")):
+        if path.is_symlink() or (not path.is_file() and not path.is_dir()):
+            raise DependencyAssuranceError("native database member is not regular")
+        if path.is_file():
+            actual[path.relative_to(root).as_posix()] = _native_file_digest(path, deadline)
+    if actual != expected:
+        raise DependencyAssuranceError("native database file inventory differs")
+    return actual
+
+
+def capture_native_dependency_audit(
+    *, sbom_bytes: bytes, expected_sbom_sha256: str, expected_image: dict[str, str],
+    expected_inventory: tuple[tuple[str, str, str], ...], scanner: Path,
+    expected_scanner_sha256: str, database_root: Path, expected_database_files: dict[str, str],
+    expected_database_status: dict[str, Any], max_database_age_seconds: int,
+    command_seconds: int, output_dir: Path,
+) -> dict[str, Any]:
+    """Capture one exact Grype input through the existing native execution owner.
+
+    Independent subjects/pins are authenticated by the protected caller. This
+    observation confers no runtime, security, phase or release authority.
+    """
+    import math
+    import os
+    import re
+    import threading
+    import subprocess
+    import time
+    from . import evidence_process_supervisor as commands
+    from .release_runtime_verification import runtime_environment
+
+    lease = commands._native_lease
+    if lease is None or lease[1] != threading.get_ident():
+        raise DependencyAssuranceError("native scan requires an existing execution owner")
+    identity = os.fstat(lease[0])
+    if (identity.st_dev, identity.st_ino) != lease[2:4]:
+        raise DependencyAssuranceError("native execution owner identity differs")
+    if type(command_seconds) is not int or command_seconds <= 0:
+        raise DependencyAssuranceError("native scan requires a positive command budget")
+    try:
+        if not math.isfinite(float(command_seconds)):
+            raise ValueError("unbounded native command budget")
+        deadline = time.monotonic() + command_seconds
+    except (ValueError, OverflowError) as exc:
+        raise DependencyAssuranceError("native scan command budget is incompatible") from exc
+    if type(sbom_bytes) is not bytes:
+        raise DependencyAssuranceError("native SBOM input must be owned finite bytes")
+    def hex_digest(value):
+        return type(value) is str and re.fullmatch(r"[a-f0-9]{64}", value) is not None
+    if not hex_digest(expected_sbom_sha256) or hashlib.sha256(sbom_bytes).hexdigest() != expected_sbom_sha256:
+        raise DependencyAssuranceError("native SBOM byte digest differs")
+    try:
+        sbom = _native_scan_json(sbom_bytes)
+        if sbom.get("schema", {}).get("version") != "16.1.13":
+            raise ValueError("native SBOM schema is unsupported")
+        if (type(expected_image) is not dict
+                or set(expected_image) != {"manifestDigest", "imageID", "architecture", "os"}
+                or any(type(value) is not str or not value for value in expected_image.values())
+                or any(re.fullmatch(r"sha256:[a-f0-9]{64}", expected_image[key]) is None
+                       for key in ("manifestDigest", "imageID"))):
+            raise ValueError("native image subject is not exact")
+        source = sbom["source"]
+        if (source.get("type") != "image" or source.get("id") != expected_image["manifestDigest"][7:]
+                or any(source["metadata"].get(key) != value for key, value in expected_image.items())):
+            raise ValueError("native image manifest/config subject differs")
+        if (type(expected_inventory) is not tuple or not expected_inventory
+                or any(type(row) is not tuple or len(row) != 3 for row in expected_inventory)):
+            raise ValueError("native independent inventory is missing")
+        wanted = [_native_component_identity(dict(zip(("purl", "name", "version"), row))) for row in expected_inventory]
+        artifacts = sbom["artifacts"]
+        if not isinstance(artifacts, list) or not artifacts:
+            raise ValueError("native SBOM inventory is missing")
+        observed = [_native_component_identity(row) for row in artifacts]
+        if (len(set(wanted)) != len(wanted) or len({row[0] for row in wanted}) != len(wanted)
+                or len(set(observed)) != len(observed) or len({row[0] for row in observed}) != len(observed)):
+            raise ValueError("native package inventory is ambiguous")
+        if sorted(observed) != sorted(wanted):
+            raise ValueError("native package inventory differs")
+        artifact_ids = [row["id"] for row in artifacts]
+        if any(type(value) is not str or not value for value in artifact_ids) or len(set(artifact_ids)) != len(artifact_ids):
+            raise ValueError("native artifact IDs are ambiguous")
+        if (type(max_database_age_seconds) is not int or max_database_age_seconds <= 0
+                or max_database_age_seconds > (2**63 - 1) // 1_000_000_000
+                or type(expected_database_status) is not dict
+                or set(expected_database_status) != {"schemaVersion", "from", "built", "valid"}
+                or expected_database_status["valid"] is not True
+                or any(type(expected_database_status[key]) is not str or not expected_database_status[key]
+                       for key in ("schemaVersion", "from", "built"))):
+            raise ValueError("native database status is incomplete")
+        built = datetime.fromisoformat(expected_database_status["built"].replace("Z", "+00:00"))
+        now = datetime.now(timezone.utc)
+        if built.tzinfo is None or not 0 <= (now - built).total_seconds() <= max_database_age_seconds:
+            raise ValueError("native database is stale or future dated")
+    except (KeyError, TypeError, ValueError, AttributeError) as exc:
+        raise DependencyAssuranceError("native scan admission failed: " + str(exc)) from exc
+    if not hex_digest(expected_scanner_sha256) or _native_file_digest(scanner, deadline) != expected_scanner_sha256:
+        raise DependencyAssuranceError("native scanner executable digest differs")
+    bound_database = _native_database_binding(database_root, expected_database_files, deadline)
+    if output_dir.exists() or output_dir.is_symlink():
+        raise DependencyAssuranceError("native scan output must be fresh")
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise DependencyAssuranceError("native scan admission budget exhausted")
+    configuration = {"ignore": [], "exclude": [], "only-fixed": False, "only-notfixed": False,
+                     "ignore-wontfix": "", "vex-documents": [], "check-for-app-update": False,
+                     "include-matcher-suppressions": True, "match-upstream-kernel-headers": True,
+                     "db": {"cache-dir": str(database_root.resolve()), "auto-update": False,
+                            "validate-age": True, "max-allowed-built-age": str(max_database_age_seconds) + "s"}}
+    config_bytes = json.dumps(configuration, sort_keys=True).encode()
+    output_dir.mkdir(parents=True, mode=0o700)
+    config_path = output_dir / "scanner-config.json"
+    config_path.write_bytes(config_bytes)
+    (output_dir / "scanner-input.json").write_bytes(sbom_bytes)
+    environment = runtime_environment(home=output_dir)
+    environment.update(GRYPE_DB_CACHE_DIR=str(database_root.resolve()), GRYPE_DB_AUTO_UPDATE="false",
+                       GRYPE_DB_VALIDATE_AGE="true", GRYPE_DB_MAX_ALLOWED_BUILT_AGE=str(max_database_age_seconds) + "s",
+                       GRYPE_CHECK_FOR_APP_UPDATE="false", GRYPE_EXTERNAL_SOURCES_ENABLE="false")
+    stdout = stderr = b""
+    returncode = None
+    diagnostic = ""
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise DependencyAssuranceError("native scan admission budget exhausted before execution")
+    try:
+        result = commands.run_admitted_command(
+            [str(scanner.resolve()), "--config", str(config_path.resolve()), "sbom:-", "--output", "json"],
+            unbound_runner=subprocess.run, cwd=output_dir, env=environment, input=sbom_bytes,
+            capture_output=True, text=False, check=False, timeout=remaining,
+        )
+        stdout, stderr, returncode = result.stdout, result.stderr, result.returncode
+    except subprocess.TimeoutExpired as exc:
+        stdout, stderr = exc.output or b"", exc.stderr or b""
+        diagnostic = "native scanner exhausted its command budget"
+    except OSError:
+        diagnostic = "native scanner could not start"
+    (output_dir / "scanner.stdout").write_bytes(stdout)
+    (output_dir / "scanner.stderr").write_bytes(stderr)
+    findings = []
+    status = "scanner_failure"
+    try:
+        if _native_file_digest(scanner, deadline) != expected_scanner_sha256:
+            raise ValueError("native scanner changed during execution")
+        _native_database_binding(database_root, bound_database, deadline)
+        if (output_dir / "scanner-input.json").read_bytes() != sbom_bytes or config_path.read_bytes() != config_bytes:
+            raise ValueError("native execution input capture changed")
+        scan = _native_scan_json(stdout)
+        for key in ("matches", "ignoredMatches"):
+            rows = scan.get(key, [] if key == "ignoredMatches" else None)
+            if not isinstance(rows, list):
+                raise ValueError("native findings population is malformed")
+            for row in rows:
+                if not isinstance(row, dict):
+                    raise ValueError("native finding is malformed")
+                artifact, vulnerability = row["artifact"], row["vulnerability"]
+                identity = _native_component_identity(artifact)
+                if (dict(zip(artifact_ids, observed)).get(artifact.get("id")) != identity
+                        or type(vulnerability.get("id")) is not str or not vulnerability["id"].strip()):
+                    raise ValueError("native finding does not bind the selected inventory")
+                findings.append({"id": vulnerability["id"], "purl": identity[0], "name": identity[1],
+                                 "version": identity[2], "severity": vulnerability.get("severity"),
+                                 "suppressed": key == "ignoredMatches"})
+        descriptor = scan["descriptor"]
+        if descriptor.get("name") != "grype" or descriptor.get("version") != "0.122.1":
+            raise ValueError("native scanner profile is unsupported")
+        target = scan["source"]
+        if target.get("type") != "image" or any(target["target"].get(key) != value for key, value in expected_image.items()):
+            raise ValueError("native result source subject differs")
+        actual_db = descriptor["db"]["status"]
+        if actual_db.get("valid") is not True or any(actual_db.get(key) != value for key, value in expected_database_status.items()):
+            raise ValueError("native result database status differs")
+        options = descriptor["configuration"]
+        if (options.get("only-fixed") is not False or options.get("only-notfixed") is not False
+                or options.get("ignore-wontfix") != "" or options.get("exclude") != []
+                or options.get("vex-documents") != [] or options.get("include-matcher-suppressions") is not True
+                or options.get("match-upstream-kernel-headers") is not True):
+            raise ValueError("native scanner filtering or suppression retention is incompatible")
+        if type(returncode) is not int or returncode != 0:
+            raise ValueError("native scanner execution did not complete successfully")
+        if not 0 <= (datetime.now(timezone.utc) - built).total_seconds() <= max_database_age_seconds:
+            raise ValueError("native database expired during execution")
+        status = "findings_present" if findings else "no_findings"
+    except (DependencyAssuranceError, ValueError, TypeError, KeyError, AttributeError) as exc:
+        diagnostic = diagnostic or str(exc)
+    observation = {"kind": "dependency_advisory_observation", "schema_version": "1.1",
+                   "authority": False, "execution_qualified": False, "security_qualified": False,
+                   "scope": "exact_native_scan_input_only", "status": status, "diagnostic": diagnostic,
+                   "scanner": {"name": "grype", "version": "0.122.1", "sha256": expected_scanner_sha256},
+                   "subject": dict(expected_image), "inventory_component_count": len(observed),
+                   "inventory_sha256": hashlib.sha256(json.dumps(sorted(observed), separators=(",", ":")).encode()).hexdigest(),
+                   "sbom_sha256": expected_sbom_sha256, "configuration_sha256": hashlib.sha256(config_bytes).hexdigest(),
+                   "database_files": bound_database, "database_status": dict(expected_database_status),
+                   "observed_at": datetime.now(timezone.utc).isoformat(), "returncode": returncode,
+                   "raw_result_sha256": hashlib.sha256(stdout).hexdigest(),
+                   "stderr_sha256": hashlib.sha256(stderr).hexdigest(), "findings": findings}
+    (output_dir / "native-audit.json").write_text(json.dumps(observation, indent=2, sort_keys=True) + "\n")
+    return observation
