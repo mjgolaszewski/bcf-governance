@@ -139,6 +139,47 @@ releases:
   - certification.custody
   implementation_disposition: requirement_intake_only_not_assumed_integrated
   whole_requirement_advancement: false
+- version: 2.3.14
+  problem: Source-bound classmethod constructors and inherited subclass bindings could
+    be omitted; recovery normalization also depended on the correct installed capability
+    scope.
+  lesson: Discover the actual bound constructor population and preserve exact class
+    identity. Unsupported bindings and absent recovery capabilities must remain explicit
+    blocks, including installed ordinary consumers.
+  workitems:
+  - foundation.composition
+  - foundation.conformance
+  - foundation.submit-normalization
+  - certification.distribution
+  implementation_disposition: requirement_intake_only_not_assumed_integrated
+  whole_requirement_advancement: false
+- version: 2.3.15
+  problem: Constructor and callback effect enforcement, unresolved-report policy and
+    actual normalization receiver identity needed correction for real consumers.
+  lesson: Preserve the published policy contract while rejecting known source writes
+    through actual constructor and callback edges. Follow actual input and returned-representation
+    lineage; names, argument position, imported spelling and nominal model binding
+    cannot supply authority.
+  workitems:
+  - foundation.composition
+  - foundation.conformance
+  - certification.distribution
+  implementation_disposition: requirement_intake_only_not_assumed_integrated
+  whole_requirement_advancement: false
+- version: 2.3.16
+  problem: Indexed registry consumers diverged from the canonical loader; profile
+    promotion and compact rendering needed to retain context limits and exact multiline
+    gate commands.
+  lesson: Use one canonical loader across source/native/installed consumers, preserve
+    profile context budgets, and compare decoded executable command bodies after compact
+    rendering.
+  workitems:
+  - foundation.composition
+  - foundation.conformance
+  - dormant.projection
+  - certification.distribution
+  implementation_disposition: requirement_intake_only_not_assumed_integrated
+  whole_requirement_advancement: false
 metadata_disposition:
   source_subject_before: b586bb44aa4306653a02824aaa4979b02d976fd7
   memory_note: 'Maintenance2.3.5-13 lessons: audits/issue-394/maintenance-release-lessons.yml;
@@ -151,3 +192,14 @@ metadata_disposition:
     statement: b586bb44 maint.
   requirements_unchanged: true
   retirement_or_integration_clearance: false
+
+followup_source:
+  url: https://raw.githubusercontent.com/mjgolaszewski/bcf-governance/v2.3.16/CHANGELOG.md
+  tag: v2.3.16
+  source_kind: selected_tagged_release_note_sections_not_code_comparison
+  selected_release_sections:
+  - 2.3.14
+  - 2.3.15
+  - 2.3.16
+  selected_sections_sha256: 923604f722f0ecc25895139333878550a376364bd12dd13f4fb80f0fd73f0b14
+  custody_verification: not_performed_by_this_intake

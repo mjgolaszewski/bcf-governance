@@ -1,0 +1,80 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/security-baseline-contract.yml
+  status: planned_before_implementation
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: contract_then_query_and_command
+workitems: [foundation.admission, foundation.conformance, foundation.baseline, dormant.early-checks, dormant.projection, certification.distribution, certification.custody]
+user_requirement: Qualify BCF2.5 against current patched Python Node dependencies and build/runtime inputs with no known applicable vulnerabilities
+meaning:
+  clean: No unresolved known applicable vulnerability in the exact scoped inventory using current authenticated advisory and scanner data at qualification and final custody
+  future_unknowns: Not claimed absent; evidence records assessment time inventory subjects scanner and database identities
+  severity: All known applicable severities; no blanket allowlist or ignore-unfixed shortcut
+  applicability: A vendor backport must be authenticated to the exact installed build; a raw version match or an authored dismissal cannot establish patched status
+  incomplete_inventory_or_unavailable_security_data: typed_block_not_clean
+  historical_fixtures: Compatibility observations only; never current security or release acceptance
+owners:
+  - bcf_governance/tooling/dependency_assurance.py
+  - .github/scripts/run_self_governance_gate.py
+  - .github/scripts/bootstrap_test_toolchain.py
+  - governance/ci-graph.yml
+  - governance/public-contracts.yml
+  - governance/ci-runtime.yml
+  - requirements-governance.txt
+  - bcf_governance/tooling/interpreter_environment.py
+  - bcf_governance/tooling/local_execution_admission.py
+  - bcf_governance/tooling/release_runtime_verification.py
+scope:
+  - Use existing toolchain environment installer security gate evidence and release owners; no new registry broker evaluator or receipt family
+  - Inventory exact interpreter and stdlib build provenance native dependencies including OpenSSL package closure Node/compiler and applicable pinned build/runtime image digests
+  - Qualify latest supported patched stable builds or authenticated maintained vendor backports; preserve the declared Python minor compatibility matrix unless separately migrated
+  - Replace stale Node22.23.2 qualification defaults with qualified22.23.5 or a later supported security release through canonical graph/toolchain projection
+  - Authenticate relevant security policy at earliest consuming boundaries and refuse known vulnerable or unqualified runtime before new proof allocation
+  - Reauthenticate moving advisory data and exact installed inventory at final build verification collection and publication boundaries
+  - Retain existing required security checks and independent roles; reuse behavioral evidence only where changed runtime does not invalidate applicability
+initial_findings:
+  node:
+    existing_fixture: v22.23.2
+    observed_host: v22.23.5
+    candidate_security_release: v22.23.5
+    source: https://nodejs.org/en/blog/release/v22.23.5
+    status: pin_update_and_qualification_required
+  python:
+    current_test_interpreter: 3.12.14
+    declared_supported_minors: ['3.11', '3.12', '3.13', '3.14']
+    latest_314_release_observed: 3.14.10
+    stable_version_number_alone_is_clean: false
+    unresolved_advisories:
+      - https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/116xxx/CVE-2026-116566.json
+      - https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/103xxx/CVE-2026-103995.json
+    candidate_vendor_source: https://raw.githubusercontent.com/wolfi-dev/os/main/python-3.14.yaml
+    candidate_vendor_version_observed: 3.14.10_git20261118-r0
+    candidate_vendor_status: source_recipe_only_not_pulled_installed_scanned_or_qualified
+    selected_release_runtime: null
+required_controls:
+  positive:
+    - Exact supported patched toolchain and complete dependency inventory are admitted before required checks
+    - Vendor-backported builds authenticate package revision patch/advisory provenance and actual bytes independently of upstream version spelling
+    - Source wheel sdist templates fresh install upgrade repeat install and applicable installed profiles consume the same approved runtime security policy
+    - Final independent verification rechecks exact built bytes inventory and current vulnerability data
+  cause_specific_negative:
+    - Old vulnerable runtime same-version different vendor build or substituted executable fails before proof allocation
+    - Missing native library or transitive package inventory stale database mismatched scan subject and scanner failure cannot yield clean status
+    - Candidate-authored exemption forged backport assertion and dropped low-severity finding cannot authorize acceptance
+    - Retained historical compatibility evidence cannot satisfy current runtime security qualification
+acceptance:
+  - Commit bounded contract and executable causal controls before production changes
+  - Qualify supported patched runtime inputs with fresh complete scans and retain all real unresolved findings as release blockers
+  - Use canonical reconciliation for generated workflows and authority commits; preserve main predecessor custody and maintained adopters
+  - Record any unavoidable public admission change with explicit contract versioning or migration
+  - Keep all82whole requirements open pending independent applicable evidence and preserve P32-P35 dependency order
+forbidden:
+  - Global host runtime replacement service changes maintenance code transplantation or maintained-adopter writes
+  - Prerelease interpreter substitution merely to evade an advisory version range
+  - Silent scan exclusions reduced severity threshold or current-security claims from historical passing tests
+  - Unverified private patched interpreter as a new distribution commitment
+implementation_evidence: []

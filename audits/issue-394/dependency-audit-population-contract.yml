@@ -1,0 +1,31 @@
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/dependency-audit-population-contract.yml
+  status: planned_before_production
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: query
+workitems: [foundation.conformance, dormant.early-checks, certification.distribution]
+source_observation: audit_envelope currently permits returncode0 with dependencies[] to become clean even for a nonempty selected inventory
+owners: [bcf_governance/tooling/dependency_assurance.py, .github/scripts/run_self_governance_gate.py]
+scope:
+  - Classify clean only when scanner output accounts exactly once for every selected name/version and no extras substitutions skips malformed rows or contradictions
+  - Preserve canonical Python package-name equivalence and bind versions exactly to the installed inventory
+  - Retain all findings and raw result hashes; known vulnerabilities block regardless of severity or fix availability
+  - Incomplete or contradictory output is scanner_failure, never clean
+  - Preserve existing public envelope keys and scanner invocation; no new receipt or evaluator
+  - This closes Python package audit population admission only; interpreter stdlib native library Node and image security remain separate required inventories
+controls: tests/test_dependency_audit_population.py
+before_expectation: Valid complete and known-vulnerability controls retain behavior; empty partial substituted malformed skipped and contradictory populations fail causally before repair
+consumer_verification:
+  - Existing dependency assurance tests and self-governance audit consumer controls
+  - Source/private runtime byte parity through canonical pack generator
+  - Fresh/repaired SDK-absent private positive and removed-population-guard controls
+  - Fresh complete real audit on approved patched runtime before any release-security claim
+forbidden:
+  - Treating a source test or empty scanner output as current security qualification
+  - Dependency version pins changed by this parser repair
+  - Main workflows authority predecessor custody or maintained-adopter mutation
+whole_requirement_advancement: false

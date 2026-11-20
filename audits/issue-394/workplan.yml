@@ -304,6 +304,8 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/dependency-audit-population-contract.yml
+    - audits/issue-394/security-baseline-contract.yml
     - audits/issue-394/effect-blocker-consumer-progress.json
     - audits/issue-394/effect-blocker-implementation-progress.json
     - audits/issue-394/observation-schema-repair-verification.json
@@ -489,6 +491,7 @@ workitems:
     - kind: cause_specific_negative
       scenario: Reject missing wrong-subject stale incomplete or unauthorized baseline inputs before dependent effects
     acceptance:
+    - Freeze current patched runtime and exact security inventory before matched performance measurements; historical fixture passes cannot qualify release security
     - Baseline pinned Radon per-function complexity and scan cost under audits/issue-394/complexity-heuristic-plan.yml; thresholds remain unapproved and observations grant no assurance
     - Commit complete affected-surface contract and executable bindings before production changes
     - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
@@ -532,6 +535,7 @@ workitems:
     - kind: cause_specific_negative
       scenario: Reject missing wrong-subject stale incomplete or unauthorized early-checks inputs before dependent effects
     acceptance:
+    - Reject incomplete or mismatched audit populations and unqualified runtime security inputs at the first consuming boundary
     - Implement the approved complexity observation and review heuristic through existing early structural-check owners; advisory first, with no proof suppression or candidate self-activation
     - Commit complete affected-surface contract and executable bindings before production changes
     - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
@@ -868,6 +872,7 @@ workitems:
     - kind: cause_specific_negative
       scenario: Reject missing wrong-subject stale incomplete or unauthorized distribution inputs before dependent effects
     acceptance:
+    - Require fresh exact-inventory security qualification of patched Python Node dependencies and applicable build/runtime images with no unresolved known applicable vulnerabilities
     - Qualify source-continuity inventory checkpoint and retirement refusal through exact wheel sdist templates and installed consumers; preserve opt-out and historical-source custody with exact-commit evidence
     - Commit complete affected-surface contract and executable bindings before production changes
     - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
@@ -4803,10 +4808,10 @@ release_train_terminal_authority_followup: {"status": "IN_PROGRESS", "authority"
 
 maintenance_release_lessons:
   report: audits/issue-394/maintenance-release-lessons.yml
-  sha256: 3ca597424b33ae175c495523c46cdf9dd5a338c8dba76bd8e99fc83bf77e695a
+  sha256: 7108cd2d9ec515245b0aed4e8263a6a8920b77f4aa72ee7779e474c7d3969078
   scope: High-level issue/compatibility intake from tagged notes, no code comparison/transplant
     or authority/acceptance advancement
-  source_subject_before: b586bb44aa4306653a02824aaa4979b02d976fd7
+  source_subject_before: 771837ecc893e2ba88e65130c5033b06c17ca7d2
   whole_requirement_advancement: false
 
 named_source_population_observation:
