@@ -161,6 +161,53 @@ def _validate_python_call_source_coverage(repo_root, inventory, functions, sourc
         if Counter(actual) != Counter(expected):
             store_reject()
 
+    class Protocols(Stores):
+        def __init__(self, function, postponed):
+            super().__init__(function, postponed)
+            self.call_attributes = {id(node.func) for node in ast.walk(function)
+                if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)}
+
+        def visit(self, node):
+            kind = None
+            if (isinstance(node, ast.Attribute) and isinstance(node.ctx, ast.Load)
+                    and id(node) not in self.call_attributes):
+                kind = "attribute_read"
+            elif isinstance(node, (ast.With, ast.AsyncWith)):
+                kind = "context_manager"
+            elif isinstance(node, ast.Await):
+                kind = "await"
+            if kind is not None:
+                self.nodes.append((node, kind))
+            return super().visit(node)
+
+        def visit_Subscript(self, node):  # noqa: N802
+            self.generic_visit(node)
+
+        visit_Attribute = visit_Subscript
+
+    def reconcile_protocols(context, symbol, postponed):
+        def protocol_reject():
+            raise SemanticAuthorityError("Python source implicit protocol coverage contradicts exact source")
+
+        visitor = Protocols(context["function"], postponed)
+        visitor.visit(context["function"])
+        expected = [(kind, node.lineno, node.col_offset, node.end_lineno, node.end_col_offset,
+            hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest())
+            for node, kind in visitor.nodes]
+        actual = []
+        for row in functions[symbol]["calls"]:
+            marker = row.get("implicit_protocol")
+            if not isinstance(marker, dict) or marker.get("kind") not in {
+                    "attribute_read", "context_manager", "await"}:
+                continue
+            span = tuple(row.get(field) for field in fields)
+            if (any(type(value) is not int for value in span) or row.get("caller") != symbol
+                    or row.get("called_symbol") != "python-implicit::" + marker["kind"]):
+                protocol_reject()
+            actual.append((marker["kind"], *span, marker.get("expression_sha256")))
+        if Counter(actual) != Counter(expected):
+            protocol_reject()
+
     fields = ("line", "column", "end_line", "end_column")
     for relative, sha in files.items():
         path = repo_root / relative
@@ -194,6 +241,7 @@ def _validate_python_call_source_coverage(repo_root, inventory, functions, sourc
                 reject()
             expected_functions.add(symbol)
             reconcile_stores(context, symbol, postponed)
+            reconcile_protocols(context, symbol, postponed)
             visitor = Calls(context["function"], postponed)
             visitor.visit(context["function"])
             expected = {(node.lineno, node.col_offset, node.end_lineno, node.end_col_offset): node
