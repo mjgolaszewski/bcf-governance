@@ -27,6 +27,9 @@ def observe(probe):
 
 def main():
     payload = json.loads(sys.argv[1])
+    artifact = Path(payload['result_path'])
+    assert artifact.parent == Path('/tmp') and not artifact.exists()
+    print('native-counterfactual:started', file=sys.stderr, flush=True)
     source = Path('/usr/lib/python3.14/http/cookies.py')
     cache = Path(importlib.util.cache_from_source(str(source)))
     original = source.read_bytes()
@@ -39,6 +42,7 @@ def main():
     patched = base64.b64decode(payload['patched_source_base64'], validate=True)
     assert sha(patched) == payload['patched_sha256']
     source.write_bytes(patched)
+    print('native-counterfactual:source-only', file=sys.stderr, flush=True)
     source_only = observe(payload['probe_source'])
     assert source_only['modules']['http.cookies']['source_sha256'] == sha(patched)
     assert source_only['modules']['http.cookies']['cached_bytecode_sha256'] == sha(bytecode)
@@ -50,17 +54,23 @@ def main():
     assert rebuilt[:4] == importlib.util.MAGIC_NUMBER
     after_flags = struct.unpack('<I', rebuilt[4:8])[0]
     assert after_flags == 3 and sha(rebuilt) != sha(bytecode)
+    print('native-counterfactual:recompiled', file=sys.stderr, flush=True)
     recompiled = observe(payload['probe_source'])
     assert recompiled['modules']['http.cookies']['source_sha256'] == sha(patched)
     assert recompiled['modules']['http.cookies']['cached_bytecode_sha256'] == sha(rebuilt)
     assert all(row['rejected'] for row in recompiled['morsel']), 'remediation did not reject injection'
-    print(json.dumps(dict(authority=False,security_qualified=False,runtime_context_qualified=False,
+    serialized = json.dumps(dict(authority=False,security_qualified=False,runtime_context_qualified=False,
         source_only=source_only,recompiled=recompiled,
         before_source_sha256=sha(original),after_source_sha256=sha(patched),
         before_cache_sha256=sha(bytecode),after_cache_sha256=sha(rebuilt),
         before_cache_flags=before_flags,after_cache_flags=after_flags,
-        package_build_qualified=False,release_runtime_selected=None),sort_keys=True))
+        package_build_qualified=False,release_runtime_selected=None),sort_keys=True)
+    pending = artifact.with_suffix('.pending')
+    pending.write_text(serialized + '\n', encoding='utf-8')
+    pending.replace(artifact)
+    print(serialized, flush=True)
 
 
-if __name__ == '__main__':
-    main()
+if __name__ != '__main__':
+    raise RuntimeError('native counterfactual requires its declared main invocation')
+main()

@@ -37,3 +37,9 @@ qualification:
   p32: active
   p33_p35: dormant
   open_whole_requirements: 82
+
+artifact_collection_disposition:
+  prior_attempt: Exact owned process exited0, but attached stdout was empty; the removed resource no longer supplies an output artifact. Retain as inconclusive, not a passed/failed native remediation claim.
+  required_before_retirement: The driver writes one complete atomic result under its owned namespace only after all controls. Collect it and terminal daemon logs before removing the stopped resource; compare any nonempty attached/logged payload with the artifact.
+  artifact_capture_failure: Preserve the stopped exact owned resource for scoped recovery when acquisition fails, rather than deleting its only evidence or allocating another proof attempt.
+  independence: Multiple captures of one execution are redundant transport, not independent verification or additional test samples.
