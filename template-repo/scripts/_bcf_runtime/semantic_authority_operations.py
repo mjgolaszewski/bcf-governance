@@ -32,7 +32,7 @@ def _validate_operation_semantics(operation: dict[str, Any]) -> str:
 def _validate_operations(
     repo_root: Path, payload: dict[str, Any], inventory: dict[str, Any], *,
     consumer_owned_schema: bool = False, source_language: str | None = None,
-    require_runtime_context: bool = True,
+    require_runtime_context: bool = True, collect_effect_obligations: bool = False,
 ) -> list[dict[str, Any]]:
     from .semantic_authority_contracts import (
         SemanticAuthorityError,
@@ -43,6 +43,8 @@ def _validate_operations(
     from .semantic_operation_python import _inventory_source_subject
     from .semantic_operation_effects import _source_function_population
 
+    if not isinstance(collect_effect_obligations, bool):
+        raise SemanticAuthorityError("operation effect diagnostic option must be boolean")
     if not isinstance(require_runtime_context, bool) or (consumer_owned_schema and not require_runtime_context):
         raise SemanticAuthorityError("required operations cannot waive runtime effect context")
     _schema(repo_root, "application-operations.schema.json", payload, consumer_owned=consumer_owned_schema)
@@ -111,6 +113,8 @@ def _validate_operations(
 
     # Effects can be traversed only after the entire operation population admits.
     observations: list[dict[str, Any]] = []
+    first_effect_error: SemanticOperationEffectError | None = None
+    effect_blockers: list[tuple[str, str, str, str, str]] = []
     for operation, kind, actual_symbol, function in admitted:
         population_id = str(operation["population"])
         try:
@@ -120,7 +124,12 @@ def _validate_operations(
                 require_runtime_context=require_runtime_context,
             )
         except SemanticOperationEffectError as exc:
-            raise SemanticAuthorityError(str(exc)) from exc
+            if not collect_effect_obligations or not exc.effect_obligations:
+                raise SemanticAuthorityError(str(exc)) from exc
+            if first_effect_error is None:
+                first_effect_error = exc
+            effect_blockers.extend((str(operation["id"]), *row) for row in exc.effect_obligations)
+            continue
         observations.append({
             "operation": operation["id"], "kind": kind, "entrypoint": actual_symbol,
             "write_effect_count": sum(role == "mutation" for role, _, _ in effect_ports),
@@ -135,4 +144,12 @@ def _validate_operations(
                 effect_context_scope='source_only_runtime_unqualified',
                 unresolved_effect_context_count=sum(role == 'unresolved' for role, _, _ in effect_ports),
             )
+    if first_effect_error is not None:
+        error = SemanticAuthorityError(str(first_effect_error))
+        error.operation_effect_population = tuple(sorted(str(row[0]["id"]) for row in admitted))
+        error.operation_effect_obligations = tuple(sorted(effect_blockers))
+        error.effect_context_scope = "admitted_operations_strict_validator_blockers"
+        error.authority = error.execution_qualified = error.completeness_qualified = False
+        error.require_runtime_context = require_runtime_context
+        raise error from first_effect_error
     return observations
