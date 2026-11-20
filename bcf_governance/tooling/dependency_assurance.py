@@ -483,7 +483,7 @@ def capture_native_dependency_audit(
         raise DependencyAssuranceError("native scan admission budget exhausted before execution")
     try:
         result = commands.run_admitted_command(
-            [str(scanner.resolve()), "--config", str(config_path.resolve()), "sbom:-", "--output", "json"],
+            [str(scanner.resolve()), "--config", str(config_path.resolve()), "sbom:/proc/self/fd/0", "--output", "json"],
             unbound_runner=subprocess.run, cwd=output_dir, env=environment, input=sbom_bytes,
             capture_output=True, text=False, check=False, timeout=remaining,
         )
