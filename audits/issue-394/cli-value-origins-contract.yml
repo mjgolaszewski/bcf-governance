@@ -39,3 +39,9 @@ forbidden_surfaces:
 - authority from mocked ports, annotations, source presence, end-value types or one observed execution
 - marking required global semantic checks green or P33 active
 validation: Commit contract and behavior controls, run affected CLI ingress and value-origin source plus installed cases, standard lint/package/architecture and governance checks; retain exact source and raw results. No causal failure baseline is claimed for characterization-only work.
+
+postparsed_consumption_followup:
+  contract: audits/issue-394/postparsed-cli-guard-contract.yml
+  predecessor_report: audits/issue-394/cli-value-origins-verification.json
+  disposition: Original parser-converter partition callback is retained at its exact prior subject. The followup guards and snapshots parsed string values before mapping construction, so current characterization expects rejection before partition. Converter construction and requested/returned Path effects remain separate, unqualified obligations.
+  whole_requirement_advancement: false

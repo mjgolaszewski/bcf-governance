@@ -1,0 +1,52 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  status: planned
+  authority: false
+  path: audits/issue-394/postparsed-cli-guard-contract.yml
+parent_contract: audits/issue-394/runtime-effect-context-foundation-contract.yml
+predecessor_characterization: audits/issue-394/cli-value-origins-verification.json
+workitem: P32-P0-04
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: input_validation_then_handler
+problem: Ordinary argv ingress does not establish the types or ownership of a parser's resulting collection. The actual qualification branch consumes parsed values directly, permitting later subclass partition/iteration callbacks or source-list changes during constructor evaluation.
+scope:
+- Reuse existing cli_arguments on args.adopter_python after parsing and before allocating the local interpreter mapping.
+- Require ordinary parsed string list or tuple, snapshot it once, and iterate only the owned snapshot.
+- Preserve ordinary CLI grammar, exact native list/tuple behavior, mapping syntax/duplicate checks and provider-selected adopter authority.
+- Reject parsed container/string subclasses before their sequence or partition callbacks and before qualification.
+- Preserve the fact that a converter may already have executed during parsing and a Path constructor/returned object may have its own effects; this is not whole-parser/native qualification.
+- Update current characterization expectation for the formerly observed partition callback; preserve exact predecessor report/commit and append its disposition rather than rewriting history.
+controls:
+- Real parser default and converter inject a string subclass; consuming guard rejects before partition or qualification.
+- Real converter construction effect remains visible before rejection; no claim that the guard erases prior effects.
+- Custom list and tuple defaults reject before iteration or slicing callbacks.
+- Path callback changes the original parsed list during iteration; the consumed snapshot remains fixed.
+- Ordinary native list and tuple still reach the actual qualification test port with unchanged mapping semantics.
+- SDK-absent fresh/upgrade installed consumers run identical controls; removing only the guard must fail the named independent control.
+target_modules:
+- bcf_governance/tooling/ci_commands.py
+- tests/postparsed_cli_guard_support.py
+- tests/test_postparsed_cli_guard.py
+- tests/test_installed_postparsed_cli_guard.py
+- tests/cli_value_origins_support.py
+- tests/test_cli_value_origins.py
+expected_tests:
+- tests/test_postparsed_cli_guard.py
+- tests/test_cli_value_origins.py
+- tests/test_cli_argument_context.py
+- tests/test_installed_postparsed_cli_guard.py
+- tests/test_installed_cli_value_origins.py
+qualification_limits:
+  runtime_context_qualified: false
+  whole_requirement_advancement: false
+  source_global_binding_and_parser_effects: still_require_full_context
+  Path_constructor_and_returned_identity: still_unqualified
+  native_security_targets_and_custody: open
+forbidden_surfaces:
+- main, maintenance, predecessor and maintained adopter trees
+- hand-edited workflows or authority pins
+- new public CLI flags, registries, brokers, receipt families or evaluators
+- disabling strict runtime context or claiming full foundation/phase acceptance
+sequence: Commit contract and cause-specific controls, capture six predecessor failures, then implement through the existing handler/guard and canonical package generator. Qualify exact source, complete source membership, installed parity and required checks before feature backup.
