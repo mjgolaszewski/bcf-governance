@@ -43,7 +43,7 @@ def _validate_python_call_source_coverage(repo_root, inventory, functions, sourc
     from pathlib import PurePosixPath
 
     from .semantic_operation_python import _operation_source_text
-    from .semantic_python_method_identity import runtime_function_contexts
+    from .semantic_python_method_identity import runtime_function_contexts, call_name
     from .semantic_ownership_inventory import _imports, _module_name
     from .semantic_source_paths import committed_python_source_population
     from .semantic_authority_contracts import SemanticAuthorityError
@@ -180,6 +180,14 @@ def _validate_python_call_source_coverage(repo_root, inventory, functions, sourc
             reject()
         postponed = any(isinstance(node, ast.ImportFrom) and node.module == "__future__"
             and any(alias.name == "annotations" for alias in node.names) for node in tree.body)
+        module_names = Counter(node.name for node in tree.body
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)))
+        shadowed = {node.id for node in ast.walk(tree)
+            if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del))}
+        shadowed.update(alias.asname or alias.name.split(".", 1)[0]
+            for node in ast.walk(tree) if isinstance(node, (ast.Import, ast.ImportFrom))
+            for alias in node.names)
+        direct_functions = {name for name, count in module_names.items() if count == 1} - shadowed
         for context in contexts:
             symbol = relative + "::" + context["qualified_name"]
             if symbol in expected_functions or symbol not in functions:
@@ -193,6 +201,11 @@ def _validate_python_call_source_coverage(repo_root, inventory, functions, sourc
             if len(expected) != len(visitor.nodes):
                 reject()
             actual = []
+            args = context["function"].args
+            parameters = {arg.arg for arg in [*args.posonlyargs, *args.args, *args.kwonlyargs,
+                *([args.vararg] if args.vararg else []), *([args.kwarg] if args.kwarg else [])]}
+            local_names = (parameters | set(context.get("closure_parameters", {}))
+                | set(context.get("bindings", {})) | set(context.get("assigned_names", [])))
             for call in functions[symbol]["calls"]:
                 if "implicit_protocol" in call:
                     continue
@@ -202,6 +215,12 @@ def _validate_python_call_source_coverage(repo_root, inventory, functions, sourc
                 if any(type(value) is not int for value in site) or site not in expected:
                     reject()
                 actual.append(site)
+                node = expected[site]
+                direct = (isinstance(node.func, ast.Name) and node.func.id in direct_functions
+                    and node.func.id not in local_names)
+                if (call.get("call_name") != call_name(node)
+                        or (direct and call.get("called_symbol") != relative + "::" + node.func.id)):
+                    raise SemanticAuthorityError("Python source call binding contradicts exact source")
                 contract = call.get("call_contract")
                 if inventory.get("call_contracts_version") == "1.0" and contract is None:
                     reject()
