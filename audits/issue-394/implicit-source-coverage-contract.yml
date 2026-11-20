@@ -1,0 +1,42 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  status: planned
+  authority: false
+  path: audits/issue-394/implicit-source-coverage-contract.yml
+parent_contract: audits/issue-394/runtime-effect-context-foundation-contract.yml
+workitem: P32-P0-04
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: query
+subject: 3dfc36f4f0d1d7ada8ee3c048530f5cbf726b025
+problem: The independent committed-source pass skips implicit protocol rows. Removing an attribute-read, context-manager or await obligation can therefore hide its callback while retaining every explicit call and store row.
+scope:
+- Reconstruct unconditional attribute-read, synchronous/asynchronous context-manager and await sites independently from exact Python AST bytes before effect traversal.
+- Compare mandatory kind, caller, source span and expression digest populations, rejecting omitted, duplicate, relocated or substituted rows.
+- Preserve eager definition/class scopes, deferred lambda/function scopes, annotations and ordinary method-call attributes handled by explicit call binding.
+- Reuse the existing source coverage owner and existing protocol/effect rows. No new graph, evaluator, broker or receipt family.
+controls:
+- Remove the discovered protocol row and its paired test: cold source must still expose the missing obligation.
+- Retain actual property/context-manager/await callback witnesses after erasing their inventory rows.
+- Duplicate rows, substitute digest/span/caller/kind and preserve unrelated explicit calls.
+- Retain ordinary native closed frames and authentic unsupported protocol blocks.
+- In SDK-absent fresh and upgrade consumers, remove only the consuming coverage guard: the named omission control must fail.
+qualification:
+  runtime_context_qualified: false
+  whole_requirement_advancement: false
+  conditional_protocol_population_complete: false
+  limitations: Conditional truth, operator, iteration, collection, matching, formatting and subscript exclusions and runtime occurrence provenance remain separate work. Mandatory source membership alone does not authorize native behavior, parser or constructor context, installed full profiles or P33 activation.
+target_modules:
+- bcf_governance/tooling/semantic_authority_operations.py
+expected_tests:
+- tests/test_implicit_source_coverage.py
+- tests/test_installed_implicit_source_coverage.py
+- tests/test_independent_call_coverage.py
+- tests/test_independent_store_coverage.py
+- tests/test_direct_call_binding.py
+forbidden_surfaces:
+- main/predecessor machinery, maintenance and adopter repositories
+- generated workflows, authority pins or evaluator bypasses
+- turning require_runtime_context off for required consumers
+sequence: Commit contract and controls before production; retain the genuine red baseline, qualify source/installed/architecture/lint/package and actual committed source population, then back up the feature branch. Preserve all required global runtime blocks.
