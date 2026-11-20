@@ -62,3 +62,5 @@ acceptance:
 implementation_evidence:
   - audits/issue-394/complexity-observation-contract.yml
   - audits/issue-394/complexity-observation-verification.json
+  - audits/issue-394/complexity-full-source-observation.json
+  - audits/issue-394/observations/radon-903db90d.json.gz
