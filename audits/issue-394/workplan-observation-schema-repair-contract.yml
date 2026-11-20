@@ -1,0 +1,45 @@
+document:
+  kind: affected_surface_contract
+  status: planned_before_schema_repair
+  authority: false
+  path: audits/issue-394/workplan-observation-schema-repair-contract.yml
+authority: false
+execution_qualified: false
+completeness_qualified: false
+source_subject: 183429cf3c99d9ae6328ad2c28802a2fc042ff8b
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: query
+owners:
+- audits/issue-394/workplan.schema.json
+- tests/test_semantic_authority.py
+scope:
+- Admit the two existing neutral observation records with closed typed schemas.
+- Preserve exact report references, full commit and digest syntax, and false-only advancement or authority fields.
+- Forward the actual inventory and source_subject through the existing source-population test adapter; retain the hidden-command rejection oracle.
+- Preserve all runtime context blocks and all82 whole requirements as open.
+causal_baseline:
+  subject: 183429cf3c99d9ae6328ad2c28802a2fc042ff8b
+  modules: 11
+  tests: 502
+  failures: 21
+  errors: 0
+  skipped: 0
+  schema_failures: 3
+  stale_test_adapter_failures: 1
+  runtime_context_or_causal_masking_failures: 17
+  report: audits/issue-394/effect-blocker-consumer-baseline.json
+expected_controls:
+- Eleven new observation-admission and forged-truth/reference controls; before repair they must fail at the actual missing schema declarations.
+- All existing332 graph/composition controls, including unknown fields and authored evidence versus computed truth.
+- The actual hidden-command source-population control must reject for its named cause after the adapter signature repair.
+verification:
+- Standard pytest for the new controls, existing graph/composition module and actual source-population test.
+- Affected Ruff and governance validation.
+- Exact source checkpoint and feature-branch backup; no provider submission or release claim.
+forbidden:
+- Production runtime or diagnostic implementation changes in this packet
+- Main, workflows, authority, policy, golden fixtures, installed environments or adopter mutations
+- Runtime-context waiver, test-oracle relaxation or broad additionalProperties permission
+- Acceptance advancement from source presence, observations or green scoped checks
+

@@ -1,0 +1,236 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "implementation_complete": false,
+  "status": "complete_preproduction_test_capture_not_green_qualification",
+  "subject": "183429cf3c99d9ae6328ad2c28802a2fc042ff8b",
+  "counts": {
+    "tests": 502,
+    "failures": 21,
+    "errors": 0,
+    "skipped": 0
+  },
+  "modules": [
+    {
+      "module": "test_ci_graph_composition.py",
+      "returncode": 1,
+      "tests": 332,
+      "failures": 3,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "3acdba072f705a62d8e620a3b598c7f77f87662aa10a03a80379bf0fd5dbd35e",
+      "failure_observations": [
+        {
+          "test": "tests.test_ci_graph_composition::test_train_inventory_covers_all_identified_requirements_and_workitems",
+          "message": "jsonschema.exceptions.ValidationError: Additional properties are not allowed ('maintenance_release_lessons', 'named_source_population_observation' were unexpected)"
+        },
+        {
+          "test": "tests.test_ci_graph_composition::test_workitem_completion_cites_observations_without_promoting_them_to_truth[DONE-citations1-True]",
+          "message": "assert True is not True"
+        },
+        {
+          "test": "tests.test_ci_graph_composition::test_workitem_completion_cites_observations_without_promoting_them_to_truth[IN_PROGRESS-citations2-True]",
+          "message": "assert True is not True"
+        }
+      ]
+    },
+    {
+      "module": "test_operation_function_admission.py",
+      "returncode": 0,
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "1e4a6232ae5b85c6da10ef278d0d87af68254b0f6cbbe24ba420d5aeb3f459af",
+      "failure_observations": []
+    },
+    {
+      "module": "test_phase_input_temporary_effects.py",
+      "returncode": 1,
+      "tests": 4,
+      "failures": 4,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "4e3dcc65a10fe07625701582095d33542559ff12deb6c8ced6c4afa32be152d0",
+      "failure_observations": [
+        {
+          "test": "tests.test_phase_input_temporary_effects::test_temporary_phase_write_leaf_is_declared_and_causal[bcf_governance/tooling/trusted_inputs.py::path.parent.mkdir-governance.cli.preflight.v1]",
+          "message": "bcf_governance.tooling.semantic_operation_effects.SemanticOperationEffectError: operation governance.cli.preflight.v1 contains an unresolved effect runtime protocol at bcf_governance/tooling/trusted_inputs.py::verify_phase_closure_input"
+        },
+        {
+          "test": "tests.test_phase_input_temporary_effects::test_temporary_phase_write_leaf_is_declared_and_causal[bcf_governance/tooling/trusted_inputs.py::path.parent.mkdir-governance.cli.truth.v1]",
+          "message": "bcf_governance.tooling.semantic_operation_effects.SemanticOperationEffectError: operation governance.cli.truth.v1 contains an unresolved effect runtime protocol at bcf_governance/tooling/trusted_inputs.py::verify_phase_closure_input"
+        },
+        {
+          "test": "tests.test_phase_input_temporary_effects::test_temporary_phase_write_leaf_is_declared_and_causal[bcf_governance/tooling/trusted_inputs.py::path.write_bytes-governance.cli.preflight.v1]",
+          "message": "bcf_governance.tooling.semantic_operation_effects.SemanticOperationEffectError: operation governance.cli.preflight.v1 contains an unresolved effect runtime protocol at bcf_governance/tooling/trusted_inputs.py::verify_phase_closure_input"
+        },
+        {
+          "test": "tests.test_phase_input_temporary_effects::test_temporary_phase_write_leaf_is_declared_and_causal[bcf_governance/tooling/trusted_inputs.py::path.write_bytes-governance.cli.truth.v1]",
+          "message": "bcf_governance.tooling.semantic_operation_effects.SemanticOperationEffectError: operation governance.cli.truth.v1 contains an unresolved effect runtime protocol at bcf_governance/tooling/trusted_inputs.py::verify_phase_closure_input"
+        }
+      ]
+    },
+    {
+      "module": "test_semantic_authority.py",
+      "returncode": 1,
+      "tests": 44,
+      "failures": 9,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "8b653591168a6ede6f704df2290bf88a4130f46ecfec30ad5c9ef22546e59e8f",
+      "failure_observations": [
+        {
+          "test": "tests.test_semantic_authority::test_bcf_declares_every_semantic_family_and_public_operation_once",
+          "message": "bcf_governance.tooling.semantic_authority_contracts.SemanticAuthorityError: operation governance.cli.ci.v1 contains an unresolved effect at bcf_governance/tooling/ci_commands.py::main"
+        },
+        {
+          "test": "tests.test_semantic_authority::test_declared_operation_port_must_be_reachable",
+          "message": "AssertionError: Regex pattern did not match."
+        },
+        {
+          "test": "tests.test_semantic_authority::test_query_implementation_cannot_hide_a_write",
+          "message": "AssertionError: Regex pattern did not match."
+        },
+        {
+          "test": "tests.test_semantic_authority::test_query_cannot_hide_a_write_behind_an_imported_helper",
+          "message": "AssertionError: Regex pattern did not match."
+        },
+        {
+          "test": "tests.test_semantic_authority::test_projection_implementation_cannot_confer_authority",
+          "message": "AssertionError: Regex pattern did not match."
+        },
+        {
+          "test": "tests.test_semantic_authority::test_dynamic_operation_path_fails_closed",
+          "message": "AssertionError: Regex pattern did not match."
+        },
+        {
+          "test": "tests.test_semantic_authority::test_source_population_cannot_be_evaded_by_path_placement",
+          "message": "TypeError: test_source_population_cannot_be_evaded_by_path_placement.<locals>.discover() got an unexpected keyword argument 'source_subject'"
+        },
+        {
+          "test": "tests.test_semantic_authority::test_semantic_lock_is_idempotent_and_source_bound",
+          "message": "bcf_governance.tooling.semantic_authority_contracts.SemanticAuthorityError: operation governance.cli.ci.v1 contains an unresolved effect at bcf_governance/tooling/ci_commands.py::main"
+        },
+        {
+          "test": "tests.test_semantic_authority::test_scan_builds_the_python_inventory_once",
+          "message": "bcf_governance.tooling.semantic_authority_contracts.SemanticAuthorityError: operation governance.cli.ci.v1 contains an unresolved effect at bcf_governance/tooling/ci_commands.py::main"
+        }
+      ]
+    },
+    {
+      "module": "test_semantic_authority_typescript.py",
+      "returncode": 0,
+      "tests": 19,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "64d6ac16f329da51f67dcecdd72380b8d453eb44dcf84bf877a3a7794fd81cdb",
+      "failure_observations": []
+    },
+    {
+      "module": "test_semantic_operation_admission.py",
+      "returncode": 1,
+      "tests": 7,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "942f6f2195ef5b4658c0a035b401cfee7688a1385b0934c0ba9cc7579ae3947c",
+      "failure_observations": [
+        {
+          "test": "tests.test_semantic_operation_admission::test_admitted_operation_population_keeps_effect_order_and_observations",
+          "message": "bcf_governance.tooling.semantic_authority_contracts.SemanticAuthorityError: operation governance.cli.ci.v1 contains an unresolved effect at bcf_governance/tooling/ci_commands.py::main"
+        }
+      ]
+    },
+    {
+      "module": "test_semantic_operation_deconstruction.py",
+      "returncode": 1,
+      "tests": 6,
+      "failures": 2,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "bd4b97f36ef5982af6b6ee1e41817051f996f17a3feae2627e62143c47808a33",
+      "failure_observations": [
+        {
+          "test": "tests.test_semantic_operation_deconstruction::test_actual_public_operation_observations_match_pre_deconstruction_bytes",
+          "message": "bcf_governance.tooling.semantic_authority_contracts.SemanticAuthorityError: operation governance.cli.ci.v1 contains an unresolved effect at bcf_governance/tooling/ci_commands.py::main"
+        },
+        {
+          "test": "tests.test_semantic_operation_deconstruction::test_import_resolved_operation_effects_preserve_exact_local_environment_port",
+          "message": "bcf_governance.tooling.semantic_authority_contracts.SemanticAuthorityError: operation governance.cli.ci.v1 contains an unresolved effect at bcf_governance/tooling/ci_commands.py::main"
+        }
+      ]
+    },
+    {
+      "module": "test_semantic_ownership.py",
+      "returncode": 1,
+      "tests": 17,
+      "failures": 2,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "cd86bb1ef96535f42a964af4c61bc6f1c7e0918008c38bc5d3565df7d2f7c773",
+      "failure_observations": [
+        {
+          "test": "tests.test_semantic_ownership::test_current_bcf_registry_is_conformant_and_report_is_compact",
+          "message": "bcf_governance.tooling.semantic_authority_contracts.SemanticAuthorityError: operation governance.cli.ci.v1 contains an unresolved effect at bcf_governance/tooling/ci_commands.py::main"
+        },
+        {
+          "test": "tests.test_semantic_ownership::test_primary_semantic_violation_precedes_derived_lock_freshness",
+          "message": "bcf_governance.tooling.semantic_authority_contracts.SemanticAuthorityError: operation governance.cli.ci.v1 contains an unresolved effect at bcf_governance/tooling/ci_commands.py::main"
+        }
+      ]
+    },
+    {
+      "module": "test_semantic_shape_admission.py",
+      "returncode": 0,
+      "tests": 39,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "f1eaed108002add1cab773b2248a527131c9c3b117f6dcb4034e5f27b4ba3ede",
+      "failure_observations": []
+    },
+    {
+      "module": "test_semantic_structural_protocols.py",
+      "returncode": 0,
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "cd26fde6ac20a482777db753e2233b5ce1016de23cc0ea22367a8b9a4e1ad44c",
+      "failure_observations": []
+    },
+    {
+      "module": "test_semantic_typescript_review.py",
+      "returncode": 0,
+      "tests": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "9b7778928b3f5378138e8a08660bf0c40c297ed4441bc043cca836cc1998561d",
+      "failure_observations": []
+    }
+  ],
+  "captures": [
+    {
+      "id": "preproduction_population_partition_01",
+      "baseline_sha256": "bf8311baedb9ee4a49af42392f66fe05355cf82abbec3a585cb9541222996226",
+      "custody_sha256": "b5113c8fd912356fbafa07dda965a9963ead1016397930f42f846fbe96549a75"
+    },
+    {
+      "id": "preproduction_population_partition_02",
+      "baseline_sha256": "afa75919ee4d99f339dc3ab81c6f1e24409442e158f68d479c1a0f8272e85f83",
+      "custody_sha256": "e312ead0eecdd054dbdec1492b9aac3170ca609ed34be5731ecbe0f44da8d92d"
+    }
+  ],
+  "residuals": {
+    "schema_failures": 3,
+    "stale_test_adapter_failures": 1,
+    "runtime_context_or_causal_masking_failures": 17
+  },
+  "production_changed": false,
+  "whole_requirement_advancement": false,
+  "next_action": "Repair the strict observation schema and source-population adapter without waiving runtime context; then qualify the committed diagnostics contract separately."
+}

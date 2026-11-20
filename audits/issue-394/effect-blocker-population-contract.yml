@@ -240,3 +240,14 @@ implementation_attempt_disposition:
     type: 394source
     statement: 508ee155 baseline memory block; runtimeOPEN.
   whole_requirement_advancement: false
+
+consumer_baseline_recovery:
+  report: audits/issue-394/effect-blocker-consumer-baseline.json
+  subject: 183429cf3c99d9ae6328ad2c28802a2fc042ff8b
+  tests: 502
+  failures: 21
+  errors: 0
+  skipped: 0
+  production_applied: false
+  runtime_qualified: false
+  whole_requirement_advancement: false
