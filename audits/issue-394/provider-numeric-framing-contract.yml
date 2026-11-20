@@ -1,0 +1,34 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  status: contract_before_production
+  authority: false
+issue: 394
+workitems: [foundation.conformance, foundation.deadlines]
+owner: bcf_governance/tooling/ci_github_response.py
+requirements: [I01, I03, I17, I21, AC11, AC25, AC30]
+problem: Exact current runtime observations still accept malformed HTTP chunk integers. Existing body deadlines bound response reads but do not establish RFC numeric framing; latest Python spelling is not remediation proof.
+primary_sources:
+- https://github.com/python/cpython/issues/150751
+- https://github.com/python/cpython/pull/150752
+- https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/103xxx/CVE-2026-103995.json
+scope:
+- Add application-level numeric-framing checks through the existing qualified HTTPResponse/BufferedReader/SocketIO owner; do not replace or monkeypatch stdlib classes or introduce another transport/parser stack.
+- Validate received Content-Length/Transfer-Encoding headers at the existing first body-consumption boundary. Preserve legitimate decimal lengths and SP/HTAB OWS; refuse unsupported/duplicate/conflicting framing.
+- Validate each chunk-size token against ASCII hexadecimal grammar before stdlib int parsing; track only transition to ignored trailer lines so trailers/extensions and partial reads retain behavior.
+- Keep absolute body deadlines, original socket inactivity limit, response/context retirement and finite BytesIO behavior. Header setup and cleanup bounds remain separately scoped.
+- Preserve existing error type, consumer CLI/status identities, provider authorization and read-only retry taxonomy. Bad response bodies cannot retry writes or infer accepted mutation failure/success.
+- No Python-version whitelist, vulnerability exemption, runtime-security admission or whole-provider-security claim. Native stdlib/vendor findings remain open outside proved application mitigation.
+consumer_matrix:
+- Existing direct provider body consumers and byte/deadline/error-retirement siblings from provider-response-read-census.json.
+- Actual socket/HTTPResponse malformed and valid bodies; full/partial reads, optional whitespace, chunk extensions and trailers, GET and POST transport failure with exactly one opener call.
+- Existing provider response/deadline/TLS and transport controls.
+- Canonical template/private/package runtime; SDK-absent fresh/upgrade positive, removed header guard and removed chunk guard detectors.
+verification:
+- Commit contract and controls before production mutation; distinguish previously accepted malformed cases from already refused native cases, not one vulnerability per failing test.
+- Retain exact preimplementation results and qualify affected consumers through standard pipeline, architecture/lint/pack/governance on committed subject.
+- Full runtime context, secure runtime, complete deadline/resource and profile/provider/adopter custody remain unqualified; no acceptance-status promotion.
+remaining:
+- Exact vendor/runtime security qualification and independently complete runtime-effect/lifecycle population.
+- Approved matched measurement protocol/targets, P33-P35 and immutable release custody.
+- P32 active, all82whole requirements open.
