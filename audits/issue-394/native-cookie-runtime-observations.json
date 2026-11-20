@@ -1,0 +1,404 @@
+{
+  "authority": false,
+  "security_qualified": false,
+  "runtime_context_qualified": false,
+  "whole_requirement_advancement": false,
+  "release_runtime_selected": null,
+  "source_subject": "29b0b61ab773274be2610bac71ef59b89edab925",
+  "archive_subject": {
+    "authority": false,
+    "security_qualified": false,
+    "archive_sha256": "376dd553e419836a443aa61cab48f3419092ddbc506b05ae6d5ba1fbe30555ef",
+    "archive_manifest_digest": "sha256:bb1b750b8616cf54158db2174e39ac43f32b88b3649633f930fa6de470252a38",
+    "config_digest": "sha256:e9c02b1e6289d43e82dd5a41c227d9878e1a8c6f4707a48c37d88a20716017bc",
+    "architecture": "amd64",
+    "os": "linux",
+    "layers": [
+      {
+        "digest": "sha256:8ab1c64b01ded616ecf6ce3488d351f2fcee1be991765bd9b6e2550b69a20545",
+        "diff_id": "sha256:4b52a7239ad634a030c345da49bb5212fecc0cc77eef58d8e7e91939e551c472",
+        "size_bytes": 3361424,
+        "expanded_bytes": 7251968
+      },
+      {
+        "digest": "sha256:7a4877cecca890677d2aeeaaaa4a4659cff0e5b2db98ca578583621e510cc657",
+        "diff_id": "sha256:81ac36f4bee4102128a3f1f63d1a2a057922351d656f4a4fcdb1b92cd28a95f2",
+        "size_bytes": 2938749,
+        "expanded_bytes": 7305728
+      },
+      {
+        "digest": "sha256:f4265a56de30c1b9e087ad6d1fe2e30c7904cee15fe2b91ff2a46177a6cdd7de",
+        "diff_id": "sha256:7f3cc23f95424a2268090e9d9f9a2e0ac29f2410e2d67e26a001b20f28576fc7",
+        "size_bytes": 513554,
+        "expanded_bytes": 1140224
+      },
+      {
+        "digest": "sha256:82087d46dc9d24d8d866b734cf1a5bdeb870f6b7af4e0a1e76e891c3e869d280",
+        "diff_id": "sha256:6e407bcb887726ad7e338d379446cbf49f43f2fd46cfa16e15d9d792b459704b",
+        "size_bytes": 355528,
+        "expanded_bytes": 816640
+      },
+      {
+        "digest": "sha256:f53829540a90766dc673f2a4d258003b3d6d0644d4a71bb303e2ab9a006e0fb9",
+        "diff_id": "sha256:24f670d1e337828fb932901ca6194de50c22b1327ee9a684bc1318e7bdbfd1f7",
+        "size_bytes": 425351,
+        "expanded_bytes": 715776
+      },
+      {
+        "digest": "sha256:dc2b2c4d05a68e22036d6b3acf944b702e8b98eaad7a732254734d0b61bc08eb",
+        "diff_id": "sha256:9a5af3c2653f7d6d3a12beb2f639b46246b03c9def6fbf03653bcdc2fbf769be",
+        "size_bytes": 178516,
+        "expanded_bytes": 394752
+      },
+      {
+        "digest": "sha256:386404bbcc5eb496e5f3a585e97e2b5c1a80371bc704877b879116b95cd73c57",
+        "diff_id": "sha256:c77049249d91fe78f3e8aebf20efb151aa6ff5a0d3dd938af712a4aa6e8eee6c",
+        "size_bytes": 97921,
+        "expanded_bytes": 236032
+      },
+      {
+        "digest": "sha256:81aee3040b675a25e4f0b1ca91348e134c9d25e69d42d2f50d0af52b49ab0ae3",
+        "diff_id": "sha256:5215e8ec94700a54bbbbbf967cb192ef56ab5ea8ba6abdf2fa2ca6b64fd09be6",
+        "size_bytes": 95799,
+        "expanded_bytes": 217088
+      },
+      {
+        "digest": "sha256:53abc9c206651e9f8631d1ab1d470ecc0f6908f0733fa51e225c7d1cb340abcd",
+        "diff_id": "sha256:2af97d351f066d95be4835564d4e9445047a023e1f572d129b8462635b998e05",
+        "size_bytes": 107901,
+        "expanded_bytes": 197632
+      },
+      {
+        "digest": "sha256:62bd281d892293b183ff1c659c7dfb91aec40e35247697218b2159ea2c1f7677",
+        "diff_id": "sha256:423bcdcc810594481f8f5b6e9b549a4f6aab9a288e121b25ec3b727eda6a13d6",
+        "size_bytes": 78636,
+        "expanded_bytes": 203264
+      },
+      {
+        "digest": "sha256:d19ee864df38805eb925a20e9bb1d8744af1363c7e63bb9d6d67850e57745ee2",
+        "diff_id": "sha256:2d53f52bb0117d1d8c10b99db662aaae27498ed75370db0f2dd0cf7e28247c4f",
+        "size_bytes": 14841,
+        "expanded_bytes": 183296
+      },
+      {
+        "digest": "sha256:efab3f2ec4f44f0e7f797f710fdd172054fa32205b8d02f9074a0f92c9d977d2",
+        "diff_id": "sha256:540f3355a8613c1064325614a570faf5404a88b614457d8d506a349c7613486b",
+        "size_bytes": 19537586,
+        "expanded_bytes": 52617216
+      }
+    ],
+    "sbom_binding": null
+  },
+  "probe_sha256": "846e56598b4800db7fe37b80b7e170375e215e71fcad6f5394a124ef84c1b9b2",
+  "actual_image": "sha256:bb1b750b8616cf54158db2174e39ac43f32b88b3649633f930fa6de470252a38",
+  "source_modules": {
+    "http.cookiejar": {
+      "cached_bytecode_sha256": "8e855c28d7e169ac595fcac37a762aa09d258d3d24978ef4d008ccb6e915bb36",
+      "reported_source_origin": "/usr/lib/python3.14/http/cookiejar.py",
+      "source_sha256": "2b82ea24d49f29f750228e29e8f7f1658305da3c50c4cc77b0a3398255be93de"
+    },
+    "http.cookies": {
+      "cached_bytecode_sha256": "c4734f20ef90860e2829013ae9d0e6e1c9d2f3853887a254c49bfde2d2528f31",
+      "reported_source_origin": "/usr/lib/python3.14/http/cookies.py",
+      "source_sha256": "d1165ad2e38352b3ca654ef5cc3dbb01233d590f1bed7fc7d1d7c1451a5a11ab"
+    }
+  },
+  "interpreter": {
+    "dont_write_bytecode": true,
+    "ignore_environment": 1,
+    "implementation": "CPython",
+    "isolated": 1,
+    "no_user_site": 1,
+    "version": "3.14.10"
+  },
+  "positive_controls": {
+    "comment_escaping": true,
+    "ordinary_attributes": true,
+    "restored_policy_delete": true,
+    "same_domain_delete": true,
+    "same_path_delete": true
+  },
+  "cookiejar": [
+    {
+      "case": "foreign_domain",
+      "domain": ".victim.test",
+      "expiry": "Max-Age=0",
+      "protected_cookie_retained": true
+    },
+    {
+      "case": "foreign_domain",
+      "domain": ".victim.test",
+      "expiry": "Expires=Thu, 01 Jan 1970 00:00:00 GMT",
+      "protected_cookie_retained": true
+    },
+    {
+      "case": "foreign_domain",
+      "domain": "victim.test",
+      "expiry": "Max-Age=0",
+      "protected_cookie_retained": true
+    },
+    {
+      "case": "foreign_domain",
+      "domain": "victim.test",
+      "expiry": "Expires=Thu, 01 Jan 1970 00:00:00 GMT",
+      "protected_cookie_retained": true
+    },
+    {
+      "case": "foreign_path",
+      "protected_cookie_retained": true
+    },
+    {
+      "case": "blocked_policy",
+      "protected_cookie_retained": true
+    }
+  ],
+  "morsel": [
+    {
+      "attribute": "expires",
+      "rejected": false,
+      "route": "assignment"
+    },
+    {
+      "attribute": "expires",
+      "rejected": false,
+      "route": "setdefault"
+    },
+    {
+      "attribute": "expires",
+      "rejected": false,
+      "route": "update"
+    },
+    {
+      "attribute": "expires",
+      "rejected": false,
+      "route": "ior"
+    },
+    {
+      "attribute": "path",
+      "rejected": false,
+      "route": "assignment"
+    },
+    {
+      "attribute": "path",
+      "rejected": false,
+      "route": "setdefault"
+    },
+    {
+      "attribute": "path",
+      "rejected": false,
+      "route": "update"
+    },
+    {
+      "attribute": "path",
+      "rejected": false,
+      "route": "ior"
+    },
+    {
+      "attribute": "domain",
+      "rejected": false,
+      "route": "assignment"
+    },
+    {
+      "attribute": "domain",
+      "rejected": false,
+      "route": "setdefault"
+    },
+    {
+      "attribute": "domain",
+      "rejected": false,
+      "route": "update"
+    },
+    {
+      "attribute": "domain",
+      "rejected": false,
+      "route": "ior"
+    },
+    {
+      "attribute": "max-age",
+      "rejected": false,
+      "route": "assignment"
+    },
+    {
+      "attribute": "max-age",
+      "rejected": false,
+      "route": "setdefault"
+    },
+    {
+      "attribute": "max-age",
+      "rejected": false,
+      "route": "update"
+    },
+    {
+      "attribute": "max-age",
+      "rejected": false,
+      "route": "ior"
+    },
+    {
+      "attribute": "secure",
+      "rejected": false,
+      "route": "assignment"
+    },
+    {
+      "attribute": "secure",
+      "rejected": false,
+      "route": "setdefault"
+    },
+    {
+      "attribute": "secure",
+      "rejected": false,
+      "route": "update"
+    },
+    {
+      "attribute": "secure",
+      "rejected": false,
+      "route": "ior"
+    },
+    {
+      "attribute": "httponly",
+      "rejected": false,
+      "route": "assignment"
+    },
+    {
+      "attribute": "httponly",
+      "rejected": false,
+      "route": "setdefault"
+    },
+    {
+      "attribute": "httponly",
+      "rejected": false,
+      "route": "update"
+    },
+    {
+      "attribute": "httponly",
+      "rejected": false,
+      "route": "ior"
+    },
+    {
+      "attribute": "version",
+      "rejected": false,
+      "route": "assignment"
+    },
+    {
+      "attribute": "version",
+      "rejected": false,
+      "route": "setdefault"
+    },
+    {
+      "attribute": "version",
+      "rejected": false,
+      "route": "update"
+    },
+    {
+      "attribute": "version",
+      "rejected": false,
+      "route": "ior"
+    },
+    {
+      "attribute": "samesite",
+      "rejected": false,
+      "route": "assignment"
+    },
+    {
+      "attribute": "samesite",
+      "rejected": false,
+      "route": "setdefault"
+    },
+    {
+      "attribute": "samesite",
+      "rejected": false,
+      "route": "update"
+    },
+    {
+      "attribute": "samesite",
+      "rejected": false,
+      "route": "ior"
+    },
+    {
+      "attribute": "partitioned",
+      "rejected": false,
+      "route": "assignment"
+    },
+    {
+      "attribute": "partitioned",
+      "rejected": false,
+      "route": "setdefault"
+    },
+    {
+      "attribute": "partitioned",
+      "rejected": false,
+      "route": "update"
+    },
+    {
+      "attribute": "partitioned",
+      "rejected": false,
+      "route": "ior"
+    }
+  ],
+  "cookiejar_expiry_safety_observed": true,
+  "morsel_semicolon_rejection_observed": false,
+  "upstream_fix_metadata": [
+    {
+      "cve": "CVE-2026-124249",
+      "role": "upstream_main_fix",
+      "url": "https://github.com/python/cpython/pull/161570",
+      "state": "closed",
+      "merged": true,
+      "base": "main",
+      "base_sha": "d7684fbef52e563a89c88a23efc68de2de9b3503",
+      "head_sha": "15c9b4165a5d83e1b64f67d4c8a8bdba368ea5c5",
+      "merge_commit_sha": "8eb3d2c1c41ca7ce628554413981c1eb763a1494",
+      "raw_sha256": "455c5881ed86e943fff09ca830d4a0cfaf0c86d69082b87885d17de0001ba196",
+      "disposition": "Merged upstream source is a remediation lead, not proof of retained binary contents or native security approval."
+    },
+    {
+      "cve": "CVE-2026-124249",
+      "role": "python314_backport",
+      "url": "https://github.com/python/cpython/pull/161580",
+      "state": "closed",
+      "merged": true,
+      "base": "3.14",
+      "base_sha": "f3eb3ccc6a554cb18ce8ca4a45e94fe211e1693f",
+      "head_sha": "e7fc6f35cfcf947b9db62eb191e6f2a7a3f1f2ca",
+      "merge_commit_sha": "ac1d49f4fbb33941475c5aa3cb663ab39d64cb73",
+      "raw_sha256": "257d079c2674761e75849daa6bdba1f432040a67966285aafaf04d0f4f528eae",
+      "disposition": "Merged upstream source is a remediation lead, not proof of retained binary contents or native security approval."
+    },
+    {
+      "cve": "CVE-2026-16052",
+      "role": "upstream_main_fix",
+      "url": "https://github.com/python/cpython/pull/161711",
+      "state": "closed",
+      "merged": true,
+      "base": "main",
+      "base_sha": "020c5f3b3867b0d392fd8b2586435b4018ccdf8a",
+      "head_sha": "b5ac6ebd9bf92e8cac2c4983bc2d3df501267cf4",
+      "merge_commit_sha": "27026842f6774c167295f4b59972589f12ec5987",
+      "raw_sha256": "4bbbe83ab4f93301290a0338c46af4f0f10bd33461b3bfb35d8f436c44ab2be0",
+      "disposition": "Merged upstream source is a remediation lead, not proof of retained binary contents or native security approval."
+    },
+    {
+      "cve": "CVE-2026-16052",
+      "role": "python314_backport",
+      "url": "https://github.com/python/cpython/pull/161893",
+      "state": "open",
+      "merged": false,
+      "base": "3.14",
+      "base_sha": "d927542e66b98082f6a99e96fa95063009bb3a88",
+      "head_sha": "a690c61fa59aa7b37f40f59ec1bfcd0016f13142",
+      "merge_commit_sha": "6494f9759216a32a0baef7f91036ebfc53e3e48a",
+      "raw_sha256": "59eee025afb906141308b345201df638fd2cd4b7723ce5a4cd0abe9d8e145ef0",
+      "disposition": "Open backport; merge_commit_sha is not a merged fix and must not be treated as admitted remediation."
+    }
+  ],
+  "raw_capture_sha256": {
+    "archive-subject.json": "d10e8c18b045ef017aaf9c486663a4b62afe5b1df2e184a23ae38f68137523a8",
+    "pinned-image.stdout": "7080f4becaeed7936990fe74c0d21bac259a4ece7c9bffbf3cee82dc6c219c28",
+    "created-container.stdout": "6c35536174a3bb9470aa7fa0377672265c3f482bcf6220d2d11ce5b1de844e9d",
+    "native-probe.stdout": "4ff846f0b90eda1f82093499f9f05bae275cddb6b14291dc9e1907057302bbaf",
+    "native-probe.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "terminal-container.json": "a8c88affc614436ec9ba4c27f4b2a823117a34c51e0c49c29ec15e8ea0796e22",
+    "container-remove.stdout": "4d96c8f4159e16a570d6f70a4860662c62bb55802e79e580d69e59a320da1dbd"
+  },
+  "limits": "Offline observations on one retained candidate and exact controlled invocation only. Upstream merge status/source hashes do not establish complete installed implementation provenance or finding applicability. Scanner database is expired; other findings and complete native/model/environment authority remain unresolved. No image adoption, fixed-runtime approval, whole acceptance, phase activation or release follows.",
+  "governance_stderr_sha256": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+}
