@@ -368,26 +368,12 @@ def _native_database_binding(root: Path, expected, deadline: float) -> dict[str,
     return actual
 
 
-def capture_native_dependency_audit(
-    *, sbom_bytes: bytes, expected_sbom_sha256: str, expected_image: dict[str, str],
-    expected_inventory: tuple[tuple[str, str, str], ...], scanner: Path,
-    expected_scanner_sha256: str, database_root: Path, expected_database_files: dict[str, str],
-    expected_database_status: dict[str, Any], max_database_age_seconds: int,
-    command_seconds: int, output_dir: Path,
-) -> dict[str, Any]:
-    """Capture one exact Grype input through the existing native execution owner.
-
-    Independent subjects/pins are authenticated by the protected caller. This
-    observation confers no runtime, security, phase or release authority.
-    """
+def _native_capture_deadline(command_seconds: int) -> float:
     import math
     import os
-    import re
     import threading
-    import subprocess
     import time
     from . import evidence_process_supervisor as commands
-    from .release_runtime_verification import runtime_environment
 
     lease = commands._native_lease
     if lease is None or lease[1] != threading.get_ident():
@@ -403,6 +389,28 @@ def capture_native_dependency_audit(
         deadline = time.monotonic() + command_seconds
     except (ValueError, OverflowError) as exc:
         raise DependencyAssuranceError("native scan command budget is incompatible") from exc
+    return deadline
+
+
+def capture_native_dependency_audit(
+    *, sbom_bytes: bytes, expected_sbom_sha256: str, expected_image: dict[str, str],
+    expected_inventory: tuple[tuple[str, str, str], ...], scanner: Path,
+    expected_scanner_sha256: str, database_root: Path, expected_database_files: dict[str, str],
+    expected_database_status: dict[str, Any], max_database_age_seconds: int,
+    command_seconds: int, output_dir: Path,
+) -> dict[str, Any]:
+    """Capture one exact Grype input through the existing native execution owner.
+
+    Independent subjects/pins are authenticated by the protected caller. This
+    observation confers no runtime, security, phase or release authority.
+    """
+    import re
+    import subprocess
+    import time
+    from . import evidence_process_supervisor as commands
+    from .release_runtime_verification import runtime_environment
+
+    deadline = _native_capture_deadline(command_seconds)
     if type(sbom_bytes) is not bytes:
         raise DependencyAssuranceError("native SBOM input must be owned finite bytes")
     def hex_digest(value):
@@ -711,3 +719,78 @@ def native_archive_subject(
         raise
     except (ValueError, TypeError, KeyError, AttributeError, OSError, EOFError, tarfile.TarError) as exc:
         raise DependencyAssuranceError("native archive is malformed or incomplete") from exc
+
+
+def capture_native_sbom(
+    archive_bytes: bytes, *, expected_archive_sha256: str, expected_manifest_digest: str,
+    max_archive_bytes: int, max_expanded_bytes: int, max_members: int,
+    cataloger: Path, expected_cataloger_sha256: str, command_seconds: int, output_dir: Path,
+) -> bytes:
+    """Capture pinned Syft output from sealed archive bytes; never qualify security.
+
+    Caller authenticates input/tool pins and supplies the existing execution lease.
+    Independent package/file completeness and applicability remain consumer work.
+    """
+    import re
+    import subprocess
+    import time
+    from . import evidence_process_supervisor as commands
+    from .release_runtime_verification import runtime_environment
+
+    deadline = _native_capture_deadline(command_seconds)
+    inputs = {"expected_archive_sha256": expected_archive_sha256,
+              "expected_manifest_digest": expected_manifest_digest, "max_archive_bytes": max_archive_bytes,
+              "max_expanded_bytes": max_expanded_bytes, "max_members": max_members}
+    if (type(expected_cataloger_sha256) is not str
+            or re.fullmatch(r"[a-f0-9]{64}", expected_cataloger_sha256) is None):
+        raise DependencyAssuranceError("native cataloger executable pin is malformed")
+    native_archive_subject(archive_bytes, **inputs)
+    if _native_file_digest(cataloger, deadline) != expected_cataloger_sha256:
+        raise DependencyAssuranceError("native cataloger executable digest differs")
+    if output_dir.exists() or output_dir.is_symlink():
+        raise DependencyAssuranceError("native cataloger output must be fresh")
+    if deadline <= time.monotonic():
+        raise DependencyAssuranceError("native cataloger admission budget exhausted")
+    output_dir.mkdir(parents=True, mode=0o700)
+    config = json.dumps({"check-for-app-update": False}, sort_keys=True).encode()
+    config_path = output_dir / "cataloger-config.json"
+    config_path.write_bytes(config)
+    environment = runtime_environment(home=output_dir)
+    (output_dir / "tmp").mkdir(mode=0o700)
+    environment.update(SYFT_CHECK_FOR_APP_UPDATE="false", TMPDIR=str((output_dir / "tmp").resolve()))
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise DependencyAssuranceError("native cataloger budget exhausted before execution")
+    try:
+        result = commands.run_admitted_command(
+            [str(cataloger.resolve()), "--config", str(config_path.resolve()), "scan",
+             "docker-archive:/proc/self/fd/0", "--output", "syft-json"],
+            unbound_runner=subprocess.run, cwd=output_dir, env=environment, input=archive_bytes,
+            capture_output=True, text=False, check=False, timeout=remaining,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        for name, raw in (("stdout", getattr(exc, "output", None)), ("stderr", getattr(exc, "stderr", None))):
+            (output_dir / ("cataloger." + name)).write_bytes(raw if type(raw) is bytes else b"")
+        raise DependencyAssuranceError("native cataloger failed or exhausted its budget") from exc
+    if type(result.stdout) is not bytes or type(result.stderr) is not bytes:
+        raise DependencyAssuranceError("native cataloger returned incompatible streams")
+    (output_dir / "cataloger.stdout").write_bytes(result.stdout)
+    (output_dir / "cataloger.stderr").write_bytes(result.stderr)
+    if (result.returncode != 0 or _native_file_digest(cataloger, deadline) != expected_cataloger_sha256
+            or config_path.read_bytes() != config):
+        raise DependencyAssuranceError("native cataloger failed or its execution inputs changed")
+    try:
+        sbom = _native_scan_json(result.stdout)
+        if sbom["descriptor"].get("name") != "syft" or sbom["descriptor"].get("version") != "1.57.2":
+            raise ValueError("cataloger descriptor differs")
+        if type(sbom.get("artifacts")) is not list or not sbom["artifacts"]:
+            raise ValueError("cataloger package population is absent")
+        for artifact in sbom["artifacts"]:
+            _native_component_identity(artifact)
+        binding = native_archive_subject(archive_bytes, **inputs, sbom_bytes=result.stdout)
+    except (ValueError, KeyError, TypeError, AttributeError) as exc:
+        raise DependencyAssuranceError("native cataloger output binding failed") from exc
+    if time.monotonic() >= deadline:
+        raise DependencyAssuranceError("native cataloger validation budget exhausted")
+    (output_dir / "archive-binding.json").write_text(json.dumps(binding, sort_keys=True) + "\n")
+    return result.stdout
