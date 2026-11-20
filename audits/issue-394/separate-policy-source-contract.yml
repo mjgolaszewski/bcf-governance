@@ -1,0 +1,47 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  status: planned
+  authority: false
+  path: audits/issue-394/separate-policy-source-contract.yml
+parent: audits/issue-394/runtime-effect-context-foundation-contract.yml
+subject: 44fffe34c6b4cf8ad184b461162027b4d18748d1
+workitem: P32-P0-04
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: contract_then_query
+target_modules:
+- bcf_governance/tooling/ci_graph_composition_operations.py
+- bcf_governance/tooling/ci_graph_composition.py
+problem: Existing public-operation capture uses one working root for protected policy and candidate source. Its later consumer accepts the retained tuple without reauthenticating policy bytes or checking that the supplied inventory belongs to the captured runtime subject.
+change:
+- Extend the existing reconstruction interface with optional operation_policy_repo_root, defaulting to the current source root.
+- Load protected policy through its existing committed policy factory in the selected policy root; reconstruct public catalogs and function effects only from the separate candidate root and exact runtime subject.
+- Retain an internal factory-owned binding to roots, immutable subjects, policy identity, declared relationships and lifecycle roots. Do not export machine-local roots in observations.
+- Reauthenticate the protected policy and local capture consistency at effect-binding and public-operation consuming boundaries; bind inventories to the captured runtime subject before effect interpretation.
+- When a separate policy root is selected, observe the exact committed candidate policy digest and its difference from protected policy without parsing candidate policy as authority.
+- Preserve legacy same-root behavior and the existing generic local/unbound semantic APIs. A committed capture itself requires its promised committed runtime inventory.
+authority_limits:
+- Caller still authenticates repository, policy source and evaluator origin. A local path, capture type or matching SHA alone grants no provider authority.
+- Candidate policy differences remain visible source changes; this query neither authorizes them nor enables reuse or suppression. Existing outer policy invalidation and full governance requirements remain required.
+- The returned observation retains authority false and execution_qualified false. Source authentication is not positive native/runtime qualification.
+expected_tests:
+- Real separate Git checkouts allow protected evaluation of candidate source even when candidate policy/schema differ; candidate policy never selects its own rules.
+- Missing or wrong policy root fails before source discovery; moved protected policy, modified capture metadata/registry/roots, wrong or unbound runtime inventory fail at consumption.
+- A source inventory from a later pure-code commit cannot be attached to an earlier capture.
+- Existing same-root, facade, import-root and source-movement behavior remains compatible.
+- Installed SDK-absent fresh/upgrade consumers preserve the separation and reject policy movement; removing only the consuming guard fails a named independent detector.
+required_checks:
+- Affected reconstruction, public-entrypoint, protected semantic and independent call-coverage controls
+- Canonical pack generation/check, standard lint and architecture boundaries
+- Installed fresh/upgrade private-runtime parity
+forbidden:
+- Main, release, predecessor or maintained adopter mutation
+- Candidate-selected protected source, caller authority booleans or a parallel registry/evaluator/receipt family
+- Claiming the positive runtime qualifier, full lifecycle, security or phase closure from this authentication step
+status:
+  implementation_complete: false
+  runtime_qualified: false
+  whole_requirement_advancement: false
+  p32: active
+  p33_p35: dormant
