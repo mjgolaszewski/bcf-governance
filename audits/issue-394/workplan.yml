@@ -304,6 +304,8 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/splinter-assignment-admission-verification.json
+    - audits/issue-394/splinter-assignment-admission-contract.yml
     - audits/issue-394/read-port-compatibility-verification.json
     - audits/issue-394/read-port-compatibility-progress.json
     - audits/issue-394/read-port-compatibility-contract.yml

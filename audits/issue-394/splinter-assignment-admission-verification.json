@@ -1,0 +1,56 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "whole_requirement_advancement": false,
+  "runtime_context_qualified": false,
+  "scope": "Strict existing plan admission and exact per-splinter result population; unchanged version1.0 plan contract and compiler algorithm",
+  "contract_commit": "660d310b9449484a4fbb3770395f2096e2b4b2a6",
+  "implementation_subject": "72301ad17528e44713b96383db4b3b877dde38ff",
+  "test_subject": "72301ad17528e44713b96383db4b3b877dde38ff",
+  "test_tree": "ef4927ba78c06c00e793043330a841eb8a26970e",
+  "before": {
+    "tests": 33,
+    "failures": 32,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source": {
+    "tests": 74,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "required_semantic": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "7b7185e8d6b16f6c8cc7192386f75e0d2f0337638d0408ff605bd4a3a26fd314",
+    "source": "a5edccebf1c6a245367d02ca1bafedd1c0eaf09193ea5a48c86990a0667d4677",
+    "installed": "a00b8131b79328d91e6bb849c2e43c4aaa9123cb22c6b6984372f2a3a1de7e80",
+    "architecture": "dd3879a282b6304fad9ccf9ae2f8e5a08c9952ae349db969a39a9716648ff597",
+    "required-semantic": "7cbdf9bb176e68df238c2124e6e4cb7e2ae53441edf0896ef4db75b6f899f629"
+  },
+  "source_sha256": "52b9535de995ccd6a30879bd9d3b1f345befb06ef9e18b3db4ca1e94f088898d",
+  "remaining": "Actual runtime context foundation, full lifecycle/distribution/shadow/custody, approved targets, canonical workflow projection and security qualification; all82whole open",
+  "governance_status": "blocked_by_pending_Node_graph_workflow_projection",
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  }
+}
