@@ -503,6 +503,14 @@ def validated_operation_effect_inventory(
         )
     if functions[entrypoint].get("lexical_parent") is not None:
         raise SemanticOperationEffectError("operation contains an unresolved effect lexical invocation context")
+    read_values = operation.get("allowed_read_ports", [])
+    if (not isinstance(read_values, list)
+            or any(not isinstance(value, str) or not value for value in read_values)
+            or len(read_values) != len(set(read_values))):
+        raise SemanticOperationEffectError("operation read port declarations are invalid")
+    read_ports = {_port_identity(value, functions) for value in read_values}
+    if len(read_ports) != len(read_values) or any(kind != "function" for kind, _ in read_ports):
+        raise SemanticOperationEffectError("operation read ports require unambiguous source functions")
     mutation_ports = {
         _port_identity(str(value), functions)
         for value in operation["allowed_mutation_ports"]
@@ -515,7 +523,9 @@ def validated_operation_effect_inventory(
         _port_identity(str(value), functions)
         for value in operation["non_authoritative_output_effects"]
     }
-    declared_ports = mutation_ports | authority_ports | non_authoritative_ports
+    if read_ports & (mutation_ports | authority_ports | non_authoritative_ports):
+        raise SemanticOperationEffectError("operation read ports must be disjoint from other effect roles")
+    declared_ports = read_ports | mutation_ports | authority_ports | non_authoritative_ports
     reached: set[tuple[str, str]] = set()
     unresolved: set[tuple[str, str, str]] = set()
     blockers: set[tuple[str, str, str, str]] = set()
@@ -525,6 +535,20 @@ def validated_operation_effect_inventory(
         if first_failure is None:
             first_failure = reason
         blockers.add((caller, kind, identity, reason))
+    # Read declarations do not authorize an opaque boundary. Validate every
+    # read closure without command permissions, then retain ordinary traversal.
+    for _, read_function in sorted(read_ports):
+        read_operation = {"id": operation["id"] + ":read", "allowed_mutation_ports": [],
+                          "allowed_authority_ports": [], "non_authoritative_output_effects": []}
+        try:
+            validated_operation_effect_inventory(
+                read_operation, read_function, inventory, require_runtime_context=require_runtime_context,
+            )
+        except SemanticOperationEffectError as exc:
+            if not exc.effect_obligations:
+                raise
+            for caller, kind, identity, reason in exc.effect_obligations:
+                reject(caller, kind, "read_port:" + read_function + ":" + identity, reason)
     write_sources: set[tuple[str, str]] = set()
     authority_sources: set[tuple[str, str]] = set()
     writes: set[str] = set()
@@ -606,7 +630,8 @@ def validated_operation_effect_inventory(
             if identity in declared_ports:
                 if credit and not construction_missing:
                     reached.add(identity)
-                continue
+                if identity not in read_ports:
+                    continue
             if call.get("dispatch_resolution") == "unresolved":
                 reject(symbol, "unresolved_call", f"{raw}:{call.get('line')}:{call.get('column')}",
                        f"operation {operation['id']} contains an unresolved effect call path at {symbol}")
@@ -664,7 +689,7 @@ def validated_operation_effect_inventory(
     ports = {
         (classification, target_kind, symbol)
         for classification, ports in (
-            ("mutation", mutation_ports), ("authority", authority_ports),
+            ("read", read_ports), ("mutation", mutation_ports), ("authority", authority_ports),
             ("observation", non_authoritative_ports),
         )
         for target_kind, symbol in ports & reached

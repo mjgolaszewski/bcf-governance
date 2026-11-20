@@ -12,6 +12,8 @@ def _validate_operation_semantics(operation: dict[str, Any]) -> str:
     from .semantic_authority_contracts import SemanticAuthorityError, READ_ONLY_KINDS, MUTATING_KINDS
 
     kind = str(operation["semantic_kind"])
+    if operation.get("allowed_read_ports") and not operation["authoritative_read"]:
+        raise SemanticAuthorityError("operation read ports require authoritative_read")
     mutates = bool(operation["authoritative_mutation"])
     confers = bool(operation["authority_conferral"])
     if kind in READ_ONLY_KINDS and (mutates or confers):

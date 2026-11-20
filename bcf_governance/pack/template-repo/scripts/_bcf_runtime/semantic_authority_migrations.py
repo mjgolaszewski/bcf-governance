@@ -38,6 +38,7 @@ _OPERATION_EFFECT_FIELDS = (
     "model_callable",
     "allowed_mutation_ports",
     "allowed_authority_ports",
+    "non_authoritative_output_effects",
 )
 
 
@@ -49,7 +50,8 @@ def _operation_change_kinds(
     changes = []
     if previous.get("semantic_kind") != current.get("semantic_kind"):
         changes.append("semantic_kind_changed")
-    if any(previous.get(field) != current.get(field) for field in _OPERATION_EFFECT_FIELDS):
+    if (any(previous.get(field) != current.get(field) for field in _OPERATION_EFFECT_FIELDS)
+            or previous.get("allowed_read_ports", []) != current.get("allowed_read_ports", [])):
         changes.append("effect_changed")
     return tuple(changes)
 

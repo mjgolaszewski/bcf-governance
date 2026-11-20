@@ -86,7 +86,7 @@ def validate_effect_binding_contexts(bindings, capture, compiled):
     for port, pairs in bindings.items():
         if (not isinstance(port, tuple) or len(port) != 4
                 or any(not isinstance(value, str) or not value for value in port)
-                or port[1] not in {"mutation", "authority", "observation"}
+                or port[1] not in {"read", "mutation", "authority", "observation"}
                 or port[2] not in {"function", "call"}
                 or port[0] not in relationships or not isinstance(pairs, frozenset)
                 or not pairs or any(pair not in relationships[port[0]] for pair in pairs)):

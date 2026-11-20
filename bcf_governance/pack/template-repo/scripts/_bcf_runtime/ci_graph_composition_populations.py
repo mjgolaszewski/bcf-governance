@@ -66,7 +66,7 @@ def lifecycle_effect_population(
         supplied = observation.get("effect_ports")
         if not isinstance(supplied, (list, tuple)):
             raise CIGraphError("lifecycle source requires compatible installed effect inventory")
-        counts = {"mutation": 0, "authority": 0, "observation": 0}
+        counts = {"read": 0, "mutation": 0, "authority": 0, "observation": 0}
         for row in supplied:
             if not isinstance(row, Mapping) or set(row) != {"classification", "target_kind", "symbol"}:
                 raise CIGraphError("lifecycle source effect fact is malformed")
