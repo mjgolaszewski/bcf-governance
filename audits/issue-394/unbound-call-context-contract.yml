@@ -1,0 +1,38 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/unbound-call-context-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitem: P32-P0-04
+bounded_context: semantic_ownership
+architectural_layer: tooling
+operation_side: query
+scope: Existing Python operation-effect traversal and independently retained unresolved invocation population
+problem:
+  - Direct bool(value) invokes an input callback while current strict scanner returns zero recognized effect ports
+  - Unbound external calls and basename-only guesses can be mistaken for complete source-bound invocation context
+contract:
+  - Strict Python traversal rejects every reached invocation without an exact source function binding and qualified external/native context
+  - No external/native context qualifier is introduced by this slice; missing context remains a typed block
+  - Collect unbound invocation context before declared-port shortcuts so an opaque port name cannot supply native binding authority
+  - Potential basename-resolved source bodies may still expand traversal but cannot authenticate the invocation
+  - Native conversions global callbacks global mutable-object methods and transitive unknown calls remain unresolved independently of callee spelling
+  - Candidate purity/effect/context and TypeScript labels on Python calls cannot waive missing authority
+  - Preserve existing write authority dynamic-dispatch and construction diagnostic precedence while retaining all new unresolved call obligations
+  - Source-only views retain unresolved invocations using the existing unresolved tuple family and preserve recognized legacy port counts; they grant no runtime authority
+  - Exact source-bound calls and declared source-bound port traversal retain their existing scope; actual port input/receiver/whole-invocation qualification remains open
+  - Preserve genuine TypeScript adapter behavior and all required consumers using strict runtime mode
+qualification:
+  - Commit native execution witnesses and causal admission controls before production changes
+  - Native witnesses retain the receiver outside the invocation to separate input callbacks from finalization
+  - Review each invalidated old fixture premise individually; source-projection tests must also assert strict default refusal, never substitute source-only success for required runtime proof
+  - Qualify installed fresh/repaired consumers with disabled native-call-context rejection control
+  - Retain all affected failures and required semantic/governance blocks until actually resolved; no phase or whole-requirement advancement
+owners:
+  - bcf_governance/tooling/semantic_operation_effects.py
+forbidden:
+  - Native primitive-name purity whitelist or candidate-authored runtime assertion
+  - New evaluator broker graph registry or receipt family
+  - Disabling strict mode in required gates or editing immutable characterization goldens
+  - Main maintenance workflows authority release or live-adopter mutation
