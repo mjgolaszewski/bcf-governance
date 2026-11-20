@@ -1,0 +1,60 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "whole_requirement_advancement": false,
+  "baseline_subject": "3dfc36f4f0d1d7ada8ee3c048530f5cbf726b025",
+  "contract_subject": "a4a59f0ebb84aa45c7cdf25839f4d80b2b13cfe3",
+  "implementation_subject": "8c44905c39d71b892b62745592099f661b30ee11",
+  "before": {
+    "tests": 52,
+    "failures": 44,
+    "errors": 0,
+    "skipped": 0
+  },
+  "before_dispositions": {
+    "omitted_mandatory_rows_accepted": 8,
+    "real_callback_witness_erasure_accepted": 4,
+    "other_mutations_wrong_existing_diagnostic": 32,
+    "positive_or_existing_blocks_passed": 8
+  },
+  "source": {
+    "tests": 224,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 22,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "actual_source_coverage": {
+    "authority": false,
+    "execution_qualified": false,
+    "runtime_context_qualified": false,
+    "source_commit": "8c44905c39d71b892b62745592099f661b30ee11",
+    "source_tree": "6fbd0a1d22322b25cf53456bd822ecc5f62dcb2c",
+    "files": 1327,
+    "functions": 12247,
+    "explicit_calls": 140137,
+    "store_observations": 4997,
+    "elapsed_seconds": 111.27249245099665
+  },
+  "junit_sha256": {
+    "before": "3f95dfe1a052154602bbfcdfac56f4b1580a077481f86a9c299bf0df94247087",
+    "source": "f42d3ded8c4f9836a4008352b093ed70f2d693a8090b8c32c38ac3745e9f3487",
+    "installed": "d5d6976cbca6c79fd7c3429dda36420c80817dc92478d64cb63ecf89eabaf2d1",
+    "architecture": "e79295421818a07a988cc22baccf9daf1a05b39be6e40354db0714c1a2fcb73b"
+  },
+  "source_sha256": "cdd17ef30e7c30d2b1f22f0c00a887c73d877bba4c4e595143282d22c91b9832",
+  "scope": "Independent committed-source reconstruction of unconditional attribute reads, synchronous/asynchronous context managers and awaits. Exact caller/kind/span/expression population checked before effect traversal; observer row removal cannot hide these callback obligations. Existing runtime protocol blocks remain enabled.",
+  "limits": "Conditional truth/operator/iteration/collection/matching/format/subscript completeness and runtime occurrence provenance remain open, as do positive authenticated native context, secure runtime, full installed profiles, approved performance targets and all82whole requirements. SDK-absent fresh/upgrade Lite only; P32 active/P33-P35 dormant.",
+  "governance_stderr_sha256": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+}
