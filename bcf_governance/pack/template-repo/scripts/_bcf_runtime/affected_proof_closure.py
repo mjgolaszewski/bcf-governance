@@ -63,14 +63,23 @@ def patterns_for_claims(
 
 def changed_paths(
     repo_root: Path, prior_commit: str | None, prior_tree: str | None = None,
+    *, current_tree: str | None = None,
 ) -> list[str] | None:
     """Return an exact tree diff, including transported-tree fallback."""
 
-    if not prior_commit:
-        return []
+    if not isinstance(prior_commit, str) or re.fullmatch(r"[a-f0-9]{40,64}", prior_commit) is None:
+        return None
+    if current_tree is not None and re.fullmatch(r"[a-f0-9]{40,64}", current_tree) is None:
+        return None
     if prior_tree is not None and re.fullmatch(r"[a-f0-9]{40,64}", prior_tree) is None:
         return None
     source = prior_commit
+    commit_type = subprocess.run(
+        ["git", "cat-file", "-t", prior_commit], cwd=repo_root,
+        capture_output=True, text=True, check=False,
+    )
+    if commit_type.returncode == 0 and commit_type.stdout.strip() != "commit":
+        return None
     commit_tree = subprocess.run(
         ["git", "rev-parse", f"{prior_commit}^{{tree}}"], cwd=repo_root,
         capture_output=True, text=True, check=False,
@@ -89,7 +98,7 @@ def changed_paths(
             return None
         source = prior_tree
     result = subprocess.run(
-        ["git", "diff", "--name-only", source, "HEAD"], cwd=repo_root,
+        ["git", "diff", "--name-only", source, current_tree or "HEAD", "--"], cwd=repo_root,
         capture_output=True, text=True, check=False,
     )
     if result.returncode:
@@ -135,6 +144,24 @@ def _tracked_contract_digest(repo_root: Path, relative: str) -> str | None:
     return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
 
 
+def _assert_current_subject(repo_root: Path, subject: Mapping[str, str]) -> None:
+    """Check local Git/working bytes, separately from caller-authenticated authority."""
+    try:
+        identity = subprocess.run(
+            ["git", "rev-parse", "HEAD", "HEAD^{tree}"], cwd=repo_root,
+            capture_output=True, text=True, check=False,
+        )
+        state = subprocess.run(
+            ["git", "status", "--porcelain=v1", "--untracked-files=all", "--ignore-submodules=none"],
+            cwd=repo_root, capture_output=True, text=True, check=False,
+        )
+    except OSError as exc:
+        raise EvidenceError("affected proof current subject state cannot be resolved") from exc
+    if (identity.returncode or state.returncode or state.stdout
+            or identity.stdout.splitlines() != [subject["commit_sha"], subject["tree_sha"]]):
+        raise EvidenceError("affected proof current subject does not match the clean repository state")
+
+
 def derive_affected_proof_set(
     repo_root: Path,
     model: Mapping[str, Any],
@@ -154,9 +181,11 @@ def derive_affected_proof_set(
         for value in current_identity.values()
     ):
         raise EvidenceError("affected proof current subject identity is invalid")
+    _assert_current_subject(repo_root, current_identity)
     required_claims = sorted(set(str(value) for value in required_claim_ids))
     subjects = sorted(set(prior_subjects), key=lambda value: (value[0], value[1] or ""))
-    changes = [changed_paths(repo_root, commit, tree) for commit, tree in subjects]
+    changes = [changed_paths(repo_root, commit, tree, current_tree=current_identity["tree_sha"])
+               for commit, tree in subjects]
     ambiguous_subject = (
         len({commit for commit, _ in subjects}) != len(subjects)
         or any(value is None for value in changes)
@@ -262,6 +291,7 @@ def derive_affected_proof_set(
         "classifications": sorted(classifications, key=lambda row: row["claim_id"]),
     }
     payload["affected_proof_set_sha256"] = canonical_sha256(payload)
+    _assert_current_subject(repo_root, current_identity)
     return payload
 
 
