@@ -13,6 +13,7 @@ operation_side: query
 purpose: Bind operation native-model qualification declarations to the existing protected canonical claim owner before runtime context admission.
 targets:
 - schemas/application-operations.schema.json
+- governance/public-contracts.yml
 - bcf_governance/tooling/ci_graph_composition_operations.py
 - bcf_governance/tooling/semantic_authority_operations.py
 contract:
@@ -44,3 +45,7 @@ status:
   whole_requirement_advancement: false
   all_whole_requirements_open: 82
   phase: P32
+repair_disposition:
+  original_run: Source108, installed16 and architecture5 passed; pack/lint passed. Governance rejected the missing readable-version registration; preserve its exact stderr and no completed/published claim.
+  correction: Register readable versions1.0 and1.1 while retaining active1.0 and unchanged actual application policy. Reuse unchanged behavioral and installed evidence by exact file hashes; run public contract consumers and governance again.
+  no_activation: The active policy remains1.0; model references do not authorize runtime effects.
