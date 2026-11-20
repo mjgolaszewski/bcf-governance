@@ -1,0 +1,157 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "security_qualified": false,
+  "whole_requirement_advancement": false,
+  "contract_commit": "36fe9349f1d6aeff99534b1f64110723954f139b",
+  "implementation_subject": "670832f992995493cfe171298069420841820d11",
+  "test_tree": "7b6a264aef3933bfee09a25284660e00fc85cd33",
+  "before": {
+    "tests": 24,
+    "failures": 24,
+    "errors": 0,
+    "skipped": 0
+  },
+  "fixture_correction_commit": "1f8a6d2d7f84ff6df8c2a76267c7cfc9a6d3f482",
+  "tested_subject": "1f8a6d2d7f84ff6df8c2a76267c7cfc9a6d3f482",
+  "preimplementation_scope": "Original24 missing-API failures precede fake child execution; later fixture-only pathlib import corrected before qualification. Original failures retained.",
+  "reused_legacy_source": {
+    "original_subject": "670832f992995493cfe171298069420841820d11",
+    "cases": 94,
+    "full_junit_sha256": "67906f20c4cbd8cc278e3abdb8845cf0ac6ec43c66b27e87582f2aa4503c202f",
+    "scope": "Only unchanged archive/Grype94 PASS subset reused; full original118 had11 fake-cataloger failures, retained as failed original evidence. Production and these fixtures unchanged."
+  },
+  "source": {
+    "tests": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "58d221ec7e493a9f2090ae89569d6eb37d19ec04a1edac508a346e5c3db277bf",
+    "source": "5f334683e073b219aad029e6a851cc5de3d4c597562a529acc5970531bb65d55",
+    "installed": "0bc80048659f083300752981fda3ebc9f3a34933eb99b177ced72640d0f436fa",
+    "architecture": "6f3fe8a66aa30da8d8484f2a485ac099731818bb6ae85b53c5534de999a25a07"
+  },
+  "source_sha256": "336413b19e968a9cb1e4d1386da0b94f76552f5610e68f8fd3b9e1bd7f9eddb4",
+  "real_sbom_capture": {
+    "authority": false,
+    "security_qualified": false,
+    "runtime_context_qualified": false,
+    "sbom_sha256": "fe70a6c8a7bd0c616d22c4b4be80e183632f386e28e40af2914a732a8180bd00",
+    "cataloger_sha256": "17cc40c1e40dbfdeb8c84b6d9928909bceb793f22e8a8023ef408625f1d96ec5",
+    "component_count": 36,
+    "apk_count": 36,
+    "exact_retained_apk_database_population": true,
+    "archive_binding": {
+      "architecture": "amd64",
+      "archive_manifest_digest": "sha256:bb1b750b8616cf54158db2174e39ac43f32b88b3649633f930fa6de470252a38",
+      "archive_sha256": "376dd553e419836a443aa61cab48f3419092ddbc506b05ae6d5ba1fbe30555ef",
+      "authority": false,
+      "config_digest": "sha256:e9c02b1e6289d43e82dd5a41c227d9878e1a8c6f4707a48c37d88a20716017bc",
+      "layers": [
+        {
+          "diff_id": "sha256:4b52a7239ad634a030c345da49bb5212fecc0cc77eef58d8e7e91939e551c472",
+          "digest": "sha256:8ab1c64b01ded616ecf6ce3488d351f2fcee1be991765bd9b6e2550b69a20545",
+          "expanded_bytes": 7251968,
+          "size_bytes": 3361424
+        },
+        {
+          "diff_id": "sha256:81ac36f4bee4102128a3f1f63d1a2a057922351d656f4a4fcdb1b92cd28a95f2",
+          "digest": "sha256:7a4877cecca890677d2aeeaaaa4a4659cff0e5b2db98ca578583621e510cc657",
+          "expanded_bytes": 7305728,
+          "size_bytes": 2938749
+        },
+        {
+          "diff_id": "sha256:7f3cc23f95424a2268090e9d9f9a2e0ac29f2410e2d67e26a001b20f28576fc7",
+          "digest": "sha256:f4265a56de30c1b9e087ad6d1fe2e30c7904cee15fe2b91ff2a46177a6cdd7de",
+          "expanded_bytes": 1140224,
+          "size_bytes": 513554
+        },
+        {
+          "diff_id": "sha256:6e407bcb887726ad7e338d379446cbf49f43f2fd46cfa16e15d9d792b459704b",
+          "digest": "sha256:82087d46dc9d24d8d866b734cf1a5bdeb870f6b7af4e0a1e76e891c3e869d280",
+          "expanded_bytes": 816640,
+          "size_bytes": 355528
+        },
+        {
+          "diff_id": "sha256:24f670d1e337828fb932901ca6194de50c22b1327ee9a684bc1318e7bdbfd1f7",
+          "digest": "sha256:f53829540a90766dc673f2a4d258003b3d6d0644d4a71bb303e2ab9a006e0fb9",
+          "expanded_bytes": 715776,
+          "size_bytes": 425351
+        },
+        {
+          "diff_id": "sha256:9a5af3c2653f7d6d3a12beb2f639b46246b03c9def6fbf03653bcdc2fbf769be",
+          "digest": "sha256:dc2b2c4d05a68e22036d6b3acf944b702e8b98eaad7a732254734d0b61bc08eb",
+          "expanded_bytes": 394752,
+          "size_bytes": 178516
+        },
+        {
+          "diff_id": "sha256:c77049249d91fe78f3e8aebf20efb151aa6ff5a0d3dd938af712a4aa6e8eee6c",
+          "digest": "sha256:386404bbcc5eb496e5f3a585e97e2b5c1a80371bc704877b879116b95cd73c57",
+          "expanded_bytes": 236032,
+          "size_bytes": 97921
+        },
+        {
+          "diff_id": "sha256:5215e8ec94700a54bbbbbf967cb192ef56ab5ea8ba6abdf2fa2ca6b64fd09be6",
+          "digest": "sha256:81aee3040b675a25e4f0b1ca91348e134c9d25e69d42d2f50d0af52b49ab0ae3",
+          "expanded_bytes": 217088,
+          "size_bytes": 95799
+        },
+        {
+          "diff_id": "sha256:2af97d351f066d95be4835564d4e9445047a023e1f572d129b8462635b998e05",
+          "digest": "sha256:53abc9c206651e9f8631d1ab1d470ecc0f6908f0733fa51e225c7d1cb340abcd",
+          "expanded_bytes": 197632,
+          "size_bytes": 107901
+        },
+        {
+          "diff_id": "sha256:423bcdcc810594481f8f5b6e9b549a4f6aab9a288e121b25ec3b727eda6a13d6",
+          "digest": "sha256:62bd281d892293b183ff1c659c7dfb91aec40e35247697218b2159ea2c1f7677",
+          "expanded_bytes": 203264,
+          "size_bytes": 78636
+        },
+        {
+          "diff_id": "sha256:2d53f52bb0117d1d8c10b99db662aaae27498ed75370db0f2dd0cf7e28247c4f",
+          "digest": "sha256:d19ee864df38805eb925a20e9bb1d8744af1363c7e63bb9d6d67850e57745ee2",
+          "expanded_bytes": 183296,
+          "size_bytes": 14841
+        },
+        {
+          "diff_id": "sha256:540f3355a8613c1064325614a570faf5404a88b614457d8d506a349c7613486b",
+          "digest": "sha256:efab3f2ec4f44f0e7f797f710fdd172054fa32205b8d02f9074a0f92c9d977d2",
+          "expanded_bytes": 52617216,
+          "size_bytes": 19537586
+        }
+      ],
+      "os": "linux",
+      "sbom_binding": {
+        "normalized_manifest_digest": "sha256:7f53ee3d11927ecea8bd8168c817b1861732749aa47bcf3fcce41fbaafb93921",
+        "normalized_manifest_independently_verified": false,
+        "sbom_sha256": "fe70a6c8a7bd0c616d22c4b4be80e183632f386e28e40af2914a732a8180bd00"
+      },
+      "security_qualified": false
+    },
+    "limits": "Actual pinned Syft and exact sealed input; installed APK database corroborates package population, not independently complete native file provenance or security applicability. Known candidate security failures remain unchanged; no runtime or release selection."
+  },
+  "required_semantic": {
+    "executed_for_this_slice": false,
+    "retained_prior": "Required CLI runtime-context qualifier absent; no current semantic-green claim",
+    "reference": "audits/issue-394/runtime-effect-context-foundation-contract.yml"
+  },
+  "scope": "Pinned Syft capture under existing native owner and shared unchanged Grype lease/deadline helper; exact sealed archive bytes, explicit source/config, closed environment, retained streams and verified archive/config/ordered layer binding. No candidate execution or default activation.",
+  "limits": "Caller authenticates pins/custody; normalized SBOM manifest label remains independently unverified. No installed package/file completeness, native applicability, secure runtime or release approval. P32 active, P33-P35 dormant, all82whole open.",
+  "governance_returncode": 1,
+  "governance_stderr_sha256": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+}
