@@ -1,0 +1,26 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/read-port-compatibility-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitems: [foundation.composition, foundation.conformance, certification.distribution]
+maintenance_lesson: Existing 2.3.7 intake requires explicit disjoint reachable authoritative read ports, source-body checks and exact-base migrations
+scope:
+  - Extend existing application operation schema and semantic effect inventory with optional allowed_read_ports, defaulting to an empty list
+  - Keep schema1.0 backward compatible; valid existing omitted fields and legacy mutation/authority count tuples remain unchanged
+  - Read declarations require authoritative_read and disjoint source identities from mutation authority and observation ports
+  - Require source-resolved read bodies to pass the existing strict read-only traversal independently of command permissions
+  - Continue ordinary source traversal through reads; a declaration never supplies an opaque effect exemption or runtime qualification
+  - Propagate read facts through existing lifecycle population and binding owners
+  - Changes to read and nonauthoritative output boundaries require existing exact-base effect_changed migration; omitted versus empty read lists are equivalent
+limits:
+  - Native dynamic or unavailable source context remains blocked; annotations and read spelling confer no authority
+  - Protected policy/source/provider authentication remains with existing consumers
+  - No new graph claim registry evaluator broker receipt family or active execution strategy
+qualification:
+  - Contract and real-source controls before production changes
+  - Pure read positive plus hidden write/authority/observation callbacks, overlap, aliases, unreachable reads and malformed declarations
+  - Existing protected operation effect composition migration and installed consumer matrices
+  - Canonical source/schema/private package parity and architecture checks
+  - Preserve main and all82whole requirements open
