@@ -554,3 +554,160 @@ def capture_native_dependency_audit(
                    "stderr_sha256": hashlib.sha256(stderr).hexdigest(), "findings": findings}
     (output_dir / "native-audit.json").write_text(json.dumps(observation, indent=2, sort_keys=True) + "\n")
     return observation
+
+
+def native_archive_subject(
+    archive_bytes: bytes, *, expected_archive_sha256: str, expected_manifest_digest: str,
+    max_archive_bytes: int, max_expanded_bytes: int, max_members: int,
+    sbom_bytes: bytes | None = None,
+) -> dict[str, Any]:
+    """Bind a single-image OCI archive without extracting or executing it.
+
+    The protected caller authenticates pins and budgets. Optional Syft metadata
+    binds config and ordered layer identities, not its normalized manifest label.
+    Neither package completeness nor runtime/security authority follows.
+    """
+    import gzip
+    import io
+    import re
+    import tarfile
+    from pathlib import PurePosixPath
+
+    def reject(message):
+        raise DependencyAssuranceError("native archive " + message)
+
+    def digest(value):
+        return type(value) is str and re.fullmatch(r"sha256:[a-f0-9]{64}", value) is not None
+
+    def blob_path(value):
+        if not digest(value):
+            reject("descriptor digest is invalid")
+        return "blobs/sha256/" + value[7:]
+
+    try:
+        if (any(type(value) is not int or not 0 < value < 2**63 - 1 for value in
+                (max_archive_bytes, max_expanded_bytes, max_members))
+                or type(archive_bytes) is not bytes or len(archive_bytes) > max_archive_bytes
+                or type(expected_archive_sha256) is not str
+                or re.fullmatch(r"[a-f0-9]{64}", expected_archive_sha256) is None
+                or hashlib.sha256(archive_bytes).hexdigest() != expected_archive_sha256
+                or not digest(expected_manifest_digest)):
+            reject("input bytes, pins or bounds are invalid")
+        files = {}
+        names = set()
+        with tarfile.open(fileobj=io.BytesIO(archive_bytes), mode="r:") as archive:
+            for member in archive:
+                if len(names) >= max_members or member.name in names:
+                    reject("member population is duplicated or exceeds its bound")
+                names.add(member.name)
+                path = PurePosixPath(member.name)
+                if (path.is_absolute() or ".." in path.parts or path.as_posix() != member.name
+                        or member.pax_headers or member.issparse()
+                        or not (member.isdir() or member.isfile())):
+                    reject("member path or type is unsupported")
+                if member.isdir():
+                    continue
+                with archive.extractfile(member) as stream:
+                    raw = stream.read(max_archive_bytes + 1)
+                if len(raw) != member.size or len(raw) > max_archive_bytes:
+                    reject("member byte length differs")
+                if member.name.startswith("blobs/sha256/"):
+                    if (len(member.name) != len("blobs/sha256/") + 64
+                            or hashlib.sha256(raw).hexdigest() != member.name.split("/")[-1]):
+                        reject("blob bytes differ from their address")
+                files[member.name] = raw
+            end_offset = archive.offset
+        if any(archive_bytes[end_offset:]):
+            reject("nonzero trailing archive bytes are ambiguous")
+        if _native_scan_json(files["oci-layout"]) != {"imageLayoutVersion": "1.0.0"}:
+            reject("OCI layout is unsupported")
+        index = _native_scan_json(files["index.json"])
+        if (type(index.get("schemaVersion")) is not int or index["schemaVersion"] != 2
+                or type(index.get("manifests")) is not list or len(index["manifests"]) != 1
+                or index["manifests"][0].get("digest") != expected_manifest_digest):
+            reject("index does not identify one exact admitted manifest")
+        used = {"oci-layout", "index.json"}
+
+        def descriptor(value, media_types):
+            if (type(value) is not dict or value.get("mediaType") not in media_types
+                    or type(value.get("size")) is not int or value["size"] < 0):
+                reject("descriptor shape or media type is invalid")
+            name = blob_path(value.get("digest"))
+            raw = files[name]
+            if len(raw) != value["size"]:
+                reject("descriptor size differs from blob bytes")
+            used.add(name)
+            return raw
+
+        manifest_raw = descriptor(index["manifests"][0], {"application/vnd.oci.image.manifest.v1+json"})
+        manifest = _native_scan_json(manifest_raw)
+        if (type(manifest.get("schemaVersion")) is not int or manifest["schemaVersion"] != 2
+                or manifest.get("mediaType") != "application/vnd.oci.image.manifest.v1+json"
+                or type(manifest.get("layers")) is not list or not manifest["layers"]):
+            reject("manifest shape is unsupported")
+        config = _native_scan_json(descriptor(manifest["config"], {"application/vnd.oci.image.config.v1+json"}))
+        if (any(type(config.get(key)) is not str or not config[key] for key in ("architecture", "os"))
+                or config["os"] != "linux" or config.get("rootfs", {}).get("type") != "layers"):
+            reject("config platform or rootfs is unsupported")
+        diffs = config["rootfs"]["diff_ids"]
+        if type(diffs) is not list or len(diffs) != len(manifest["layers"]) or any(not digest(v) for v in diffs):
+            reject("ordered rootfs layer population differs")
+        expanded = 0
+        layers = []
+        for layer, diff in zip(manifest["layers"], diffs):
+            raw = descriptor(layer, {"application/vnd.oci.image.layer.v1.tar", "application/vnd.oci.image.layer.v1.tar+gzip"})
+            stream = gzip.GzipFile(fileobj=io.BytesIO(raw)) if layer["mediaType"].endswith("+gzip") else io.BytesIO(raw)
+            hashed = hashlib.sha256()
+            size = 0
+            with stream:
+                while chunk := stream.read(min(1024 * 1024, max_expanded_bytes - expanded + 1)):
+                    expanded += len(chunk)
+                    size += len(chunk)
+                    if expanded > max_expanded_bytes:
+                        reject("expanded layer population exceeds its bound")
+                    hashed.update(chunk)
+            if "sha256:" + hashed.hexdigest() != diff:
+                reject("expanded layer bytes differ from rootfs identity")
+            layers.append({"digest": layer["digest"], "diff_id": diff, "size_bytes": len(raw), "expanded_bytes": size})
+        if "manifest.json" in files:
+            def compatibility_pairs(items):
+                result = {}
+                for key, value in items:
+                    if key in result:
+                        reject("Docker projection contains duplicate JSON keys")
+                    result[key] = value
+                return result
+            compatibility = json.loads(files["manifest.json"], object_pairs_hook=compatibility_pairs)
+            json.dumps(compatibility, allow_nan=False)
+            if (type(compatibility) is not list or len(compatibility) != 1
+                    or compatibility[0].get("Config") != blob_path(manifest["config"]["digest"])
+                    or compatibility[0].get("Layers") != [blob_path(v["digest"]) for v in manifest["layers"]]):
+                reject("Docker compatibility projection differs from OCI identity")
+            used.add("manifest.json")
+        if set(files) != used:
+            reject("unreferenced or unknown archive files remain")
+        binding = None
+        if sbom_bytes is not None:
+            if type(sbom_bytes) is not bytes:
+                reject("SBOM must be immutable bytes")
+            sbom = _native_scan_json(sbom_bytes)
+            source = sbom["source"]
+            metadata = source["metadata"]
+            if (sbom.get("schema", {}).get("version") != "16.1.13" or source.get("type") != "image"
+                    or metadata.get("imageID") != manifest["config"]["digest"]
+                    or any(metadata.get(key) != config[key] for key in ("architecture", "os"))
+                    or not digest(metadata.get("manifestDigest"))
+                    or source.get("id") != metadata["manifestDigest"][7:]
+                    or [v.get("digest") for v in metadata["layers"]] != diffs):
+                reject("SBOM config, platform or ordered layer identity differs")
+            binding = {"sbom_sha256": hashlib.sha256(sbom_bytes).hexdigest(),
+                       "normalized_manifest_digest": metadata["manifestDigest"],
+                       "normalized_manifest_independently_verified": False}
+        return {"authority": False, "security_qualified": False,
+                "archive_sha256": expected_archive_sha256, "archive_manifest_digest": expected_manifest_digest,
+                "config_digest": manifest["config"]["digest"], "architecture": config["architecture"],
+                "os": config["os"], "layers": layers, "sbom_binding": binding}
+    except DependencyAssuranceError:
+        raise
+    except (ValueError, TypeError, KeyError, AttributeError, OSError, EOFError, tarfile.TarError) as exc:
+        raise DependencyAssuranceError("native archive is malformed or incomplete") from exc
