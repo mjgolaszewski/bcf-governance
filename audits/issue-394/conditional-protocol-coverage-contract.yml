@@ -1,0 +1,44 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  status: planned
+  authority: false
+  path: audits/issue-394/conditional-protocol-coverage-contract.yml
+parent_contract: audits/issue-394/runtime-effect-context-foundation-contract.yml
+workitem: P32-P0-04
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: query
+subject: 966aeb181bae60a4b435a2b39b326fe5c1337c15
+problem: The independent pass now checks mandatory attribute/context/await rows, but conditional protocol rows and expression occurrences can still be omitted or substituted before runtime-context qualification.
+scope:
+- Extend the same cold AST pass to all currently supported protocol syntax and comprehension guards, using independently reconstructed site grammar and the existing canonical native-literal/Boolean eligibility proofs.
+- Do not invoke FunctionVisitor or its implicit protocol classifier to reconstruct expected source sites; deleting that producer classifier and its paired test must leave cold source obligations visible.
+- Bind kind, exact caller/span/expression digest, model version and occurrence; bind explicit call-contract occurrences in the same source traversal, including collisions with comprehension guard expressions.
+- Recompute existing native eligibility from actual source; no annotation or candidate disposition supplies exclusion. Qualification of the native eligibility models themselves remains a separate protected-context requirement.
+- Keep existing source/protocol/effect owners and schema identities. No parallel registry, graph, runtime evaluator or receipt family.
+controls:
+- Erase truth/operator/iteration/collection/subscript/format/exception/match obligations, retaining all unrelated explicit calls and stores.
+- Remove the producer emitter or classifier; the independently reconstructed source population must still reject omissions.
+- Duplicate or forge kind/span/digest/caller/version/occurrence and exchange repeated-expression identities.
+- Include actual truth/hash/iteration/operator/format/subscript callbacks after erasing their inventory rows.
+- Preserve native literal and Boolean-result exclusions, eager definitions/class bodies, deferred function/lambda scopes, comprehensions, closure scalar cells, Unicode and CRLF bytes.
+- In fresh and upgraded SDK-absent Lite installations, remove only the consumer reconciliation call; named omitted-protocol controls must fail.
+qualification:
+  runtime_context_qualified: false
+  whole_requirement_advancement: false
+  limitation: Completeness is relative to the existing supported Python protocol grammar and canonical eligibility models, not the entire language/native runtime. Native/profile authority, implementation/model qualification, dynamic invocation, full installed matrix and lifecycle closure remain open. P32 active, P33-P35 dormant, all82whole open.
+target_modules:
+- bcf_governance/tooling/semantic_authority_operations.py
+expected_tests:
+- tests/test_conditional_protocol_coverage.py
+- tests/test_installed_conditional_protocol_coverage.py
+- tests/test_implicit_source_coverage.py
+- tests/test_independent_call_coverage.py
+- tests/test_independent_store_coverage.py
+- tests/test_direct_call_binding.py
+forbidden_surfaces:
+- main/predecessor machinery, maintenance/adopter repositories
+- generated workflows and authority pins
+- source-only green substitution or disabling strict context
+sequence: Commit bounded contract and controls first; preserve genuine red omissions before production. Then affected source, exact committed population, installed parity, architecture/lint/package, coupled ledgers and feature backup; keep global required blocks explicit.
