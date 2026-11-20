@@ -71,7 +71,7 @@ def test_fresh_offline_bootstrap_installs_real_compiler_and_declared_types(repos
     assert not (fixture / "node_modules").exists()
     report = BOOTSTRAP.bootstrap(repository)
     assert report["status"] == "test_toolchain_ready" and report["network_requests"] == 0
-    assert report["node_version"] == "v22.23.2" and report["typescript_version"] == "6.0.3"
+    assert report["node_version"] == "v22.23.5" and report["typescript_version"] == "6.0.3"
     assert report["compiler_files"] > 100
     assert BOOTSTRAP._tree(fixture / "node_modules/@bcf-test/declared-types") == BOOTSTRAP._tree(fixture / "declared-types")
     source = fixture / "fixture.ts"
@@ -173,7 +173,7 @@ def test_missing_or_wrong_node_fails_without_skipping_or_installing(repository: 
     else:
         monkeypatch.setattr(BOOTSTRAP.subprocess, "run", lambda *args, **kwargs:
                             subprocess.CompletedProcess(args[0], 0, stdout="v20.0.0\n", stderr=""))
-    with pytest.raises(ValueError, match="requires Node v22.23.2"): BOOTSTRAP.bootstrap(repository)
+    with pytest.raises(ValueError, match="requires Node v22.23.5"): BOOTSTRAP.bootstrap(repository)
     assert not (repository / BOOTSTRAP.FIXTURE / "node_modules").exists()
 
 

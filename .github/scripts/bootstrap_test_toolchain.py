@@ -15,7 +15,7 @@ import tarfile
 import tempfile
 
 
-NODE_VERSION = "v22.23.2"
+NODE_VERSION = "v22.23.5"
 FIXTURE = Path("tests/fixtures/typescript-toolchain")
 
 
