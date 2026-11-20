@@ -1,0 +1,150 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "whole_requirement_advancement": false,
+  "runtime_context_qualified": false,
+  "security_qualified": false,
+  "scope": "Enforced native string argument snapshot before all21 declared CLI parser setups, package/controller dispatch and nested command construction; no whole runtime context authority",
+  "contract_commit": "d41da09e16559e700be9066e1b697cb01f5aca54",
+  "implementation_subject": "e69256497ca22b9f1d6e25081d768ddb6ea69f81",
+  "test_subject": "e69256497ca22b9f1d6e25081d768ddb6ea69f81",
+  "test_tree": "a44cec9a63e894fca47b41458c216254ddc2e8fb",
+  "before": {
+    "tests": 188,
+    "failures": 159,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source": {
+    "tests": 217,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "required_semantic": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "fc782f1c0cb73b68d9a2bb64e046364e7a557abd6719a228f8d0b214fc8061ed",
+    "source": "04863ca4ab020e00f8213fe7aa43f96606005d66dbb15072f5984785a5ca7694",
+    "installed": "1ad85b5c0454b788691ad9b0c31408f27f18a559ceac8e089b7f8b35ee1f7826",
+    "architecture": "8fa81146f3c641f338c9518484261572cacb44f25ddeb627bd0748e33db2c188",
+    "required-semantic": "84aec4cdb0ee2a02b5d1c4259a334ae6566ece0e9b64b55bf582e8b230256277"
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/ci_commands.py": "ad609f50d5315461775c851d92e75f9228e95a8ce3ef9fef9b7efdfd511b79d7",
+    "bcf_governance/tooling/cleanup_ci_resources.py": "1ad740fff53338ee7945860e00f180c36fabac5f0d03c7cdf6eec74fc39eb65c",
+    "bcf_governance/tooling/ci_github_commands.py": "3a120210821b7fc9572a48c4fec468415a165fcf8867d82c9197eb77bef52a95",
+    "bcf_governance/tooling/cleanup_governance_pack.py": "f3cbdff8b2a523f883f78101f33bd72f5b8b0a96d44757bd9d4318273d916bf7",
+    "bcf_governance/tooling/doctor_governance_pack.py": "cdb32f9878ecc419839839fb180a99f946e3428beaa5056280d460cdae2eec6f",
+    "bcf_governance/tooling/interpreter_environment.py": "6a4c60ca156f83375d5d6b8eccdcd6155c64123d10d003de6ee32d4a2c9bed3e",
+    "bcf_governance/tooling/governance_evidence.py": "8aa1c6cf588d5f954564c181786d80131809ac9ab0078630747499799eee66e2",
+    "bcf_governance/tooling/evidence_storage_commands.py": "af9da8819a67b1ecf74452a9b15cf00d28928d32a2fb37f53ac578aaa1faa950",
+    "bcf_governance/tooling/check_governance_exposure.py": "5adf176f2bc019de757469b65afa30f3f1c71da654863253dc3eca8fd354cac3",
+    "bcf_governance/tooling/governance_install/cli.py": "10a58adc89631fdcc72d9845c698f3dd671bf0aed971b47d75e21e94e41eb4a7",
+    "bcf_governance/tooling/migrate_contracts.py": "b0778c0037fb9d269f4b9eaba1031807a8bd8a380ec81e3c087cec81a1f28f42",
+    "bcf_governance/tooling/migrate_governance_evidence.py": "e78b8fb18b769c5b1a20982c9b27ef2cb4ab3cbe3dc2d975c8b68a1df7b5724a",
+    "bcf_governance/tooling/preflight.py": "09faf9e1599f6528f642b4b3cc58a04d3406a60851f0c39dfd46d76dbbe31bbe",
+    "bcf_governance/tooling/profile_governance.py": "97e42382fa52a32592e5b25be1274d57ae86a5603518ed6c8be986c45a36b455",
+    "bcf_governance/tooling/publish_audit.py": "ea0387af90498bccceaad490bb17e8765df9cbb87e4c6885fbbd830fb11aa31c",
+    "bcf_governance/tooling/scaffold_governance_artifacts.py": "166ca84123925e6b2e363f19e42bccc818298c039b4c92a833cbcfd0793119b2",
+    "bcf_governance/tooling/semantic_ownership_scan.py": "10e7e3c013e3f2056735bfb587fcc209d58a95abee2d6406888c05cda16372b7",
+    "bcf_governance/tooling/test_manifests.py": "2b5fd18687e7713b1a012ebf9e67cc00a9a77f4592925ee53426efe187de08eb",
+    "bcf_governance/tooling/governance_truth_cli.py": "5856793627af96862b205d5f2c6101cc16f3ca464c1217e42046ae042cf27398",
+    "bcf_governance/tooling/governance_validation/runner.py": "b48d5abcfc48357e29a513b161e2c8778f5a432ec929de0ca7c14732394cee76",
+    "bcf_governance/cli.py": "dfb43e720c24af02607f9fe76040920a9df87dc3976e69f145b938ad968a5575",
+    "bcf_governance/tooling/ci_controller_builder.py": "74754a86c01b5e679b0c6bae3d4bdc7944a0a59b3ac7e1e77579a0d5c2c35504",
+    "bcf_governance/tooling/nested_cli_runtime.py": "c4140646f8d5aa1e980f30b480839acb8e3aea13806e1ec65282495ef6769ae0"
+  },
+  "entrypoint_population": {
+    "bcf_governance/tooling/ci_commands.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/cleanup_ci_resources.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/ci_github_commands.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/cleanup_governance_pack.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/doctor_governance_pack.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/interpreter_environment.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/governance_evidence.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/evidence_storage_commands.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/check_governance_exposure.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/governance_install/cli.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/migrate_contracts.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/migrate_governance_evidence.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/preflight.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/profile_governance.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/publish_audit.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/scaffold_governance_artifacts.py": [
+      "main",
+      "reconcile_main"
+    ],
+    "bcf_governance/tooling/semantic_ownership_scan.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/test_manifests.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/governance_truth_cli.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/governance_validation/runner.py": [
+      "main"
+    ],
+    "bcf_governance/cli.py": [
+      "main"
+    ],
+    "bcf_governance/tooling/ci_controller_builder.py": [
+      "main"
+    ]
+  },
+  "limits": "Context witnesses retain receivers outside calls and trusted normal interpreter globals. Generated-controller tests use real synthetic committed installed-source materialization with inert downstream handlers; no controller build/publication or full SDK custody. Full global/initialization/lifetime/native and effect qualification remains open, as do actual context factory, security, required semantic/projection, approved targets and82whole requirements.",
+  "governance_returncode": 1,
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  }
+}
