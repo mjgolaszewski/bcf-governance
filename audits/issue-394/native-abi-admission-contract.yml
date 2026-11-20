@@ -1,0 +1,41 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/native-abi-admission-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitem: P32-P0-04
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: command
+owners: [bcf_governance/tooling/release_runtime_verification.py]
+scope: Existing manifest1.1 selected-executable admission before verification output or environment allocation
+contract:
+  - Probe actual selected executable in isolated mode for standard GNU Linux x86_64 CPython ABI facts in addition to exact declared Python version and platform
+  - Derive expected cache tag SOABI extension suffix and multiarch from the independently validated manifest subject rather than candidate report fields
+  - Require 64-bit pointers standard ABI flags nondebug build and an absent or integer-zero Py_GIL_DISABLED value; missing extra mistyped or contradictory identity facts reject
+  - Free-threaded debug musl cross-minor and x32 identities cannot be silently represented by the existing standard cp3xx subject
+  - Retain manifest1.0 and historical report semantics canonical locks public CLI grammar and current release-role compatibility unchanged
+  - Preserve report1.2 grammar; this strengthens executable admission without turning a reported ABI into complete runtime provenance
+qualification:
+  - Commit contract and controls before production
+  - Exercise adversarial executable-response fixtures with unchanged version/platform and different ABI facts
+  - Retain an actual selected CPython standard-ABI positive witness reaching the next allocation boundary
+  - Qualify fresh and repaired SDK-absent consumers with an ABI-only guard removal causing the named refusal control to fail
+  - Retain whole-operation semantic and workflow projection failures and all82whole requirements open
+limits:
+  - Adversarial executable fixtures are identity-admission controls not actual free-threaded debug or foreign-runtime executions
+  - A selected executable can lie about its facts; approved executable stdlib native-library and image bytes still require independent authenticated custody and security qualification
+  - Reaching the next boundary proves admission only; full wheel/sdist execution and ordinary invocation contexts remain independently required
+forbidden:
+  - New graph registry evaluator broker or receipt family
+  - Alternate native profile activation or release runtime selection by this slice
+  - Main maintenance authority generated workflows live adopters or historical evidence mutation
+references:
+  - https://docs.python.org/3.14/using/configure.html#cmdoption-disable-gil
+  - audits/issue-394/runtime-subject-migration-contract.yml
+
+legacy_consumer_dispositions:
+  - Capture the two legacy producer failures caused by a mock missing the existing manifest_schema_version python and platform protocol; supply those legacy1.0 fields without changing its producer or report assertions
+  - Capture the stale Node22.23.2 expectation and align it with already implemented canonical22.23.5 policy; no Node or workflow production bytes change
+  - Require all three corrected cases to pass before applying native ABI production changes; retain their original failures and exact tested subjects
