@@ -1,0 +1,35 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  status: contract_before_production
+  authority: false
+issue: 394
+workitem: P32-P0-04
+owner: bcf_governance/tooling/dependency_assurance.py
+requirements: [I03, I04, I18, I25, I28, I29, AC19, AC24, AC26]
+problem: Exact archive and native advisory input checks exist, but production SBOM bytes are still supplied by a caller rather than captured from the exact sealed archive by the existing native command owner.
+interface:
+  operation: capture_native_sbom
+  inputs: Independently authenticated immutable archive/manifest pins and bounds; pinned Syft1.57.2 executable; existing native execution lease and finite deadline; fresh execution-owned output.
+  output: Original Syft16.1.13 bytes and retained raw stdout/stderr/config/archive-binding records; no new receipt family, CLI, default gate or security authority.
+contract:
+- Existing native execution owner and descriptor/thread identity precede any archive/tool/output work.
+- Factor unchanged existing Grype lease/deadline checks into one private helper shared with Syft; retain all existing Grype behavior and controls.
+- Validate exact archive chain and tool bytes before output allocation. Reject malformed/moved/substituted inputs, incompatible bounds and existing output namespaces.
+- Closed runtime environment and explicit owned config prevent ambient cataloger settings or provider/cloud credentials from changing input selection; application-update checks disabled.
+- Send exact immutable archive bytes through existing sealed stdin; explicit docker-archive:/proc/self/fd/0 source must match the native command rather than a mutable filename or automatic pipe guess.
+- Retain original streams. Nonzero process, malformed/wrong-version output, changed tool/config, incompatible streams or wrong archive/config/layer SBOM binding cannot return accepted bytes.
+- Recheck finite deadline after consuming output/context binding. Existing owner handles admitted process cleanup; unknown custody propagates and preserves namespace, never auto-deletes or retries.
+- Query/capture binds identity only. Protected consumer still authenticates source/tool pins, full package/file inventory, context applicability, secure runtime and provider/release authority. No empty or omitted population can grant downstream audit success.
+consumer_matrix:
+- Existing Grype capture and archive-binding consumers after private helper extraction.
+- Source, canonical template/private/package runtime.
+- SDK-absent fresh/upgrade positive and cause-specific detector controls.
+- Actual pinned Syft with retained exact archive, matching config/ordered layers and independently retained installed APK inventory; no image execution or scanner DB update.
+verification:
+- Commit contract and executable controls before production mutation.
+- Retain preimplementation failures; run affected archive/native and installed controls, real cataloger witness, standard lint/pack/architecture and governance.
+- Preserve original source/normalized manifest distinction and all known runtime security findings; no phase or whole-requirement advancement.
+remaining:
+- Complete installed native/file provenance and security applicability, approved runtime, full context/lifecycle proof and matched measurement approval.
+- P32 active; P33-P35 dormant; all82whole requirements open.
