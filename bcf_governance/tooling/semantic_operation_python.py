@@ -9,7 +9,7 @@ from typing import Any
 def _operation_source_text(repo_root: Path, source: Path, source_subject=None) -> str:
     """Read exact source when bound; this does not authenticate its repository."""
     if source_subject is None:
-        return source.read_text(encoding="utf-8")
+        return source.read_bytes().decode("utf-8")
     from .semantic_source_paths import committed_regular_blob_capture
 
     _, raw = committed_regular_blob_capture(
