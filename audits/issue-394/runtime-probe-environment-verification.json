@@ -1,0 +1,54 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "security_qualified": false,
+  "whole_requirement_advancement": false,
+  "contract_commit": "cbb31aa6f7278d21ac678793ad91c753e0134800",
+  "implementation_subject": "7017636350d51c66bdf9ba145699f8dc66b42930",
+  "test_tree": "3c7c027cf407938909b7379fb5874a12267278c8",
+  "before": {
+    "tests": 22,
+    "failures": 22,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source": {
+    "tests": 164,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "required_semantic": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "629446108875152f682b8b28af86d0612e40353721cdfeb32458f9d6ca99ea05",
+    "source": "3426941a83519d830cfd2c45455a4a066c7b853c5be82af097e1d56139fb859e",
+    "installed": "9d62a4c02002a9aa7fa834a15c2ba4af07f1a4f0c5bf7d1cd2445a6894e69929",
+    "architecture": "c92819461e0092e1dce709d7567ea5e5c39845a42206d9a3939b1e0b12ab506b",
+    "required-semantic": "4c1e71253c6191ca20f6438ca1221a4e17cab54c4a757a1a9ffeb5faa9dcbb33"
+  },
+  "source_sha256": "d9b5b2e1bee7952de303cbee7a43f5acf9ab78febef73f3b293b8b26d3c9adb8",
+  "scope": "Both existing manifest branches explicitly bind selected executable probes to existing closed runtime_environment and manifest-parent cwd with isolated bytecode-free Python invocation before output/environment allocation",
+  "limits": "Selected executable fixtures capture actual child environment; not executable authenticity or native-image/security/full runtime-effect qualification. Existing PATH/locale/TMPDIR allowances remain. Full global/lifetime/native context and semantic/projection, targets/custody and82whole requirements remain open.",
+  "governance_returncode": 1,
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  }
+}

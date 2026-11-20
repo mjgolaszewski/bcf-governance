@@ -304,6 +304,8 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/runtime-probe-environment-verification.json
+    - audits/issue-394/runtime-probe-environment-contract.yml
     - audits/issue-394/cli-argument-context-verification.json
     - audits/issue-394/cli-argument-context-contract.yml
     - audits/issue-394/native-abi-admission-verification.json
