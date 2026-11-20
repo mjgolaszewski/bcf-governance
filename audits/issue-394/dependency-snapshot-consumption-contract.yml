@@ -1,0 +1,36 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/dependency-snapshot-consumption-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitem: P32-P0-04
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: contract_then_command_and_query
+owners: [bcf_governance/tooling/dependency_assurance.py]
+problem: Frozen dataclass fields still contain mutable dictionaries and lists; consumers currently trust a stored digest after member mutation and return aliases to input data
+contract:
+  - Capture an owned canonical JSON inventory payload at each actual consumer and recompute its SHA256 before acceptance
+  - A changed root component edge or digest cannot yield a clean or vulnerable accepted audit subject; return scanner_failure with a typed diagnostic instead
+  - Frozen requirement export and CycloneDX construction reject incompatible inventory before creating output directories or publishing a document
+  - Build outputs only from the admitted owned snapshot so subsequent caller mutation cannot rewrite exported bytes or the SBOM
+  - Detach payload and SBOM containers from the inventory; capture scanner JSON before deriving findings digest and status
+  - Malformed non-JSON or nonfinite scanner data is scanner_failure rather than clean
+  - Preserve the existing digest algorithm observation schema scanner exit/population rules CLI grammar and genuinely valid hand-built inventories
+qualification:
+  - Commit bounded contract and independent controls before production
+  - Replace historical dummy digests in existing fixtures with computed canonical digests without weakening their population or vulnerability assertions
+  - Qualify mutation of roots components dependency edges digest caller-owned raw results and snapshots at each consumer
+  - Prove ordinary valid inventory keeps exact frozen text and CycloneDX output; mutations after capture cannot replace those captured subjects
+  - Qualify SDK-absent fresh and repaired consumers plus a digest-predicate removal causing the named stale-inventory control to fail
+  - Run affected inventory audit and installed controls standard lint package parity architecture and required semantic/governance gates on exact source
+limits:
+  - Payload integrity is not authentication of installed package provenance or the caller; protected collectors and consumers still own that trust boundary
+  - This does not authenticate a native image scanner execution complete native package inventory vendor applicability or a positive full runtime context
+  - Arbitrary Python callback global initialization and lifetime behavior is not qualified by JSON copying
+  - All82 whole requirements stay open and P33-P35 dormant
+forbidden:
+  - New registry evaluator broker receipt family or security exception
+  - Main generated workflow authority predecessor or maintained adopter mutation
+  - A native scanner clean claim inferred from its matches array without authenticated exact input and execution binding

@@ -1,11 +1,17 @@
 """Security audit completion requires the exact requested dependency population."""
+from dataclasses import replace
+import hashlib
+import json
+
 import pytest
 from bcf_governance.tooling.dependency_assurance import InstalledDependencyInventory, audit_envelope
 
 
 def _inventory():
-    return InstalledDependencyInventory(roots=("example-package",), components=(
+    result = InstalledDependencyInventory(roots=("example-package",), components=(
         {"name": "example-package", "version": "1.0"},), dependencies=(), sha256="a" * 64)
+
+    return replace(result, sha256=hashlib.sha256(json.dumps(result.payload(), sort_keys=True, separators=(",", ":")).encode()).hexdigest())
 
 
 def _row(**changes):

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
+from dataclasses import replace
+import hashlib
+import json
 
 from bcf_governance.tooling.dependency_assurance import (
     InstalledDependencyInventory,
@@ -14,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def _inventory() -> InstalledDependencyInventory:
-    return InstalledDependencyInventory(
+    result = InstalledDependencyInventory(
         roots=("example",),
         components=(
             {
@@ -27,6 +30,8 @@ def _inventory() -> InstalledDependencyInventory:
         dependencies=(({"ref": "pkg:pypi/example@1.0", "dependsOn": []}),),
         sha256="a" * 64,
     )
+
+    return replace(result, sha256=hashlib.sha256(json.dumps(result.payload(), sort_keys=True, separators=(",", ":")).encode()).hexdigest())
 
 
 def test_known_vulnerability_and_scanner_failure_never_become_clean() -> None:
