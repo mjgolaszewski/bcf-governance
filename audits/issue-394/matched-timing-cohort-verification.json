@@ -1,0 +1,55 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "percentile_certification": false,
+  "whole_requirement_advancement": false,
+  "contract_commit": "5d862fe4f75b88d789ce65dd503f43ce1b3517e3",
+  "implementation_subject": "75a2a1a4f4e533b703852524cbac2372f6db3e94",
+  "test_tree": "82ec850829e55bc8f00b6b49567ea4ff14a10c1a",
+  "before": {
+    "tests": 47,
+    "failures": 47,
+    "errors": 0,
+    "skipped": 0
+  },
+  "preimplementation_evidence": {
+    "original_subject": "5d862fe4f75b88d789ce65dd503f43ce1b3517e3",
+    "original_junit_sha256": "2b9c850c5f6694b9a45491f072238687c5ace2846fa37cf87ae2ba66344de55e",
+    "scope": "Unchanged 47 RED evidence reused from terminal v1; no new preimplementation run"
+  },
+  "source": {
+    "tests": 197,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "2b9c850c5f6694b9a45491f072238687c5ace2846fa37cf87ae2ba66344de55e",
+    "source": "82e12279b9369d5aaec09f48d0d910c0afcf6da716aff1f0109445bee143c073",
+    "installed": "d7ceb31e719624019bcc34db7db01ae40a4862a5204ad14f1c4dc4e6035ec8bd",
+    "architecture": "8e854a452323af73f08446a9bfcae8d2a144409b5c50339c31bc9553ba1c7140"
+  },
+  "source_sha256": "28f20da83f56bd3958b8c1c2ed4736d8cba2984a7f100c269727ba43f91dc67a",
+  "schema_sha256": "00137a7fb921f95735829912acbb8f9c0c4a29bedbeee3f851504df8b3d4e486",
+  "scope": "Dormant pure controlled-pair query checks independently supplied protocol/capture pins, full input population, exact context/subjects, existing arithmetic and deterministic detached observations. Inputs authenticated by protected consumer, not this query. No exclusions, percentiles, targets, approval or provider authority.",
+  "required_semantic": {
+    "executed_for_this_slice": false,
+    "retained_prior": "Required CLI runtime-context qualifier absent; no current semantic-green claim",
+    "reference": "audits/issue-394/runtime-effect-context-foundation-contract.yml"
+  },
+  "limits": "No real matched cohort, reviewed protocol, approved secure runtime, statistical adequacy, target approval, default activation or independently complete foundation/custody. All82whole open.",
+  "governance_returncode": 1,
+  "governance_stderr_sha256": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+}
