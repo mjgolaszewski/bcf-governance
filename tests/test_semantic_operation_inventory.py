@@ -73,6 +73,14 @@ def test_effect_inventory_rejects_unresolved_path_before_projection(source_effec
 def test_effect_inventory_retains_exact_external_port_identity(source_effects):
     operation, inventory = source_effects
     operation['allowed_authority_ports'] = ['provider::publish']
-    observed = _inventory(operation, inventory)
+    # The external identity is a source projection, not authenticated invocation.
+    with pytest.raises(effects.SemanticOperationEffectError, match='runtime call context'):
+        _inventory(operation, inventory)
+    observed = effects.validated_operation_effect_inventory(
+        operation, 'runtime.py::entry', inventory, require_runtime_context=False,
+    )
     assert ('authority', 'call', 'provider::publish') in observed
-    assert effects.validate_operation_effects(operation, 'runtime.py::entry', inventory) == (1, 1)
+    assert any(row[:2] == ('unresolved', 'runtime_call') for row in observed)
+    assert effects.validate_operation_effects(
+        operation, 'runtime.py::entry', inventory, require_runtime_context=False,
+    ) == (1, 1)

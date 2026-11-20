@@ -284,7 +284,12 @@ def test_mixed_source_composition_retains_python_classes_and_both_consumers(tmp_
     originals = deepcopy((python, typescript))
     combined = merge_inventories([python, typescript])
     assert combined["classes"] == python["classes"], "Python class facts lost in source composition"
-    assert validate_operation_effects(_operation(), "service.py::query", combined) == (0, 0)
+    # Composition retains source facts without authenticating Python allocation.
+    with pytest.raises(SemanticOperationEffectError, match="runtime call context"):
+        validate_operation_effects(_operation(), "service.py::query", combined)
+    assert validate_operation_effects(
+        _operation(), "service.py::query", combined, require_runtime_context=False,
+    ) == (0, 0)
     assert validate_operation_effects(_operation(), "src/query.ts::query", combined) == (0, 0)
     assert (python, typescript) == originals
 

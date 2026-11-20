@@ -73,8 +73,12 @@ def test_independent_direct_port_path_retains_credit_with_constructor_obligation
         "class Owner:\n    def __init__(self):\n        store()\n"
         "def query():\n    store()\n    return Owner()\n"
     ))
+    # Direct source credit does not authenticate the separate allocation call.
+    with pytest.raises(SemanticOperationEffectError, match="runtime call context"):
+        validate_operation_effects(_operation("service.py::store"), "service.py::query", inventory)
     assert validate_operation_effects(
         _operation("service.py::store"), "service.py::query", inventory,
+        require_runtime_context=False,
     ) == (1, 0)
 
 

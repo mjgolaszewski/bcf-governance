@@ -67,7 +67,12 @@ def test_source_constructor_obligations_are_consumed(tmp_path: Path, context: st
     }
     entry = prefix + "service.py::query"
     if case == "plain":
-        assert validate_operation_effects(operation, entry, inventory) == (0, 0)
+        # A source-only constructor body is not whole allocation qualification.
+        with pytest.raises(SemanticOperationEffectError, match="runtime call context"):
+            validate_operation_effects(operation, entry, inventory)
+        assert validate_operation_effects(
+            operation, entry, inventory, require_runtime_context=False,
+        ) == (0, 0)
     else:
         with pytest.raises(
             SemanticOperationEffectError, match="(construction|undeclared write|unresolved)",
