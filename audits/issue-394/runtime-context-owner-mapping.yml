@@ -1,0 +1,89 @@
+schema_version: '1.0'
+document:
+  kind: implementation_plan
+  status: planned
+  authority: false
+  path: audits/issue-394/runtime-context-owner-mapping.yml
+parent_contract: audits/issue-394/runtime-effect-context-foundation-contract.yml
+subject:
+  commit: 7dc09a17c02f76d96a65d539a12ead0c7cab2665
+  tree: 7d9149885fece75d577445f164271a2fbf930628
+status:
+  implementation_complete: false
+  runtime_qualified: false
+  whole_requirement_advancement: false
+  p32: active
+  p33_p35: dormant
+inspection_scope:
+  entrypoint: bcf_governance/tooling/ci_commands.py::main
+  required_operation: governance.cli.ci.v1
+  population_complete: false
+  limitation: This is an owner and dependency mapping, not a newly executed source census or qualification.
+existing_owners:
+  committed_source:
+    owner: bcf_governance/tooling/semantic_source_paths.py
+    reuse: [committed_python_source_population, committed_regular_blob_capture]
+    supplies: Exact Git object membership and regular member bytes without candidate execution or missing-object acquisition.
+    does_not_supply: Protected origin authorization or runtime implementation semantics.
+  policy_and_operation_population:
+    owner: bcf_governance/tooling/ci_graph_composition_operations.py
+    reuse: [capture_public_operation_bindings, validate_public_operation_capture]
+    supplies: Distinct policy/runtime subjects, independently required relationships and complete public entrypoint classification.
+    does_not_supply: A positive runtime-context qualifier; the protected caller still authenticates the subjects.
+  source_population:
+    owner: bcf_governance/tooling/semantic_ownership_inventory.py
+    reuse: [discover_python_source, resolve_python_imports]
+    supplies: Committed source, import, call and possible initialization observations.
+    does_not_supply: Executed initialization or closed native/dynamic behavior.
+  source_protocols:
+    owner: bcf_governance/tooling/semantic_ownership_protocols.py
+    reuse: [boolean_result_sites, implicit_runtime_protocols]
+    supplies: Existing closed literal and Boolean-result cases plus neutral unresolved protocols.
+    does_not_supply: Native purity from annotations, method names or a receiver observed once.
+  operation_effects:
+    owner: bcf_governance/tooling/semantic_operation_effects.py
+    reuse: [source_operation_call_population, validated_operation_effect_inventory]
+    supplies: Call/store/constructor observations, actual port traversal and strict scoped blockers.
+    does_not_supply: Authenticated positive context; require_runtime_context remains true for required consumers.
+  lifecycle_conformance:
+    owner: bcf_governance/tooling/ci_graph_composition.py
+    reuse: [validate_reconstructed_lifecycle_bindings]
+    supplies: Existing reconstruction, independent relationships, controls and effect backtraces.
+    does_not_supply: Runtime completeness merely because source edges and tests agree.
+first_vertical_slice:
+  expression: interpreters[repository] = Path(path)
+  operation_branch: qualify-release
+  obligations:
+  - Authenticate the entry frame and actual operation trigger before branch-specific conclusions.
+  - Preserve cli_arguments exact list-or-tuple and exact-str input snapshot proof.
+  - Reconstruct the actual parser and every relevant action, conversion, default and namespace write from authenticated source and runtime implementations.
+  - Derive the adopter_python collection element origins, iteration, raw.partition result and unpacking; do not infer these from the annotation.
+  - Derive repository key identity and owned dict allocation, membership and assignment without conflating Path construction with its result.
+  - Resolve Path constructor and platform-selected implementation separately, including callbacks and initialization.
+  - Follow the resulting mapping into qualify_release; local construction does not prove later consumer purity.
+  - Retain invalid, duplicate, absent and exceptional input paths and their terminals.
+  - Keep unrelated command branches unresolved until their own context is qualified; a successful branch is not the whole public operation.
+  independent_controls:
+  - Replace ordinary strings with subclasses carrying hash, equality, partition or iteration effects; ingress must reject before parser allocation.
+  - Change parser action, default, conversion or namespace behavior while keeping the target assignment text unchanged.
+  - Rebind Path or the returned object implementation without changing its spelling or annotation.
+  - Move policy, source, executable or library identity after capture and before consumption.
+  - Remove a discovered obligation and its paired test; independent reconstruction must still reject the omission.
+delivery_sequence:
+  - step: Authenticate inputs through the existing protected consumer and source owners.
+    exit: Missing or moved authority blocks before positive context can be consumed.
+  - step: Derive frame, input and value origins for the actual first vertical slice.
+    exit: Every discharged obligation has an exact source and runtime derivation; unsupported alternatives remain typed unresolved.
+  - step: Integrate positive context into the existing strict effect owner and required operation consumer.
+    exit: Ordinary literal behavior remains compatible and forged, incomplete or wrong-context credit is rejected.
+  - step: Expand to the independently reconstructed complete required operation and lifecycle population.
+    exit: Both trace directions, installed scope and required governance pass on exact bytes before any foundation verification claim.
+runtime_dependencies:
+  secure_release_runtime_selected: false
+  complete_stdlib_native_implementation_binding: false
+  note: Compatibility Python and ABI identity are insufficient for full runtime implementation or security assurance. Existing scanned candidates remain unqualified.
+forbidden:
+- A parallel graph, registry, evaluator or receipt family.
+- Candidate-owned rows or caller booleans supplying protected authority.
+- Turning strict runtime context off or treating this mapping as executable evidence.
+- Main machinery changes, phase activation, custody or performance claims from this artifact.

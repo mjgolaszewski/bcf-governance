@@ -146,3 +146,4 @@ coupled_ledger_disposition:
     type: 394source
     statement: 38918dc4 context-contract; runtimeOPEN.
   status_advancement: false
+implementation_mapping: audits/issue-394/runtime-context-owner-mapping.yml
