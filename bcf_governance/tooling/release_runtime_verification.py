@@ -398,6 +398,7 @@ def run_release_runtime_verification(
     verify_archive(exact_wheel)
     verify_archive(exact_sdist)
     closure = verify_wheelhouse(manifest, lock, wheelhouse.resolve())
+    probe_environment = runtime_environment(home=manifest.parent)
     if closure.manifest_schema_version == "1.1":
         probe = ("import json,platform,struct,sys,sysconfig;print(json.dumps({'python':platform.python_version(),"
                  "'implementation':platform.python_implementation(),'system':platform.system(),"
@@ -407,6 +408,7 @@ def run_release_runtime_verification(
                  "'multiarch':sysconfig.get_config_var('MULTIARCH'),'debug':sysconfig.get_config_var('Py_DEBUG'),"
                  "'gil_disabled':sysconfig.get_config_var('Py_GIL_DISABLED')}))")
         identity = subprocess.run([str(selected), "-I", "-B", "-c", probe],
+                                  cwd=manifest.parent, env=probe_environment,
                                   capture_output=True, text=True, check=False)
         try:
             pairs = json.loads(identity.stdout, object_pairs_hook=lambda rows: rows)
@@ -434,7 +436,8 @@ def run_release_runtime_verification(
             qualified_identity = False
     else:
         identity = subprocess.run(
-            [str(selected), "-c", "import platform;print(platform.python_version())"],
+            [str(selected), "-I", "-B", "-c", "import platform;print(platform.python_version())"],
+            cwd=manifest.parent, env=probe_environment,
             capture_output=True, text=True, check=False,
         )
         machine = platform.machine().lower()
