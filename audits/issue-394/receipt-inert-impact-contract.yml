@@ -1,0 +1,20 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/receipt-inert-impact-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitems: [foundation.conformance, dormant.continuation, dormant.impact]
+scope: Existing independent receipt subject-change and invalidation consumer
+problem: Receipt verification has a separate ordinary Git diff reader that can execute conversion programs hide dirty source and discard old rename endpoints
+contract:
+  - Delegate committed path comparison to the existing exact affected-proof owner and working/index/untracked differences to the existing inert source observer
+  - Preserve both rename endpoints literal path spelling and hidden source differences
+  - Candidate conversion or fsmonitor code and ambient Git namespace cannot control source observations
+  - Unavailable nonempty prior history yields an explicit source_change_population_unavailable issue; never an empty successful population
+  - Preserve existing exact-subject binding and permitted tree-independent behavior and receipt schemas
+  - No new graph registry evaluator broker receipt family or CLI grammar
+qualification:
+  - Contract and real Git causal controls before production changes
+  - Required receipt planner truth and source-observer consumers plus actual installed private runtime controls
+  - Existing normal-Git evidence remains scoped; no release authority or whole-requirement closure
