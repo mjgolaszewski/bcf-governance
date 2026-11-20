@@ -1,0 +1,20 @@
+{
+  "status": "reviewed_before_fixture_revision",
+  "authority": false,
+  "cases": {
+    "test_effect_inventory_retains_exact_external_port_identity": "External identity source projection only; add default strict rejection and unresolved row assertion",
+    "test_independent_direct_port_path_retains_credit_with_constructor_obligation": "Source credit independent of unqualified allocation; add default strict rejection",
+    "test_source_constructor_obligations_are_consumed[plain]": "Existing explicit source-only proof docstring; add default strict rejection in all three import contexts",
+    "test_mixed_source_composition_retains_python_classes_and_both_consumers": "Existing source merge assertion does not authenticate Python allocation; retain Python default denial plus source-only projection and unchanged TypeScript default behavior"
+  },
+  "required_consumers_changed": false,
+  "remaining": "No native, allocation or whole runtime context qualification supplied",
+  "implementation_subject": "34cedd7e0e5b008761a3042a93f1612e567e55e2",
+  "original_source_result": {
+    "tests": 562,
+    "failures": 6,
+    "errors": 0,
+    "skipped": 0
+  },
+  "original_source_junit_sha256": "e062da4176028dec7257cdb9879a7a76132d57e6df9f76dad1b1d476747416db"
+}
