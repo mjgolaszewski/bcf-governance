@@ -1,0 +1,268 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "whole_requirement_advancement": false,
+  "baseline_subject": "2bcc901b5bf3a9be0e1a6a6d0ac6fe64c5f08c93",
+  "contract_subject": "884f3747bdd39a4db911af20286b36d6a05f9106",
+  "implementation_subject": "a2bf2b4e9350a8ed32af311c78295cc5e9c43a11",
+  "before": {
+    "tests": 8,
+    "failures": 6,
+    "errors": 0,
+    "skipped": 0
+  },
+  "before_dispositions": {
+    "parsed_subclass_or_sequence_accepted": 5,
+    "mutable_source_list_expanded_consumption": 1,
+    "ordinary_native_cases_passed": 2
+  },
+  "source": {
+    "tests": 201,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 28,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_observations": [
+    {
+      "authority": false,
+      "events": [],
+      "mode": "default_word",
+      "qualification_port_calls": 0,
+      "rejected": true,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "converter_word",
+      "qualification_port_calls": 0,
+      "rejected": true,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [
+        "converter-new"
+      ],
+      "mode": "converter_effect",
+      "qualification_port_calls": 0,
+      "rejected": true,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "custom_list",
+      "qualification_port_calls": 0,
+      "rejected": true,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "custom_tuple",
+      "qualification_port_calls": 0,
+      "rejected": true,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [
+        "constructor-mutated-source-list"
+      ],
+      "mode": "mutated_list",
+      "qualification_port_calls": 1,
+      "rejected": false,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "native_list",
+      "qualification_port_calls": 1,
+      "rejected": false,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "native_tuple",
+      "qualification_port_calls": 1,
+      "rejected": false,
+      "runtime_context_qualified": false
+    }
+  ],
+  "installed_observations": [
+    {
+      "authority": false,
+      "events": [],
+      "mode": "default_word",
+      "qualification_port_calls": 0,
+      "rejected": true,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "converter_word",
+      "qualification_port_calls": 0,
+      "rejected": true,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [
+        "converter-new"
+      ],
+      "mode": "converter_effect",
+      "qualification_port_calls": 0,
+      "rejected": true,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "custom_list",
+      "qualification_port_calls": 0,
+      "rejected": true,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "custom_tuple",
+      "qualification_port_calls": 0,
+      "rejected": true,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [
+        "constructor-mutated-source-list"
+      ],
+      "mode": "mutated_list",
+      "qualification_port_calls": 1,
+      "rejected": false,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "native_list",
+      "qualification_port_calls": 1,
+      "rejected": false,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "native_tuple",
+      "qualification_port_calls": 1,
+      "rejected": false,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "default_word",
+      "qualification_port_calls": 0,
+      "rejected": true,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "converter_word",
+      "qualification_port_calls": 0,
+      "rejected": true,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [
+        "converter-new"
+      ],
+      "mode": "converter_effect",
+      "qualification_port_calls": 0,
+      "rejected": true,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "custom_list",
+      "qualification_port_calls": 0,
+      "rejected": true,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "custom_tuple",
+      "qualification_port_calls": 0,
+      "rejected": true,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [
+        "constructor-mutated-source-list"
+      ],
+      "mode": "mutated_list",
+      "qualification_port_calls": 1,
+      "rejected": false,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "native_list",
+      "qualification_port_calls": 1,
+      "rejected": false,
+      "runtime_context_qualified": false
+    },
+    {
+      "authority": false,
+      "events": [],
+      "mode": "native_tuple",
+      "qualification_port_calls": 1,
+      "rejected": false,
+      "runtime_context_qualified": false
+    }
+  ],
+  "actual_source_coverage": {
+    "authority": false,
+    "execution_qualified": false,
+    "runtime_context_qualified": false,
+    "source_commit": "a2bf2b4e9350a8ed32af311c78295cc5e9c43a11",
+    "source_tree": "3e419e62dab0dec185f7eaf053e0c43aa4e89180",
+    "files": 1325,
+    "functions": 12218,
+    "explicit_calls": 139963,
+    "store_observations": 4988,
+    "elapsed_seconds": 106.17449728299107
+  },
+  "junit_sha256": {
+    "before": "6f3444b1415de9f4bcf645e3a572588b05ce4a21e15d53053dbce1d3b13532f6",
+    "source": "f887f10ade56219ff02008ac23ce44c7245e863b70150306c8e7c6ca834f3178",
+    "installed": "30a589315416ce1ad546fd36670b15b8990353a1d860fceb13d22e0fb306a318",
+    "architecture": "6df7a3dc9661079b2b8282ced93214b797f83bb964adea15d8adaa010460826c"
+  },
+  "source_sha256": "5cc6db0f89be1fab645cd9db830a9d31b0166be14d2204e686615a429f30b9fc",
+  "scope": "Existing cli_arguments guards/snapshots parsed adopter_python values before local mapping allocation. Five unsupported parsed-type cases reject before partition/sequence callbacks or qualification; one real Path callback cannot expand the consumed source list. Native list/tuple behavior and existing mapping checks retained.",
+  "limits": "Converter construction can already have effects before postparse rejection; Path construction/returned callbacks remain separate unknowns. Named guard detector qualification does not close parser/native/global runtime conformance, secure runtime, performance targets, installed full matrix or82whole. SDK-absent fresh/upgrade Lite only; P32 active/P33-P35 dormant.",
+  "predecessor_characterization": "Original parser-partition witness retained at e52e3c79d1ee13d43d7c055eb7ca7656a2124aae and its report. Current expectation is consuming rejection; earlier converter construction witness remains explicit.",
+  "governance_stderr_sha256": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+}
