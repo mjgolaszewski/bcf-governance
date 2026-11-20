@@ -28,6 +28,13 @@ def _validate_operation_semantics(operation: dict[str, Any]) -> str:
         raise SemanticAuthorityError(f"authority operation {operation['id']} requires a declared authority port")
     if operation["model_callable"] and confers:
         raise SemanticAuthorityError(f"model-callable operation {operation['id']} cannot confer authority")
+    scopes = set()
+    for qualification in operation.get("runtime_qualifications", []):
+        for profile in qualification["profiles"]:
+            scope = (qualification["model"], profile)
+            if scope in scopes:
+                raise SemanticAuthorityError("operation runtime qualification model/profile is ambiguous")
+            scopes.add(scope)
     return kind
 
 

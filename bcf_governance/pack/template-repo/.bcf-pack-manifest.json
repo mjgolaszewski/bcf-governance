@@ -192,7 +192,7 @@
     },
     "schemas/application-operations.schema.json": {
       "operation": "copy",
-      "sha256": "420583c1ea82698c4bb71bcf42802c3948143834bb1ae5ec34f930d41ffe9c74"
+      "sha256": "51fd27fb023f357d57ea42bcddf76030b01c5c9858a8c9e88a1c90d247a6ceb3"
     },
     "schemas/architecture-boundaries.schema.json": {
       "operation": "copy",
@@ -748,7 +748,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_composition_operations.py": {
       "operation": "copy",
-      "sha256": "e67448e0967e761584b715b17adf9973b6eeffc9525765560a3d6c31916d5cf7"
+      "sha256": "57f8df5cc058a1c5bb01ee8b0b3ffc0e1c9f74a790a6d1194419ad46bae267fc"
     },
     "scripts/_bcf_runtime/ci_graph_composition_populations.py": {
       "operation": "copy",
@@ -1475,7 +1475,7 @@
     },
     "scripts/_bcf_runtime/resources/schemas/application-operations.schema.json": {
       "operation": "copy",
-      "sha256": "420583c1ea82698c4bb71bcf42802c3948143834bb1ae5ec34f930d41ffe9c74"
+      "sha256": "51fd27fb023f357d57ea42bcddf76030b01c5c9858a8c9e88a1c90d247a6ceb3"
     },
     "scripts/_bcf_runtime/resources/schemas/architecture-boundaries.schema.json": {
       "operation": "copy",
@@ -1803,7 +1803,7 @@
     },
     "scripts/_bcf_runtime/semantic_authority_operations.py": {
       "operation": "copy",
-      "sha256": "4c6b29712bdd29e42805b851938f0b83cbdd885667c8a062fc0bb42d7da79d66"
+      "sha256": "7ebb141a7a17e333a98ceed06a569dff0b337aacac2a04626a24349ba42ab56c"
     },
     "scripts/_bcf_runtime/semantic_derivations.py": {
       "operation": "copy",

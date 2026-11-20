@@ -28,6 +28,33 @@ class _PublicOperationCapture(NamedTuple):
     bindings: tuple
     roots: tuple
     runtime_policy_sha256: str | None
+    runtime_claims_sha256: str | None = None
+
+
+def _runtime_qualification_policy(registry, policy_root, policy_subject):
+    """Bind declarations to canonical protected claims; grant no runtime credit."""
+    from .semantic_source_paths import committed_regular_blob_capture
+    from .semantic_yaml import load_unique_mapping_text
+    from .evidence_planning import parse_claim_model
+
+    declarations = [row for operation in registry.operations
+                    for row in operation.get("runtime_qualifications", [])]
+    if not declarations:
+        return None
+    try:
+        identity, raw = committed_regular_blob_capture(policy_root,
+            path="governance/gate-contracts.yml", **policy_subject)
+        model = parse_claim_model(load_unique_mapping_text(raw.decode("utf-8")))
+        for declaration in declarations:
+            for claim_id in declaration["claims"]:
+                claim = model["claims"].get(claim_id)
+                if (not isinstance(claim, dict) or claim.get("qualification_scope") != "subject"
+                        or not set(declaration["profiles"]) <= set(claim.get("profiles", []))
+                        or model["execution_groups"][claim["execution_group"]].get("captured_by_preflight") is True):
+                    raise ValueError("runtime qualification requires a subject-qualified executable claim/profile")
+    except (OSError, TypeError, KeyError, UnicodeError, ValueError) as exc:
+        raise CIGraphError(f"public operation runtime qualification policy is invalid: {exc}") from exc
+    return identity["sha256"]
 
 
 def _reauthenticate_public_operation_capture(capture, *, repo_root=None, inventory=None):
@@ -61,6 +88,11 @@ def _reauthenticate_public_operation_capture(capture, *, repo_root=None, invento
             raise CIGraphError("public operation runtime policy source differs from capture")
         expected.update(runtime_policy_sha256=capture.runtime_policy_sha256,
             policy_changed=capture.runtime_policy_sha256 != capture.registry_sha256)
+    claims_sha = _runtime_qualification_policy(registry, capture.policy_root, policy_subject)
+    if claims_sha != capture.runtime_claims_sha256:
+        raise CIGraphError("public operation runtime qualification policy differs from capture")
+    if claims_sha is not None:
+        expected["runtime_claims_sha256"] = claims_sha
     if capture.metadata != expected:
         raise CIGraphError("public operation capture metadata contradicts source binding")
     roots = {pair: frozenset(values) for pair, values in capture.roots}
@@ -103,6 +135,7 @@ def capture_public_operation_bindings(
         )
     except (SemanticAuthorityError, OSError, ValueError) as exc:
         raise CIGraphError(f"public operation policy capture failed: {exc}") from exc
+    claims_sha = _runtime_qualification_policy(registry, policy_root, policy_subject)
     if bindings.keys() != {operation["id"] for operation in registry.operations}:
         raise CIGraphError("public operation binding omits or invents required operations")
     try:
@@ -127,6 +160,8 @@ def capture_public_operation_bindings(
         policy_blob_oid=identity["blob_oid"], registry_sha256=identity["registry_sha256"],
         bindings=tuple(sorted((key, tuple(sorted(pairs))) for key, pairs in bindings.items())),
     )
+    if claims_sha is not None:
+        metadata["runtime_claims_sha256"] = claims_sha
     runtime_policy_sha256 = None
     if policy_repo_root is not None:
         from .semantic_source_paths import committed_application_registry_identity
@@ -141,7 +176,7 @@ def capture_public_operation_bindings(
         tuple(policy_subject[key] for key in ("commit_sha", "tree_sha")),
         tuple(runtime_subject[key] for key in ("commit_sha", "tree_sha")),
         identity["registry_sha256"], metadata["bindings"],
-        tuple(sorted((pair, tuple(sorted(values))) for pair, values in roots.items())), runtime_policy_sha256)
+        tuple(sorted((pair, tuple(sorted(values))) for pair, values in roots.items())), runtime_policy_sha256, claims_sha)
 
 
 def validate_public_operation_capture(repo_root: Path, inventory: dict[str, Any], capture) -> dict[str, Any]:
