@@ -1,0 +1,41 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  status: planned
+  authority: false
+  path: audits/issue-394/native-cookie-runtime-contract.yml
+parent_contract: audits/issue-394/security-baseline-contract.yml
+workitem: P32-P0-04
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: controlled_native_test_and_observation
+subject: 6b73a13fc7d1154d6a168b59d3d8f7a1da10ba5e
+scope:
+- Bind the retained exact native candidate archive, OCI config and ordered layer identities before creating a disposable native probe container.
+- Use offline real http.cookiejar and http.cookies public APIs to observe CVE-2026-124249 cross-domain/path/policy expiry and CVE-2026-16052 attribute-injection mutation routes.
+- Require ordinary legitimate cookie deletion, ordinary attributes and escaped comments as positive controls; rejecting all work cannot imply remediation.
+- Pin interpreter/module source and cached-bytecode observations without treating a version or source hash as actual whole-runtime qualification.
+- Preserve primary upstream fix/backport metadata; an open backport merge_commit_sha is not a merged remediation.
+- Reuse existing native archive verification and original workspace fence/ownership. No new evaluator, claim registry, broker or receipt family.
+constraints:
+- No image pull/import/build/install, network, host mount, publication, main/maintenance/adopter change or security exception.
+- Probe is read-only/nonroot/no capabilities/no new privileges; explicit native resource ownership and terminal verification precede stopped-container removal and fence release.
+- Existing candidate, current shared services, databases, volumes and pinned archive remain unchanged.
+- Preserve native failures and accepted malicious inputs as observations. A successful driver exit is not a clean security result.
+- Existing scanner database is expired; no new scanner-freshness, whole finding applicability, current security or release-runtime claim follows.
+expected_tests:
+- tests/native_cookie_probe.py executed inside the exact retained candidate image
+- Existing standard lint and governed YAML checks; unchanged SDK/installed evidence reused only for its prior scope
+qualification:
+  authority: false
+  security_qualified: false
+  runtime_context_qualified: false
+  whole_requirement_advancement: false
+  release_runtime_selected: null
+  next_action: Use exact observed behavior and immutable source/build provenance to choose required native remediation, then obtain fresh complete dependency findings and independent qualified runtime/model evidence before context admission.
+sequence: Commit this bounded contract and test driver before native observation; retain raw driver/container/source identities and exact outcome, update coupled ledgers, then back up source. No ordinary SDK change or release activation.
+
+mutation_recovery:
+- Reconcile owned name and exact manifest label if create response is lost or incomplete; never infer absence from the client failure.
+- If start observation ends while the exact owned container is still running, join that existing object before terminal inspection.
+- Remove only the stopped exact owned object and authenticate absence afterward; do not retry ambiguous proof allocation or force-stop active work.
