@@ -1,0 +1,25 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/splinter-junit-assurance-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitems: [foundation.conformance, dormant.continuation, dormant.scheduling]
+scope: Existing successful test-splinter proof producer reuse selector and independent aggregate collector
+problem:
+  - Self-consistent proof/JUnit hashes do not establish exact successful assigned test execution
+  - Aggregate capture does not bind proof applicability to the report partition or reject duplicate result identities
+contract:
+  - Reparse actual captured JUnit bytes through the existing canonical JUnit adapter; no parallel parser or receipt family
+  - Require exact nonempty distinct assigned node identities and zero failed errored or skipped cases
+  - Hash parse and capture the same immutable raw byte capture; verify result node claims against parsed cases
+  - Producer rejects invalid JUnit before output allocation
+  - Reuse selector treats malformed self-consistent evidence as unusable and executes unresolved required work
+  - Collector independently validates partition applicability and exact result/proof cardinality before copying any member
+  - Preserve valid prior-attempt session-independent reuse and existing proof/report schemas
+  - Source/report hashes remain data; existing provider subject inventory policy and collector authority still must authenticate inputs
+qualification:
+  - Contract and forged-evidence controls precede implementation
+  - Independently forge persisted proofs after a genuine valid producer run so producer checks cannot mask consumer failures
+  - Qualify producer selector aggregate collector and SDK-absent fresh/repaired consumers with disabled validation controls
+  - Preserve dormant capabilities and all82whole requirements open
