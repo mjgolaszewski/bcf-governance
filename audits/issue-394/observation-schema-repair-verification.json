@@ -1,0 +1,37 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "status": "scoped_schema_and_fixture_repair_complete_runtime_unqualified",
+  "implementation_complete": true,
+  "resumed_from_terminal": true,
+  "retained_test_capture_subject": "50c03b51eb48fb18b4d6bf5d0edffc313aa16f99",
+  "contract_commit": "068ec42c362f2e12444e539690104b8015c1da9a",
+  "test_subject": "50c03b51eb48fb18b4d6bf5d0edffc313aa16f99",
+  "test_tree": "f2de8e6b1acdc6e2da0c56d4ac834baa717c43f9",
+  "causal_before": {
+    "tests": 11,
+    "failures": 11,
+    "errors": 0,
+    "skipped": 0
+  },
+  "affected_after": {
+    "tests": 344,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "f33bd551f386f69e5be1ca3bd8111a428b6670287bedb4015b6c95b3eb6dfd55",
+    "affected": "ed6e15260c99b5d417b21679fe052d07bc91bc852260738ed35409fc238d0a8e"
+  },
+  "source_sha256": {
+    "audits/issue-394/workplan.schema.json": "2cdf03c91e54e578e43d5aaa58679c0478aff2e37b0291d893364f2208828e4f",
+    "tests/test_semantic_authority.py": "83a14c31275e7de711121272cd17f093bf1603d1932e7c6b38612a4b1b086e4c",
+    "tests/test_issue394_observation_schema.py": "58cf396aea8aed3d7161962de3aa84b3f0c6f71f2de2aa434836002810de2f30"
+  },
+  "runtime_context_or_causal_masking_failures_retained": 17,
+  "diagnostic_production_applied": false,
+  "whole_requirement_advancement": false,
+  "remaining": "Qualify diagnostics through the existing owners; authenticated runtime context, complete lifecycle, installed consumers and all82whole requirements remain open."
+}
