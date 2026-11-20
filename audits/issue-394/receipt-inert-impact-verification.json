@@ -1,0 +1,51 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "whole_requirement_advancement": false,
+  "implementation_complete": true,
+  "scope": "Affected-proof consuming existing inert source observer and exact noncollapsed tree path population",
+  "contract_commit": "77ac21807b2b8c88dc571c42613be36c4b7c7267",
+  "test_subject": "74dbb947d69daef498dd9978f4d132c5c1ef2e12",
+  "test_tree": "eacc820bad79f258953dc4e5a2084f133502bbcb",
+  "before": {
+    "tests": 8,
+    "failures": 7,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_after": {
+    "tests": 220,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "846d3d0af38eb1b5c424d0b2071f968a107316dc814abdbc7e35c36ab3caeff9",
+    "source": "56fc4af47f8995529cd30b251e07e336121fe7b6cd6bec97baa237d507de6027",
+    "installed": "6971672954b4308575eda5272c0fc1ec6cbe698b5b262622ff45284f75520e15",
+    "architecture": "5fa079c3f5aab3d98f31a64b0ff5de490526494ce29a5659f2ff7932604e78a7"
+  },
+  "source_sha256": "7bf75b60e52646cad8ca96ab488deea5f25274f49304d9c8838fb786d209f4b7",
+  "supersession": "Prior exact-subject evidence remains scoped to normal Git visibility; this adds actual descriptor byte observation, inert Git reads and rename endpoint preservation.",
+  "limits": "Existing inert observer supports qualified regular resolved source. Boundary checks are not atomic custody or provider/evaluator authority.",
+  "runtime_context_qualified": false,
+  "remaining": "Actual operation runtime/native contexts and lifecycle proof, complete distributions and pending canonical Node workflow projection; all82whole remain open",
+  "governance_status": "blocked_by_pending_Node_graph_workflow_projection",
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  }
+}
