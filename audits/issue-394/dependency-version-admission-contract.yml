@@ -1,0 +1,32 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/dependency-version-admission-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitem: P32-P0-04
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: query
+scope: Existing installed Python dependency inventory before SBOM or advisory input allocation
+owners: [bcf_governance/tooling/dependency_assurance.py]
+contract:
+  - Validate every selected installed version against each applicable declared root and transitive requirement before deduplicating traversal
+  - Capture the validated installed version once for output identity and reject contradictory repeated version observations
+  - Preserve constraints for build project optional and governance roots; a second requirement or cycle cannot erase a conflicting constraint
+  - Require valid nonempty unpadded PEP440 installed version metadata and typed refusal of malformed transitive requirement metadata
+  - Preserve existing roots markers extras closure scope and valid inventory ordering digest and SBOM/advisory output grammar
+  - Use the existing requirement marker evaluation and prerelease-inclusive installed-version semantics already used by interpreter environment admission
+  - Refuse before a frozen audit input or SBOM can be constructed; pip check does not substitute for declared build and governance root constraints
+qualification:
+  - Commit contract and controls before production
+  - Cover repeated roots already selected dependencies cycles marker exclusions extras and all root sources
+  - Qualify fresh and repaired SDK-absent consumers with disabled version predicate causing its named refusal control to fail
+  - Retain required semantic and canonical workflow projection failures; no clean-runtime security or phase authority is supplied
+limits:
+  - This validates declared version constraints only; direct-URL artifact provenance remains owned by existing dependency source admission
+  - Native interpreter standard library OS and library inventories advisory applicability and complete runtime security qualification remain open
+forbidden:
+  - New registry evaluator broker or receipt family
+  - Weakening required dependency or security gates
+  - Changing valid output schema native runtime selection main maintenance adopters workflows or authority
