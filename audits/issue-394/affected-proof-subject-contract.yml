@@ -1,0 +1,31 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/affected-proof-subject-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitems: [foundation.conformance, dormant.continuation, dormant.impact]
+scope: Exact current subject coherence at existing affected-proof derivation and verification boundaries
+problem: A supplied current identity is checked only for shape while prior changes are computed against moving HEAD and policy is read from the current working tree
+contract:
+  - Current commit and tree must match the clean Git checkout before dependency or policy decisions and before returning a derived frontier
+  - Tracked staged and untracked source changes or moved HEAD cannot yield an affected-proof result
+  - Pin each comparison to the already checked current tree rather than a later HEAD lookup
+  - Prior subjects require exact commit identities; symbolic revisions wrong Git object types missing or contradictory history expand execution conservatively
+  - Preserve authenticated transported prior-tree fallback when its commit is unavailable
+  - Ignored execution evidence remains allowed; no caller clean boolean can substitute for actual state
+  - Keep existing claim model fingerprints classification vocabulary digest and receipt/session schemas
+  - No new graph broker registry evaluator or receipt family; ordinary CLI and provider statuses unchanged
+limits:
+  - Local Git coherence does not authenticate provider repository policy or evaluator authority
+  - Before/after checks are boundary reauthentication; they are not an atomic filesystem lease or a proof against every transient mutation
+  - Existing transaction custody immutable worker inputs protected policy and consuming freshness rules remain required
+controls:
+  - Real Git divergent checkout same-tree different-commit forged tree and forged commit
+  - Staged unstaged untracked and mid-derivation source or HEAD changes refuse
+  - Symbolic prior revisions and a tree substituted for a commit cannot imply unaffected work
+  - Matching clean subject ignored evidence valid missing-commit transport and contradictory-prior conservative fallback preserve behavior
+qualification:
+  - Commit contract and causal controls before production edits
+  - Qualify existing planner proof closure truth and installed consumers plus architecture and canonical package parity
+  - Remain dormant and retain whole requirements open until independent lifecycle acceptance
