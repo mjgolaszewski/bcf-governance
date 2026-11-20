@@ -6,6 +6,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+- Reject incompatible or malformed installed dependency versions before constructing security inventory; retain every root and transitive constraint through duplicate and cyclic traversal.
+
 - Reject unbound Python invocation contexts in strict effect validation, including opaque native ports and basename-only guesses; retain unresolved source observations and existing diagnostics.
 
 - Distinguish guaranteed boolean result consumption from operand effects in supported Python frames; retain strict unknown callbacks and unchanged store ownership.

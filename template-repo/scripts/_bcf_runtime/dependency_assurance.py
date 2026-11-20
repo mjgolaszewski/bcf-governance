@@ -11,8 +11,9 @@ from pathlib import Path
 import tomllib
 from typing import Any
 
-from packaging.requirements import Requirement
+from packaging.requirements import InvalidRequirement, Requirement
 from packaging.utils import InvalidName, canonicalize_name
+from packaging.version import InvalidVersion, Version
 
 
 class DependencyAssuranceError(ValueError):
@@ -80,48 +81,66 @@ def collect_installed_inventory(repo_root: Path) -> InstalledDependencyInventory
     """Derive the exact installed closure of every declared build/runtime root."""
 
     installed = _installed()
-    queue: list[tuple[str, set[str]]] = []
+    queue: list[tuple[Requirement, set[str]]] = []
     roots: set[str] = set()
     for requirement in _declared_requirements(repo_root):
         name = canonicalize_name(requirement.name)
         roots.add(name)
-        queue.append((name, set(requirement.extras)))
+        queue.append((requirement, set(requirement.extras)))
     selected: dict[str, metadata.Distribution] = {}
+    versions_by_name: dict[str, str] = {}
     extras_by_name: dict[str, set[str]] = {}
     edges: dict[str, set[str]] = {}
     while queue:
-        name, extras = queue.pop()
+        requirement, extras = queue.pop()
+        name = canonicalize_name(requirement.name)
+        distribution = installed.get(name)
+        if distribution is None:
+            raise DependencyAssuranceError(f"declared dependency is not installed: {name}")
+        installed_version = distribution.version
+        if (not isinstance(installed_version, str) or not installed_version
+                or installed_version != installed_version.strip()):
+            raise DependencyAssuranceError(f"installed dependency version is invalid: {name}")
+        try:
+            Version(installed_version)
+        except InvalidVersion as exc:
+            raise DependencyAssuranceError(f"installed dependency version is invalid: {name}") from exc
+        if not requirement.specifier.contains(installed_version, prereleases=True):
+            raise DependencyAssuranceError(f"installed dependency {name} violates declared requirement {requirement.specifier}")
+        if name in versions_by_name and versions_by_name[name] != installed_version:
+            raise DependencyAssuranceError(f"installed dependency version changed during inventory: {name}")
+        versions_by_name[name] = installed_version
         previous = extras_by_name.setdefault(name, set())
         if name in selected and extras <= previous:
             continue
         previous.update(extras)
-        distribution = installed.get(name)
-        if distribution is None:
-            raise DependencyAssuranceError(f"declared dependency is not installed: {name}")
         selected[name] = distribution
         required: set[str] = set()
         for raw in distribution.requires or []:
-            requirement = Requirement(raw)
+            try:
+                requirement = Requirement(raw)
+            except (InvalidRequirement, TypeError) as exc:
+                raise DependencyAssuranceError(f"installed dependency requirement is malformed: {name}") from exc
             if not _requirement_applies(requirement, previous):
                 continue
             dependency = canonicalize_name(requirement.name)
             required.add(dependency)
-            queue.append((dependency, set(requirement.extras)))
+            queue.append((requirement, set(requirement.extras)))
         edges[name] = required
     components = tuple(
         {
             "type": "library",
             "name": name,
-            "version": distribution.version,
-            "bom-ref": f"pkg:pypi/{name}@{distribution.version}",
+            "version": versions_by_name[name],
+            "bom-ref": f"pkg:pypi/{name}@{versions_by_name[name]}",
         }
         for name, distribution in sorted(selected.items())
     )
     dependencies = tuple(
         {
-            "ref": f"pkg:pypi/{name}@{selected[name].version}",
+            "ref": f"pkg:pypi/{name}@{versions_by_name[name]}",
             "dependsOn": [
-                f"pkg:pypi/{dependency}@{selected[dependency].version}"
+                f"pkg:pypi/{dependency}@{versions_by_name[dependency]}"
                 for dependency in sorted(required)
                 if dependency in selected
             ],
