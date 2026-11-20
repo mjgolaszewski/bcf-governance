@@ -6,9 +6,10 @@ in-memory BytesIO responses are accepted. Header setup is a separate bound.
 from __future__ import annotations
 
 from contextlib import contextmanager
-from http.client import HTTPResponse
+from http.client import HTTPMessage, HTTPResponse
 from io import BufferedReader, BytesIO
 import math
+import re
 import socket
 import ssl
 import time
@@ -50,11 +51,13 @@ def validate_provider_timeout(timeout):
 
 
 class _DeadlineReader:
-    def __init__(self, stream, transport, deadline, inactivity_timeout):
+    def __init__(self, stream, transport, deadline, inactivity_timeout, *, chunked=False):
         self.stream = stream
         self.transport = transport
         self.deadline = deadline
         self.inactivity_timeout = inactivity_timeout
+        self.chunked = chunked
+        self.trailers = False
 
     def read1(self, size=-1):
         remaining = self.deadline - time.monotonic()
@@ -93,7 +96,13 @@ class _DeadlineReader:
             value.extend(byte)
             if byte == b"\n":
                 break
-        return bytes(value)
+        result = bytes(value)
+        if self.chunked and not self.trailers:
+            token = result[:-2].split(b";", 1)[0]
+            if not result.endswith(b"\r\n") or re.fullmatch(rb"[0-9A-Fa-f]+", token) is None:
+                raise ProviderResponseError("provider chunk size violates numeric framing")
+            self.trailers = not token.strip(b"0")
+        return result
 
     def readinto(self, buffer):
         value = self.read(len(buffer))
@@ -102,6 +111,23 @@ class _DeadlineReader:
 
     def close(self):
         self.stream.close()
+
+
+def _validate_provider_numeric_framing(response):
+    """Refuse unsupported wire framing before body consumption, not by version."""
+    if type(response.headers) is not HTTPMessage:
+        raise ProviderResponseError("provider response headers are not qualified")
+    lengths = response.headers.get_all("Content-Length", [])
+    encodings = response.headers.get_all("Transfer-Encoding", [])
+    if (len(lengths) > 1 or any(type(value) is not str
+            or re.fullmatch(r"[0-9]+", value.strip(" \t")) is None for value in lengths)):
+        raise ProviderResponseError("provider content length violates numeric framing")
+    if (len(encodings) > 1 or any(type(value) is not str
+            or value.strip(" \t").lower() != "chunked" for value in encodings)
+            or (lengths and encodings)):
+        raise ProviderResponseError("provider transfer framing is unsupported or ambiguous")
+    if type(response.chunked) is not bool or response.chunked != bool(encodings):
+        raise ProviderResponseError("provider parsed transfer framing contradicts headers")
 
 
 @contextmanager
@@ -125,10 +151,11 @@ def provider_response_deadline(response, *, timeout):
     if (type(stream) is not BufferedReader or type(raw) is not socket.SocketIO
             or type(transport) not in {socket.socket, ssl.SSLSocket}):
         raise ProviderResponseError("provider response stream is not qualified for body deadlines")
+    _validate_provider_numeric_framing(response)
     previous_timeout = transport.gettimeout()
     # The body budget is absolute, not reset at each application read. A shorter
     # existing socket timeout must remain in force without shortening that budget.
-    reader = _DeadlineReader(stream, transport, time.monotonic() + timeout, previous_timeout)
+    reader = _DeadlineReader(stream, transport, time.monotonic() + timeout, previous_timeout, chunked=response.chunked)
     response.fp = reader
     try:
         yield response
