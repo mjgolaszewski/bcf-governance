@@ -1,0 +1,21 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/installed-inventory-admission-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitems: [foundation.conformance, dormant.early-checks, certification.distribution]
+scope: Existing installed Python metadata admission before dependency closure and audit allocation
+problem: Canonical duplicate distribution names overwrite prior metadata and malformed names can silently disappear
+contract:
+  - Reject ambiguous canonical installed identities even when reported versions match
+  - Reject missing empty non-string or invalid package metadata names instead of silently omitting them
+  - Preserve canonical package spelling normalization and deterministic valid closure/SBOM behavior
+  - Use the existing DependencyAssuranceError and installed inventory owner; no registry or receipt family
+  - This does not qualify installed file bytes native components version constraints or current vulnerability status
+required_controls:
+  - Real metadata adapter fixtures feed complete selected root and dependency collection
+  - Canonical spelling collision same-version collision and differing-version collision refuse
+  - Malformed identity cannot vanish from discovered inventory
+  - Distinct valid distributions and canonical source spelling preserve deterministic inventory
+  - Existing real environment inventory and installed fresh/repaired consumers remain required

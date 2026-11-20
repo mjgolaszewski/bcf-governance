@@ -31,10 +31,17 @@
     "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "stderr": "dfd3f717682f2d91b7ee666953b9dadc8233a07af74a4020c48084a3a5e8ea56"
   },
-  "orchestration_history": "Initial controller lacked jsonschema; retried through qualified test controller with canonical project-environment derivation. Existing21lint findings unchanged from8042. Exact42PASS reused.",
+  "orchestration_history": "Initial controller lacked jsonschema; retried through qualified test controller with canonical project-environment derivation. Existing21lint findings unchanged from8042. Exact42PASS reused. Clean candidate retry reached semantic-lock; known runtime-effect refusal retained, no generated source changes.",
   "governance_returncode": 1,
   "governance_log_sha256": {
     "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  },
+  "canonical_clean_candidate_attempt": {
+    "subject": "e9f3759ebddd73f1068f74661708c794025b41f7",
+    "returncode": 1,
+    "changed_paths": [],
+    "stderr_sha256": "30c7a50e1c7cd9c3523ef3f2c94ff3e615ec01523d39ce955306ef28d7f40dcc",
+    "diagnostic": "semantic-lock failed: governance.cli.ci.v1 unresolved runtime effect at ci_commands.main"
   }
 }
