@@ -51,3 +51,10 @@ construction_disposition:
   subject: 7981f161778d769d6cfc6354adb99eec358c8dfb
   result: 461 affected source passes and one retained immutable-policy invariant failure.
   correction: Working-file reread and the newly authored expectation that such an edit must fail were incorrect. Supersede that expectation with committed-object availability checks and preserve the existing immutable-capture test. Original raw evidence remains retained.
+causal_control_repair:
+  baseline_subject: 4b9012954af22629edb1447ae1de2927a131a4e1
+  baseline: 504 source passes and eight failures; raw JUnit retained.
+  scope: Ground five effect controls in real source fixtures. Three currently fabricate source call rows; two cannot reach their intended cause because an earlier live-project runtime-context block masks them.
+  deconstruction: Extract unchanged contract-module loading and source-effect fixture support from the oversized 879-line test_semantic_authority.py before adding behavior; retain all five original test node names and every full-project assertion. Both resulting files must respect 800 lines.
+  stable_interfaces: No CI selectors, expected node manifests, production guards or required global semantic checks change. The three full-project semantic assertions remain unwaived and open until runtime qualification is implemented.
+  verification: Preserve loader AST behavior and default module identity; actual source/native write and simulated authority witnesses must match independently collected typed effect obligations. Reuse applicable prior source evidence separately, never label a scoped continuation as full semantic success.
