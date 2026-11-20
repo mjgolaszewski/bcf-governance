@@ -1,0 +1,57 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "security_qualified": false,
+  "whole_requirement_advancement": false,
+  "contract_commit": "1b57d230c0dbd965872a9005312b4edac47fe0a3",
+  "fixture_lint_repair": "2df7fee5b52cb51d5e999cdf5c4fa4a1e8c15fd3",
+  "implementation_subject": "57b01df9ec684fd33fc13b0be16b81bb49171eec",
+  "test_tree": "bcf12975e99bcabcef9bd47ce7a88103bb7f325f",
+  "before": {
+    "tests": 16,
+    "failures": 16,
+    "errors": 0,
+    "skipped": 0
+  },
+  "before_capture_reused": true,
+  "before_subject": "2df7fee5b52cb51d5e999cdf5c4fa4a1e8c15fd3",
+  "source": {
+    "tests": 136,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "required_semantic": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "341bb4e1cd870fd49e843e08461501bf4d8d67c11f25acae5fca184d85529d10",
+    "source": "30d1559bccfa106bfe0f3d868e0e99d3997ecf4b20c2970de574e06ddcc3d2c8",
+    "installed": "d0a386d627860d6735b17260f8518ba09218936ab666d1148b7e0efaef5ed104",
+    "architecture": "fae799322f049278be06de1caa21bbc9f1e1fe257c2b602d99805f4c17fcff98",
+    "required-semantic": "2f2e6018e23830ed5b658649e2d925ffa4c077394e3c865f9508365e3bdd3090"
+  },
+  "source_sha256": "6d5b12f77039bc333243c6de2397b42c810879b0a66f1a8bf1aa000ffd0e2744",
+  "scope": "Pinned Radon6.0.1 advisory observations from independent named-function AST population on exact committed Python blobs, with typed incomplete tooling/syntax/population results",
+  "limits": "No pipeline performance measurement or reviewed baseline, approved thresholds, delta comparison, default activation, native/runtime security or full effect context qualification. Calculator two-module digest is not complete package/runtime provenance. Full distribution qualification and82whole requirements remain open.",
+  "governance_returncode": 1,
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "6853cb20d6a3e157651c633d6c986c7166dd0624cb9615e2439e0116ac72010e"
+  }
+}

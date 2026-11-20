@@ -1,6 +1,6 @@
 schema_version: '1.0'
 kind: issue_394_bounded_implementation_plan
-status: planned_not_executed
+status: initial_observation_implemented_policy_and_distribution_open
 authority: false
 owner: home:bcf-governance:bcf-394-ironwatch
 workitems: [foundation.baseline, dormant.early-checks, dormant.projection, certification.distribution]
@@ -59,4 +59,6 @@ acceptance:
   - Prove exact-source deterministic population completeness measured overhead and installed parity
   - Retain all 82 existing whole requirements open pending independent applicable evidence
   - Preserve P32 active and P33-P35 dormant until canonical lifecycle derivation permits advancement
-implementation_evidence: []
+implementation_evidence:
+  - audits/issue-394/complexity-observation-contract.yml
+  - audits/issue-394/complexity-observation-verification.json
