@@ -1803,7 +1803,7 @@
     },
     "scripts/_bcf_runtime/semantic_authority_operations.py": {
       "operation": "copy",
-      "sha256": "be63366125e832c9d51ae7f807517b9aa152f570fe6e7eac0f1ef469d183360e"
+      "sha256": "4c6b29712bdd29e42805b851938f0b83cbdd885667c8a062fc0bb42d7da79d66"
     },
     "scripts/_bcf_runtime/semantic_derivations.py": {
       "operation": "copy",

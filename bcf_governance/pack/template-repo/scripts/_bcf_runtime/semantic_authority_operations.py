@@ -178,6 +178,7 @@ def _validate_python_call_source_coverage(repo_root, inventory, functions, sourc
                 parent is not None and any(child is function for child in parent.body)) else set()
             self.occurrences = Counter()
             self.explicit_occurrences = {}
+            self.operation_active = False
 
         def record(self, node, kind):
             digest = hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest()
@@ -187,6 +188,8 @@ def _validate_python_call_source_coverage(repo_root, inventory, functions, sourc
                 node.end_col_offset, digest, occurrence))
 
         def visit(self, node):
+            if not self.operation_active:
+                return super().visit(node)
             native = self.native | self.parent_cells if isinstance(node, ast.AugAssign) else self.native
             def known(value):
                 return _native_protocol_value(value, native, self.booleans)
@@ -277,6 +280,23 @@ def _validate_python_call_source_coverage(repo_root, inventory, functions, sourc
                         if not _native_protocol_value(guard, bound, self.booleans):
                             self.record(guard, "truth")
             return super().visit(node)
+
+        def visit_FunctionDef(self, node):  # noqa: N802
+            previous = self.operation_active
+            try:
+                for field, value in ast.iter_fields(node):
+                    if field == "body" and node is not self.root:
+                        continue
+                    if field == "returns" and self.postponed:
+                        continue
+                    self.operation_active = field == "body" if node is self.root else previous
+                    for child in value if isinstance(value, list) else [value]:
+                        if isinstance(child, ast.AST):
+                            self.visit(child)
+            finally:
+                self.operation_active = previous
+
+        visit_AsyncFunctionDef = visit_FunctionDef
 
         def visit_Call(self, node):  # noqa: N802
             digest = hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest()
