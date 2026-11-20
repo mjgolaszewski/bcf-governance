@@ -43,3 +43,12 @@ forbidden:
   - New registry evaluator broker or receipt family
   - Main generated workflows authority predecessor or maintained-adopter mutation
   - Native security approval from a zero-length matches array or unreviewed vendor exception
+
+real_scanner_stdin_correction:
+  prior_subject: deb945c4342896884e14b7713894d6def03e0be0
+  observed_failure: Grype0.122.1 interprets sbom:- as a file named minus and emits no JSON; fixture child processes did not validate this vendor argument
+  correction: Use explicit sbom:/proc/self/fd/0 for the existing Linux sealed stdin descriptor; avoid pipe autodetection and mutable named input paths
+  control: Assert exact source argument through the real command owner before delegating; the previous command must fail that control
+  required_real_witness: All50 selected construction packages and at least16 known findings retained under actual pinned scanner with suppressions enabled
+  independence_limit: Construction tuples still derive from retained SBOM, not independently authenticated installed inventory; no native security or runtime approval
+  source: https://oss.anchore.com/docs/guides/vulnerability/scan-targets/

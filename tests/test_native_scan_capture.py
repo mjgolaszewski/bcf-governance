@@ -254,3 +254,15 @@ def test_existing_output_is_preserved_without_execution(tmp_path):
         case.invoke()
     assert (output / "prior").read_bytes() == b"preserve"
     assert not case.seen.exists()
+
+
+def test_native_source_argument_is_the_sealed_stdin_descriptor(tmp_path, monkeypatch):
+    from bcf_governance.tooling import evidence_process_supervisor as commands
+    case = Case(tmp_path)
+    original = commands.run_admitted_command
+    def checked(argv, **kwargs):
+        assert "sbom:/proc/self/fd/0" in argv, "native scanner source is not its sealed stdin descriptor"
+        assert kwargs["input"] == case.arguments["sbom_bytes"]
+        return original(argv, **kwargs)
+    monkeypatch.setattr(commands, "run_admitted_command", checked)
+    assert case.invoke()["status"] == "no_findings"
