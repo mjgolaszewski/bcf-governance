@@ -1,0 +1,33 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/sbom-gate-admission-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitem: P32-P0-04
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: command
+owners: [.github/scripts/run_self_governance_gate.py]
+scope: Actual registered security-sbom CLI consuming the admitted dependency snapshot
+problem: The standard SBOM gate creates its artifact directory before the strengthened library validates the inventory and before document serialization
+contract:
+  - Collect validate snapshot and serialize the complete CycloneDX document before any artifact-directory creation or write
+  - Inventory and serialization failures use the existing controlled gate failure and leave a fresh artifact namespace unallocated
+  - Preserve preexisting evidence bytes on admission failure; no cleanup or rewriting follows a refusal
+  - Preserve ordinary security-sbom CLI grammar provider gate identity and valid CycloneDX document bytes
+  - Keep self-governance consumer code separate from unchanged SDK library and private/template implementations
+qualification:
+  - Commit bounded controls before production
+  - Dispatch through actual main using the registered gate name and real strengthened library with stale roots components edges or digest
+  - Retain serialization-failure existing-evidence positive-valid and restored-late-admission causal controls
+  - Reuse prior73source and12installed dependency-library results only after exact module and mirrored-copy byte checks; do not recertify them under the new commit
+  - Run affected CLI tests standard lint architecture package parity and governance on exact source
+  - Retain prior required semantic failure as unresolved; no new source-only or phase-green claim
+limits:
+  - This is the framework self-governance entrypoint; no SDK private consumer implementation changes
+  - Full native scan/input execution binding positive runtime context approved security targets and custody remain open
+  - All82whole requirements remain open; P32 active and P33-P35 dormant
+forbidden:
+  - Main generated workflows authority maintained adopters or predecessor mutation
+  - New gate identity policy switch registry evaluator broker or receipt family
