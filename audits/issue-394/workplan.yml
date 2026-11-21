@@ -307,6 +307,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/guarded-loop-origin-verification.json
     - audits/issue-394/runtime-context-consumer-binding-verification.json
     - audits/issue-394/runtime-context-factory-verification.json
     - audits/issue-394/qualifier-control-binding-verification.json

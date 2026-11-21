@@ -1,0 +1,44 @@
+{
+  "authority": false,
+  "actual_native_context_qualified": false,
+  "whole_requirement_advancement": false,
+  "baseline_subject": "9c8c6c5723f8c438e98d09e0f9c36a4476e3d509",
+  "contract_subject": "998855eacb687ff9e7038ef0cca8eaf52649a49c",
+  "implementation_subject": "5ed67de660339ffb58004329d6c83fe078a3cd71",
+  "before": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "baseline_scope": "Prior model1.1 unsupported-policy RED; not an unsafe-acceptance counterfactual.",
+  "source": {
+    "tests": 423,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 26,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "fe687c1c9f15a62b2b47832badb5bc8656178944254bdaf4939410f89b9074ad",
+    "source": "56f899939f16189a1f240ad4dd60aefbba0e9688f2f2d35c5f01389aa39946fb",
+    "installed": "769527ff2acf689e628a47dcb3dad67dce752db56e8a6230c45ac284b1fbf605",
+    "architecture": "6b37f1ced6be499df126567e02c16ffd67e217ab62556509f1a940419fbedfc7"
+  },
+  "scope": "Versioned python.cli-string-snapshot1.1 adds exact source-derived iteration entry over the fresh guarded local list, through canonical protected qualified evidence and ambient consumer binding.1.0 remains guard-only. Neutral protocol metadata checked before credit; callbacks, body operations and element type across mutation remain separate blockers.",
+  "limits": "Controlled fixture producer/native selectors only. Current operation policy1.0 unchanged. Actual secure native/model/namespace/frame approval, full required semantic train, approved performance and custody remain OPEN. P32active/all82wholeOPEN.",
+  "governance_stderr_sha256": "805a139f77c9a5c23ef013f206356590dd800761b6b79243f4763f024e89f40d",
+  "governance_qualified": false,
+  "unwaived_governance_block": "CI graph public-contracts value source digest requires canonical submission/reconciliation; no manual pins."
+}
