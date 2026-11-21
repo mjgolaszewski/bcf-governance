@@ -238,8 +238,53 @@ def _qualification_issues(repo_root: Path, receipt: dict[str, Any], *, policy_in
         except (OSError, yaml.YAMLError, ValueError, KeyError, TypeError):
             return ["qualification_contract_unreadable"]
         actual = qualification.get("control_ids")
+        if policy_inputs is not None and (not isinstance(actual, list)
+                or any(not isinstance(value, str) for value in actual)):
+            return ["qualification_control_inventory_incomplete"]
         if not isinstance(actual, list) or set(actual) != expected:
             return ["qualification_control_inventory_incomplete"]
+        if policy_inputs is not None:
+            controls = {}
+            for claim_id in receipt.get("claims", []):
+                if claim_id in referenced_claims:
+                    continue
+                contract = projection.get(str(claim_id))
+                gate = contract.get("gate") if isinstance(contract, dict) else None
+                if not isinstance(gate, dict) or not isinstance(gate.get("negative_controls", []), list):
+                    return ["qualification_control_contract_invalid"]
+                for control in gate.get("negative_controls", []):
+                    if (not isinstance(control, dict) or not isinstance(control.get("id"), str)
+                            or not isinstance(control.get("oracle"), dict)):
+                        return ["qualification_control_contract_invalid"]
+                    key = control["id"]
+                    if key in controls and controls[key] != control:
+                        return ["qualification_control_contract_ambiguous"]
+                    controls[key] = control
+            probes = receipt.get("behavioral_probes")
+            if not isinstance(probes, list):
+                return ["qualification_control_execution_missing"]
+            indexed = {}
+            for probe in probes:
+                if not isinstance(probe, dict) or not isinstance(probe.get("id"), str):
+                    return ["qualification_control_execution_invalid"]
+                if probe["id"] in indexed:
+                    return ["qualification_control_execution_ambiguous"]
+                indexed[probe["id"]] = probe
+            if expected - indexed.keys():
+                return ["qualification_control_execution_missing"]
+            if indexed.keys() - expected:
+                return ["qualification_control_execution_not_declared"]
+            declared = {artifact.get("path") for artifact in receipt.get("artifacts", [])
+                        if isinstance(artifact, dict) and isinstance(artifact.get("path"), str)}
+            for key, control in controls.items():
+                probe = indexed[key]
+                if probe.get("oracle") != control["oracle"]:
+                    return ["qualification_control_oracle_differs_from_policy"]
+                references = probe.get("raw_artifacts")
+                if (not isinstance(references, dict) or not references
+                        or any(not isinstance(value, str) or value not in declared
+                               for value in references.values())):
+                    return ["qualification_control_artifact_not_declared"]
         return []
     if (
         isinstance(references, list)

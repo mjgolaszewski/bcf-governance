@@ -924,7 +924,7 @@
     },
     "scripts/_bcf_runtime/evidence_claim_resolution.py": {
       "operation": "copy",
-      "sha256": "7b52d41ec38bd24af2448306af0c7d1ed9ba3c4033c0716196bf3f23a73fa223"
+      "sha256": "13c8adb912175958f792df0e1258baca4f9e74526c803e46cf2d1335749fbd2a"
     },
     "scripts/_bcf_runtime/evidence_claims.py": {
       "operation": "copy",
@@ -1156,7 +1156,7 @@
     },
     "scripts/_bcf_runtime/governance_truth_support.py": {
       "operation": "copy",
-      "sha256": "e911abf4a286256859210652ec78c9b4cad5033fa7c56f20a9cc0b89f09066c2"
+      "sha256": "a632a3a089f7cb6e6529f1959ecab9d49892b90f6b4f733afc6864c774e52789"
     },
     "scripts/_bcf_runtime/governance_validation/__init__.py": {
       "operation": "copy",
@@ -1911,7 +1911,7 @@
     },
     "scripts/_bcf_runtime/truth_receipts.py": {
       "operation": "copy",
-      "sha256": "f0bb9a78ce422e8512201c26c5351f289a4c5c6df01079abe7bc3484560b00f8"
+      "sha256": "f9cb79f7a81b08ba6968725441d8210fbe9f4718d36d233272fbb079c5543a25"
     },
     "scripts/_bcf_runtime/truth_reporting.py": {
       "operation": "copy",

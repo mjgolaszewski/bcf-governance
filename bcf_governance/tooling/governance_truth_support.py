@@ -25,7 +25,7 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def artifact_issues(receipt_path: Path, receipt: dict[str, Any]) -> list[str]:
+def artifact_issues(receipt_path: Path, receipt: dict[str, Any], *, require_contained_regular: bool = False) -> list[str]:
     """Verify each raw artifact path and digest relative to its receipt."""
     artifacts = receipt.get("artifacts")
     if not isinstance(artifacts, list):
@@ -41,6 +41,21 @@ def artifact_issues(receipt_path: Path, receipt: dict[str, Any]) -> list[str]:
             issues.append(f"artifact_{index}_path_invalid")
             continue
         path = receipt_path.parent / relative
+        if require_contained_regular:
+            try:
+                if (not relative or "\\" in relative or "\0" in relative
+                        or any(part in {"", ".", ".."} for part in relative.split("/"))):
+                    raise ValueError("artifact path is not canonical")
+                current = receipt_path.parent
+                for part in Path(relative).parts:
+                    current = current / part
+                    if current.is_symlink():
+                        raise ValueError("artifact path crosses a symbolic link")
+                if not path.resolve(strict=True).is_relative_to(receipt_path.parent.resolve(strict=True)):
+                    raise ValueError("artifact is outside the receipt root")
+            except (OSError, RuntimeError, ValueError):
+                issues.append(f"artifact_{index}_path_invalid")
+                continue
         if not path.is_file():
             issues.append(f"artifact_{index}_missing")
         elif not isinstance(expected, str) or _sha256(path) != expected:

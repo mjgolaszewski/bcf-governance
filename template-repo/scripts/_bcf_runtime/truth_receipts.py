@@ -416,21 +416,26 @@ def _receipt_result(
         issues.append("execution_tree_not_clean")
     if receipt.get("result") != "passed":
         issues.append("receipt_recomputed_result_failed")
-    issues.extend(artifact_issues(receipt_path, receipt))
+    artifact_failures = artifact_issues(receipt_path, receipt, require_contained_regular=policy_inputs is not None)
+    qualification_failures = (None if policy_inputs is None else
+        _qualification_issues(repo_root, receipt, policy_inputs=policy_inputs))
+    issues.extend(artifact_failures)
     subject_issues, invalidation = _subject_issues(
         repo_root, receipt, current, tree_independent_allowlist, policy_inputs=policy_inputs
     )
     issues.extend(subject_issues)
-    issues.extend(
-        _probe_issues(
-            receipt_path,
-            receipt,
-            required=require_negative_control and receipt.get("schema_version") == "2.0",
+    if policy_inputs is None or (not artifact_failures and not qualification_failures):
+        issues.extend(
+            _probe_issues(
+                receipt_path,
+                receipt,
+                required=require_negative_control and receipt.get("schema_version") == "2.0",
+            )
         )
-    )
-    issues.extend(_test_issues(receipt_path, receipt))
+        issues.extend(_test_issues(receipt_path, receipt))
     issues.extend(_multi_claim_test_issues(repo_root, receipt, policy_inputs=policy_inputs))
-    issues.extend(_qualification_issues(repo_root, receipt, policy_inputs=policy_inputs))
+    issues.extend(_qualification_issues(repo_root, receipt) if qualification_failures is None
+                  else qualification_failures)
     issues.extend(_environment_issues(receipt))
     issues.extend(_output_requirement_issues(receipt))
     issues.extend(_freshness_issues(receipt))
