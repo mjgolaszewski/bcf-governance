@@ -403,6 +403,7 @@ execution_evidence:
   - "Versioned model qualification references bind protected committed canonical claims and reauthenticate at consumption; declarations confer no runtime authority. Legacy policy unchanged. Native/evidence/frame qualification, full conformance, approved performance and custody remain open;all82OPEN."
   - "Native model policy qualification: source108/installed16/architecture5 passed at37b072ab; original governance failure from missing public readable versions retained. Register1.0/1.1 while keeping active1.0; public compatibility consumers qualified separately, unchanged behavioral evidence reused. Native/model/frame qualification andall82whole remain OPEN."
   - "Protected model policy:108source/16installed/5architecture PASS at37b072ab;17public compatibility PASS atbf94720a. Both natural-terminal governance failures retained. Missing inventory corrected; current CI source digest block remains for canonical submission/reconciliation, no manual pins. Source implementation only; positive runtime context, native approval, full conformance/performance/custody and82whole remain OPEN."
+  - "Existing qualifier receipt admission binds protected committed schema/claims/profile/evidence settings, dependency population, manifests and session schema; characterize and move existing claim checks unchanged before extension. Candidate/dirty policy cannot replace those inputs. Full native/frame/model qualification and82whole remain OPEN."
 closeout_requirements:
   claims:
     workitems_closed:

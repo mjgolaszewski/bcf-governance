@@ -1,0 +1,65 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "whole_requirement_advancement": false,
+  "baseline_subject": "c2a51aea909cff90ebf6c185598ee3c598d64c82",
+  "contract_subject": "7278a11e97d0f177aad095191d66ba5e0036bb14",
+  "extraction_subject": "d5128b1ca986e2977c9da73f96940369de8f5d77",
+  "implementation_subject": "bad613e45088cba891ff2c14fc59d6c6f5c6ad27",
+  "before": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "before_disposition": "Feature absent: canonical receipt API rejected the new policy_subject keyword; not an unsafe acceptance.",
+  "characterization_before": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "characterization_after": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "extracted_function_AST_equal": true,
+  "source": {
+    "tests": 204,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "source": "95fd6697dd6025557b6480d4c84fe5a78ccfb68e3c7241b5f86b764f3c57305f",
+    "installed": "25a712012879f0f36f582a5bdc484509bfc2acc653e9698090357173a1ef22e0",
+    "architecture": "6982c6a8c7d0dc08435b99cf9015a66542f07cf3352abbdbc161ecf951e1f7d0"
+  },
+  "scope": "Existing receipt admission can bind all schema/claim/profile/evidence settings, dependency inventories, test manifests and session schema reads to exact protected Git objects. Selection authority remains the consuming actor; no boolean or candidate policy supplies it.",
+  "limits": "No positive source-frame/native-model applicability or executing-native-code qualification. SDK-absent fresh/upgrade fixtures only; full consumer/profile conformance, approved performance and custody remain open. P32active/all82OPEN.",
+  "original_raw_sha256": {
+    "before": "96a267bd1e4fac2c71ccf8f0f00c43a0a00b8dfc518b0f25e82dfdf8a1924054",
+    "characterization-before": "2ac292dae2bd0e393ccd8e7bebc69e9997013b5a6fd89d67402c6534e83a05ad"
+  },
+  "post_extraction_characterization_sha256": "34b620a9620619fa31c5b0baed468716931a16732f306504a7450174f260d5eb",
+  "pre_existing_ruff_failure_sha256": "204c07b3d32c1d5c56a0243aa3f297164b841309dcbf5b5ae193d70c33385455",
+  "pre_existing_ruff_disposition": "E731 predicate converted to local def; full affected planner tests required, no waiver.",
+  "initial_preparation_failure": "Extraction commit stopped on EOF blank lines after unchanged AST and4 baseline characterizations; extension not applied. Raw terminal retained, only EOF whitespace corrected before resume.",
+  "governance_stderr_sha256": "805a139f77c9a5c23ef013f206356590dd800761b6b79243f4763f024e89f40d",
+  "governance_qualified": false,
+  "unwaived_governance_block": "CI graph public-contracts value source digest requires canonical submission/reconciliation; no manual pin edits."
+}
