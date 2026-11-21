@@ -14,6 +14,14 @@ from tests.test_truth_receipts_adversarial import _repo
 @pytest.fixture
 def bundle(tmp_path):
     root = _make_repo(tmp_path)
+    manifest = root / 'governance/test-manifests/qualifier.txt'
+    manifest.parent.mkdir(parents=True)
+    manifest.write_text('tests/test_security.py::test_auth\n')
+    gate_path = root / 'governance/gate-contracts.yml'
+    gate = yaml.safe_load(gate_path.read_text())
+    gate['gates']['test']['evidence'] = {'kind':'test_suite', 'test_contract':{
+        'expected_node_manifest':'governance/test-manifests/qualifier.txt'}}
+    gate_path.write_text(yaml.safe_dump(gate))
     evidence = _enable_v3_grouped_session(root, session_version='3.0')
     current = current_subject(root)
     policy = yaml.safe_load((root / 'governance/evidence-policy.yml').read_text())
@@ -52,12 +60,13 @@ def test_existing_receipts_are_unchanged_without_protected_context(bundle):
     assert all('admission_policy' not in row for row in result)
 
 
-@pytest.mark.parametrize('dirty', [None, 'schema','gate','profile','policy','session-schema','all'])
+@pytest.mark.parametrize('dirty', [None, 'schema','gate','profile','policy','session-schema','manifest','all'])
 def test_bound_receipts_ignore_dirty_policy_and_preserve_original_bindings(bundle, dirty):
     root, _, args, subject = bundle
     paths = {'schema':'schemas/evidence-receipt.schema.json','gate':'governance/gate-contracts.yml',
         'profile':'governance-profile.yml','policy':'governance/evidence-policy.yml',
-        'session-schema':'schemas/evidence-session-v3.schema.json'}
+        'session-schema':'schemas/evidence-session-v3.schema.json',
+        'manifest':'governance/test-manifests/qualifier.txt'}
     for key, path in paths.items():
         if dirty in {key, 'all'}:
             (root / path).write_text('false' if path.endswith('.json') else 'candidate: cannot_supply_authority')
@@ -91,12 +100,13 @@ def test_caller_cannot_weaken_canonical_admission_settings(bundle, field):
         owner.load_receipts(**args, policy_subject=subject)
 
 
-@pytest.mark.parametrize('defect', ['qualification','producer','dependency','session','schema'])
+@pytest.mark.parametrize('defect', ['qualification','control','producer','dependency','session','schema'])
 def test_forged_runtime_qualifier_evidence_still_fails(bundle, defect):
     root, evidence, args, subject = bundle
     path = evidence / 'test.evidence.json'
     receipt = json.loads(path.read_bytes())
     if defect=='qualification':receipt['qualification']['satisfied']=False
+    elif defect=='control':receipt['qualification']['control_ids']=['forged']
     elif defect=='producer':receipt['gate_id']='wrong'
     elif defect=='dependency':receipt['dependency_manifest']['claim_model_sha256']='0'*64
     elif defect=='schema':receipt.pop('producer')

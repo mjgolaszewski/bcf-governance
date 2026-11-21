@@ -33,3 +33,7 @@ verification:
   gates: [affected behavioral and cause-specific controls, canonical pack generation/check, affected architecture, lint, required governance]
   known_unwaived_governance_block: CI graph public-contracts value source digest requires canonical submission/reconciliation; do not hand-edit pins or claim whole governance green.
 status: {implementation_complete: false, native_context_qualified: false, all_whole_requirements_open: 82, phase: P32}
+continuation_controls:
+  retained: Exact AST-preserving extraction committed after EOF-only repair;4 original and4 post-extraction characterization checks passed. Feature-absent RED1 remains unsupported keyword, not unsafe acceptance.
+  lint: Pre-existing E731 local path predicate in touched planning module becomes an equivalent local def; ordinary planner/receipt suites remain required, no style waiver.
+  completeness: Use an actual committed required test-node manifest in new receipt fixtures, test conflicting working bytes, and explicitly forge qualification control IDs while leaving satisfied true.
