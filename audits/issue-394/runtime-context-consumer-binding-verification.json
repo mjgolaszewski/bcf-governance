@@ -33,7 +33,10 @@
       "skipped": 0
     },
     "unchanged_passes_reused": 395,
-    "scope": "Only governed record location and citation changed; every Python/schema/pack byte unchanged; 5 schema cases rechecked, other395 retained"
+    "scope": "Only governed record location and citation changed; every Python/schema/pack byte unchanged; 5 schema cases rechecked, other395 retained",
+    "recheck_subject": "009ea4e9729f0135b0c4cc88d5af6370bc3955d6",
+    "retention_contract_subject": "e83643724d4d53c13587e171e1a39c3aec53ca25",
+    "retained_peer_report": "audits/issue-394/maintenance-terminal-failure-intake.yml"
   },
   "installed": {
     "tests": 16,
@@ -51,7 +54,8 @@
     "before": "400af95616782a64f21b4dc4852d56c802561c1ec7ea9ec371d9d776458b9898",
     "source": "6fdf950abe1434478fff2d749ca452a58865ffa5ea8a960b119335985819b2eb",
     "installed": "b2a597503a3aa26285a0bbcd100c99a281cdc844e884d09f2856f8f3c930f367",
-    "architecture": "1c9ad23ae85a11e06fe4f942893784e3e85282df73577b5b7af2fb705f6269a9"
+    "architecture": "1c9ad23ae85a11e06fe4f942893784e3e85282df73577b5b7af2fb705f6269a9",
+    "schema-recheck": "0f79dbd95bdb8f4a523be0533bc3e033eca52b2f8ec74743153d7773d4950855"
   },
   "scope": "Qualified contexts must match the entire reauthenticated ambient public-operation capture at consuming boundary, including protected claim-policy and lifecycle relationship identity. The actual required public consumer discharges only its guard calls; unrelated strict CLI obligations remain.",
   "limits": "Simulated fixture producer/native selectors only; actual native/model approval, CI source-pin governance, performance and custody remain OPEN. P32active/all82wholeOPEN.",
