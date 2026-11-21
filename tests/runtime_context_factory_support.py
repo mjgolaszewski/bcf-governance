@@ -23,10 +23,10 @@ NATIVE = dict(implementation_sha256='a' * 64, namespace_sha256='b' * 64)
 def subject(root):
     return dict(commit_sha=_git(root, 'rev-parse', 'HEAD'), tree_sha=_git(root, 'rev-parse', 'HEAD^{tree}'))
 
-def operation_payload():
-    return dict(schema_version='1.1', document=dict(kind='application_operation_registry', id='fixture-runtime-model', version='1.1.0', status='active', path='governance/application-operations.yml'), populations=[dict(id='cli', adapter='python_mapping', source='entry.py', symbol='COMMANDS', public_only=True)], operations=[dict(id=OPERATION, population='cli', population_key='ci', family='cli', bounded_context='ci_authority', entrypoints=[CALLER], semantic_kind='command', authoritative_read=True, authoritative_mutation=False, authority_conferral=False, produces_projection=False, model_callable=False, allowed_mutation_ports=[], allowed_authority_ports=[], non_authoritative_output_effects=[], runtime_qualifications=[dict(model='python.cli-string-snapshot', version='1.0', claims=['test-claim'], profiles=['normal'])])], migrations=[])
+def operation_payload(model_version='1.0'):
+    return dict(schema_version='1.1', document=dict(kind='application_operation_registry', id='fixture-runtime-model', version='1.1.0', status='active', path='governance/application-operations.yml'), populations=[dict(id='cli', adapter='python_mapping', source='entry.py', symbol='COMMANDS', public_only=True)], operations=[dict(id=OPERATION, population='cli', population_key='ci', family='cli', bounded_context='ci_authority', entrypoints=[CALLER], semantic_kind='command', authoritative_read=True, authoritative_mutation=False, authority_conferral=False, produces_projection=False, model_callable=False, allowed_mutation_ports=[], allowed_authority_ports=[], non_authoritative_output_effects=[], runtime_qualifications=[dict(model='python.cli-string-snapshot', version=model_version, claims=['test-claim'], profiles=['normal'])])], migrations=[])
 
-def statement_for(root, inventory):
+def statement_for(root, inventory, model_version='1.0'):
     caller_raw = (root / CALLER.split('::')[0]).read_bytes()
     guard_raw = (root / CALLEE.split('::')[0]).read_bytes()
     main = next((node for node in ast.parse(caller_raw).body if isinstance(node, ast.FunctionDef) and node.name == 'main'))
@@ -40,10 +40,26 @@ def statement_for(root, inventory):
         value = node.args[0]
         sites.append(dict(caller=CALLER, callee=CALLEE, line=node.lineno, column=node.col_offset, expression_sha256=hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest(), occurrence=call['call_contract']['occurrence'], input_origin='cli_entry_vector' if isinstance(value, ast.Name) else 'parser_append_vector'))
     sites.sort(key=lambda value: json.dumps(value, sort_keys=True, separators=(',', ':')))
-    return dict(schema_version='1.0', model='python.cli-string-snapshot', model_version='1.0', target=dict(source_subject=subject(root), operation=OPERATION, entrypoint=CALLER, profile='normal', native_subject=dict(NATIVE)), caller_sha256=hashlib.sha256(caller_raw).hexdigest(), guard_sha256=hashlib.sha256(guard_raw).hexdigest(), call_sites=sites)
+    statement = dict(schema_version='1.0', model='python.cli-string-snapshot', model_version=model_version, target=dict(source_subject=subject(root), operation=OPERATION, entrypoint=CALLER, profile='normal', native_subject=dict(NATIVE)), caller_sha256=hashlib.sha256(caller_raw).hexdigest(), guard_sha256=hashlib.sha256(guard_raw).hexdigest(), call_sites=sites)
 
-@pytest.fixture
-def context_inputs(tmp_path):
+
+    if model_version == '1.1':
+        iterations = []
+        for loop in ast.walk(main):
+            if not isinstance(loop, ast.For) or not isinstance(loop.iter, ast.Name) or loop.iter.id != 'adopter_python':
+                continue
+            row = next(item for item in function['calls'] if item.get('called_symbol') == 'python-implicit::iteration'
+                       and (item['line'], item['column']) == (loop.lineno, loop.col_offset))
+            guard = next((site for site in sites if site['input_origin'] == 'parser_append_vector'), {})
+            iterations.append(dict(caller=CALLER, line=loop.lineno, column=loop.col_offset,
+                expression_sha256=hashlib.sha256(ast.dump(loop, include_attributes=False).encode()).hexdigest(),
+                occurrence=row['call_contract']['occurrence'], kind='native_list_iterator',
+                value_origin='fresh_exact_list_at_loop_entry', guard_call=guard))
+        statement['iteration_sites'] = iterations
+    return statement
+
+
+def make_context_inputs(tmp_path, model_version='1.0', source_transform=None):
     root = _make_repo(tmp_path)
     for relative in [CALLER.split('::')[0], CALLEE.split('::')[0]]:
         path = root / relative
@@ -53,7 +69,9 @@ def context_inputs(tmp_path):
         (root / relative).write_text('')
     (root / 'entry.py').write_text('from bcf_governance.tooling.ci_commands import main\nCOMMANDS={"ci":main}\n')
     shutil.copyfile(ROOT / 'schemas/application-operations.schema.json', root / 'schemas/application-operations.schema.json')
-    (root / 'governance/application-operations.yml').write_text(yaml.safe_dump(operation_payload()))
+    (root / 'governance/application-operations.yml').write_text(yaml.safe_dump(operation_payload(model_version)))
+    if source_transform is not None:
+        source_transform(root)
     gate_path = root / 'governance/gate-contracts.yml'
     gate = yaml.safe_load(gate_path.read_text())
     manifest = root / 'governance/test-manifests/qualifier.txt'
@@ -66,7 +84,7 @@ def context_inputs(tmp_path):
     evidence = _enable_v3_grouped_session(root, session_version='3.0')
     current = subject(root)
     facts = discover_python_source(root, source_subject=current, call_contracts_version='1.0')
-    statement = statement_for(root, facts)
+    statement = statement_for(root, facts, model_version)
     for path in evidence.glob('*.evidence.json'):
         receipt = json.loads(path.read_bytes())
         receipt['qualification']['control_ids'] = [row['id'] for row in receipt['behavioral_probes']]
@@ -75,3 +93,8 @@ def context_inputs(tmp_path):
         path.write_text(json.dumps(receipt))
     public = owner.capture_public_operation_bindings(root, policy_subject=current, runtime_subject=current, required_relationships={OPERATION: frozenset({PAIR})}, relationship_roots={PAIR: frozenset({CALLER})})
     return dict(repo_root=root, inventory=facts, public_capture=public, operation_id=OPERATION, evidence_root=evidence, native_subject=dict(NATIVE))
+
+
+@pytest.fixture
+def context_inputs(tmp_path):
+    return make_context_inputs(tmp_path)

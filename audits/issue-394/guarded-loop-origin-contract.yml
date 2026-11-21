@@ -1,0 +1,23 @@
+schema_version: '1.0'
+document: {kind: affected_surface_contract, status: planned, authority: false, path: audits/issue-394/guarded-loop-origin-contract.yml}
+source_subject: 9c8c6c5723f8c438e98d09e0f9c36a4476e3d509
+parent: audits/issue-394/runtime-context-factory-contract.yml
+workitem: P32-P0-04
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: query
+targets: [bcf_governance/tooling/semantic_ownership_protocols.py, bcf_governance/tooling/ci_graph_composition_operations.py, bcf_governance/tooling/semantic_operation_effects.py]
+purpose: Derive the actual guarded list origin at qualify-release loop entry through the existing approved-model and strict effect owners.
+contract:
+  migration: Existing model python.cli-string-snapshot1.0 retains exactly its original guard-call scope. Optional1.1 additionally binds explicit iteration_sites in the existing versioned runtime_context observation. Neither current operation1.0 policy nor any actual model/native approval is activated.
+  authority: Require the same protected model declaration, exact canonical qualification/control/session evidence, effective-native implementation/namespace selectors, producer-source collection custody and complete ambient capture as the existing factory. Fixture evidence supplies no actual native or release approval.
+  derivation: Independently reconstruct the actual qualify-release branch, sole guarded assignment in a terminal-on-error try, inert empty-dict local allocation with postponed annotations, and immediately subsequent for over that exact local. The assigned value is a fresh exact list from the already qualified guard; no annotation or spelling alone establishes it.
+  credit: Discharge only the exact source-qualified native list iteration dispatch at loop entry, including its contract span/digest/occurrence. Validate neutral protocol metadata before credit. Ordinary guard-call scopes remain separate.
+  limits: Do not infer that yielded elements remain strings across callbacks or mutation, suppress loop-body calls, partition/unpacking/truth/membership/store effects, qualify Path construction/returned objects, or remove exceptional/recovery obligations. Incompatible source flow remains typed unresolved/blocking.
+  invalidation: Match both model version and complete exact iteration-site statement. Missing/extra/duplicate/rebound or moved source/evidence/native scope cannot reuse prior guard-only proof. Reauthenticate at each consuming boundary.
+verification:
+  positive: Exact real CI source plus controlled canonical fixture qualification covers two guard calls and one list iteration; actual required public consumer retains surrounding blockers.
+  negative: Legacy guard-only policy/proof, substituted/missing/extra/duplicate iteration scope, context tampering, intervening callback/rebinding, nonterminal error handler, non-postponed annotation, alternate iterable and source omission fail without widening authority.
+  installed: Fresh/upgrade SDK-absent consumers exercise exact1.0 compatibility and1.1 scope plus changed proof and source-flow rejection.
+forbidden: [main or maintenance changes, source-only mode, new CLI selector, parallel model registry or receipt family, manual workflow or authority pins, full-loop or element-string purity from guard result]
+status: {actual_native_context_qualified: false, whole_requirement_advancement: false, all_whole_requirements_open: 82, phase: P32}
