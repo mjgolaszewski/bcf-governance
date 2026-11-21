@@ -1,0 +1,45 @@
+{
+  "authority": false,
+  "actual_native_context_qualified": false,
+  "whole_requirement_advancement": false,
+  "baseline_subject": "9884cfb3fc639a80868b07e460a0c75c5c419b71",
+  "contract_subject": "baa4a787742c3f06ad709ca2f9817bea10a75520",
+  "implementation_subject": "dddbe55a9521c0c083f02dbf93737e8590c60c90",
+  "before": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "fixture_repair_subject": "d98c2f5c7020ac574d3325935a336e8e811a8738",
+  "baseline_scope": "Feature-absent AttributeError, not an unsafe-acceptance counterfactual.",
+  "source": {
+    "tests": 242,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 14,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "73d7ad2d5c07e5a36b2042345619c7fbc81f72c93176e33362ce549fe615d87a",
+    "source": "447f8233e07eba74fff318831cd841ff776b8660ab4d670f5d658a586a6df947",
+    "installed": "7fff3b7fdc43c498d34608a0c859bdfacad82e05de56bf401a7945e318cfd905",
+    "architecture": "303a4ea2ba7e57d7b5e4e574fdb165eff1a1d2f83b83e2805f4b15256a5e73af"
+  },
+  "scope": "Existing owners construct exact protected model context using canonical claims, qualification controls/session and exact compound source/native/profile/call scope, reauthenticate at strict effect consumption and retain surrounding unresolved runtime obligations. Simulated trusted fixture producer only.",
+  "limits": "Actor must authenticate protected evaluator/repository, actual effective-native/namespace and collection custody plus protected producer source provenance. Fixture selectors are not native security approval. Current operation policy remains1.0, actual model/native evidence absent, P32active/all82wholeOPEN.",
+  "governance_stderr_sha256": "805a139f77c9a5c23ef013f206356590dd800761b6b79243f4763f024e89f40d",
+  "governance_qualified": false,
+  "unwaived_governance_block": "CI graph public-contracts value source digest requires canonical submission/reconciliation; no manual pins."
+}
