@@ -1,0 +1,48 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "whole_requirement_advancement": false,
+  "baseline_subject": "ab9bcd879bc26cad872aaf7d5ba11246558e2478",
+  "contract_subject": "0a9cdaa73d7fa61678b4ca41227e8c503f951284",
+  "implementation_subject": "a56e516973813a16543cb7d06de93425c84b295f",
+  "before": {
+    "tests": 19,
+    "failures": 16,
+    "errors": 0,
+    "skipped": 0
+  },
+  "before_dispositions": {
+    "accepted_substitution": 8,
+    "untrusted_oracle_consumed": 8,
+    "existing_rejections_and_positive": 3
+  },
+  "source": {
+    "tests": 223,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 30,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "259ee6598a91bd8e57ac9540c44d7e76ed11a69d6c9db11d4c8bca63bf519d7f",
+    "source": "58fcf9ebe781813a101b55939b7480846094a69274decb2b8c4a65a853cbe872",
+    "installed": "a959164b5e9f6fb06fd92dc4f857fb176e6feeb0aad2e202caa38e461ccf2264",
+    "architecture": "e263cd7fd18e107b20f4d03d965813bd942941b2ac41330ad446eb1f17164e35"
+  },
+  "scope": "Protected inline qualification matches both directions between canonical controls and actual unique probes, exact protected oracle and declared artifact membership. Existing artifact owner rejects symlink/escaping bound inputs. Invalid bound policy/control/artifact premises reject before receipt-supplied oracle or raw test consumption. Legacy unbound order and behavior preserved.",
+  "limits": "Fixture execution qualifies receipt conformance only, not native models, executing implementation, source frames, complete installed profiles, performance or custody. P32active/all82wholeOPEN.",
+  "governance_stderr_sha256": "805a139f77c9a5c23ef013f206356590dd800761b6b79243f4763f024e89f40d",
+  "governance_qualified": false,
+  "unwaived_governance_block": "CI graph public-contracts value source digest requires canonical submission/reconciliation; no manual pins."
+}
