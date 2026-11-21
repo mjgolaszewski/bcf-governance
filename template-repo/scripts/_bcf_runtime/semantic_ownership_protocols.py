@@ -267,3 +267,63 @@ def cli_snapshot_model_sites(caller_source, guard_source, approved_guard_source,
     if not sites or len(sites) != len(locations):
         raise ValueError("snapshot model omits or invents source call contexts")
     return tuple(sorted(sites))
+
+
+def cli_snapshot_iteration_sites(caller_source, *, caller, calls, guard_sites):
+    """Derive only native-list iteration entry; body and element effects remain open."""
+    import hashlib
+    import json
+
+    tree = ast.parse(caller_source)
+    if not any(isinstance(node, ast.ImportFrom) and node.module == "__future__"
+               and any(name.name == "annotations" for name in node.names) for node in tree.body):
+        raise ValueError("snapshot iteration requires postponed local annotations")
+    roots = [node for node in tree.body if isinstance(node, ast.FunctionDef)
+             and node.name == caller.split("::")[-1]]
+    if len(roots) != 1:
+        raise ValueError("snapshot iteration caller is ambiguous")
+    expected_test = ast.dump(ast.parse('args.operation == "qualify-release"', mode="eval").body,
+                             include_attributes=False)
+    branches = [node for node in ast.walk(roots[0]) if isinstance(node, ast.If)
+                and ast.dump(node.test, include_attributes=False) == expected_test]
+    if len(branches) != 1 or len(branches[0].body) < 3:
+        raise ValueError("snapshot iteration branch is unsupported")
+    guarded, allocation, loop = branches[0].body[:3]
+    if (not isinstance(guarded, ast.Try) or len(guarded.body) != 1
+            or guarded.orelse or guarded.finalbody or len(guarded.handlers) != 1):
+        raise ValueError("snapshot iteration guard flow is unsupported")
+    handler = guarded.handlers[0]
+    assignment = guarded.body[0]
+    if (not isinstance(handler.type, ast.Name) or handler.type.id != "TypeError"
+            or len(handler.body) != 1 or not isinstance(handler.body[0], ast.Raise)
+            or not isinstance(assignment, ast.Assign) or len(assignment.targets) != 1
+            or not isinstance(assignment.targets[0], ast.Name) or not isinstance(assignment.value, ast.Call)):
+        raise ValueError("snapshot iteration requires a guarded local assignment and terminal error path")
+    bound = assignment.targets[0].id
+    if any(isinstance(node, (ast.Global, ast.Nonlocal)) and bound in node.names
+           for node in ast.walk(roots[0])):
+        raise ValueError("snapshot iteration result is not a local binding")
+    if (not isinstance(allocation, ast.AnnAssign) or not isinstance(allocation.target, ast.Name)
+            or allocation.target.id == bound or not isinstance(allocation.value, ast.Dict)
+            or allocation.value.keys or not isinstance(loop, ast.For)
+            or not isinstance(loop.iter, ast.Name) or loop.iter.id != bound
+            or not isinstance(loop.target, ast.Name)):
+        raise ValueError("snapshot iteration local is rebound or has intervening effects")
+    invocation = assignment.value
+    guards = [json.loads(identity) for identity, _ in guard_sites]
+    guards = [row for row in guards if row["input_origin"] == "parser_append_vector"
+              and (row["line"], row["column"]) == (invocation.lineno, invocation.col_offset)]
+    if len(guards) != 1:
+        raise ValueError("snapshot iteration does not consume a qualified guard result")
+    rows = [row for row in calls if row.get("called_symbol") == "python-implicit::iteration"
+            and (row.get("line"), row.get("column")) == (loop.lineno, loop.col_offset)]
+    digest = hashlib.sha256(ast.dump(loop, include_attributes=False).encode()).hexdigest()
+    if (len(rows) != 1 or rows[0].get("call_contract", {}).get("expression_sha256") != digest
+            or rows[0].get("implicit_protocol", {}).get("expression_sha256") != digest):
+        raise ValueError("snapshot iteration source protocol is missing or ambiguous")
+    row = rows[0]
+    identity = dict(caller=caller, line=loop.lineno, column=loop.col_offset,
+        expression_sha256=digest, occurrence=row["call_contract"]["occurrence"],
+        kind="native_list_iterator", value_origin="fresh_exact_list_at_loop_entry", guard_call=guards[0])
+    return ((json.dumps(identity, sort_keys=True, separators=(",", ":")),
+             json.dumps(row, sort_keys=True, separators=(",", ":"))),)

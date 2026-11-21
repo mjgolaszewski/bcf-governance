@@ -606,6 +606,7 @@ def validated_operation_effect_inventory(
                            f"operation {operation['id']} contains an unresolved effect call path at {symbol}")
         for call_index, call in enumerate(function.get("calls", [])):
             if (symbol, json.dumps(call, sort_keys=True, separators=(",", ":"))) in model_calls:
+                _implicit_protocol(call, symbol)
                 raw = str(call.get("called_symbol", ""))
                 target = _resolve_function(raw, functions)
                 if ("call", raw) in declared_ports or (target is not None and ("function", target) in declared_ports):

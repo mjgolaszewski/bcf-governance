@@ -274,6 +274,7 @@ class _OperationRuntimeContext(NamedTuple):
     statement: str
     receipts: tuple
     sites: tuple
+    iteration_sites: tuple = ()
 
 
 def _runtime_inventory_digest(inventory):
@@ -318,7 +319,7 @@ def capture_operation_runtime_context(repo_root, inventory, public_capture, *, o
     from .semantic_authority_operations import _validate_python_call_source_coverage
     from .semantic_authority_contracts import _function_for_entrypoint
     from .semantic_source_paths import committed_regular_blob_capture
-    from .semantic_ownership_protocols import cli_snapshot_model_sites
+    from .semantic_ownership_protocols import cli_snapshot_model_sites, cli_snapshot_iteration_sites
 
     keys = ("implementation_sha256", "namespace_sha256")
     if (type(native_subject) is not dict or set(native_subject) != set(keys)
@@ -340,7 +341,7 @@ def capture_operation_runtime_context(repo_root, inventory, public_capture, *, o
         scope = assurance_scope(public_capture.policy_root, payload=policy["profile"])
         declarations = [row for row in operation.get("runtime_qualifications", []) if scope in row["profiles"]]
         if (registry.raw["schema_version"] != "1.1" or len(declarations) != 1
-                or declarations[0]["model"] != "python.cli-string-snapshot" or declarations[0]["version"] != "1.0"):
+                or declarations[0]["model"] != "python.cli-string-snapshot" or declarations[0]["version"] not in {"1.0", "1.1"}):
             raise CIGraphError("runtime context model policy is missing or unsupported")
         functions = _source_function_population(inventory)
         _validate_python_call_source_coverage(repo_root, inventory, functions, source_subject)
@@ -358,9 +359,14 @@ def capture_operation_runtime_context(repo_root, inventory, public_capture, *, o
             caller=caller, callee=callee, calls=function.get("calls", []))
         target = dict(source_subject=source_subject, operation=operation_id, entrypoint=operation["entrypoints"][0],
                       profile=scope, native_subject=dict(native_subject))
-        statement = dict(schema_version="1.0", model="python.cli-string-snapshot", model_version="1.0", target=target,
+        statement = dict(schema_version="1.0", model="python.cli-string-snapshot", model_version=declarations[0]["version"], target=target,
             caller_sha256=hashlib.sha256(caller_raw).hexdigest(), guard_sha256=hashlib.sha256(guard_raw).hexdigest(),
             call_sites=[json.loads(identity) for identity, _ in sites])
+        iteration_sites = ()
+        if declarations[0]["version"] == "1.1":
+            iteration_sites = cli_snapshot_iteration_sites(caller_raw, caller=caller,
+                calls=function.get("calls", []), guard_sites=sites)
+            statement["iteration_sites"] = [json.loads(identity) for identity, _ in iteration_sites]
         settings = policy["evidence_policy"].get("settings", {})
         receipts = load_receipts(public_capture.policy_root, evidence_root, policy_subject,
             policy_subject=policy_subject, require_negative_control=bool(settings.get("require_negative_control_for_required_gates", True)),
@@ -389,7 +395,7 @@ def capture_operation_runtime_context(repo_root, inventory, public_capture, *, o
         raise CIGraphError(f"runtime context qualification failed: {exc}") from exc
     return _OperationRuntimeContext(public_capture, operation_id, evidence_root.resolve(),
         tuple(native_subject[key] for key in keys), inventory_sha,
-        json.dumps(statement, sort_keys=True, separators=(",", ":")), tuple(sorted(identities)), sites)
+        json.dumps(statement, sort_keys=True, separators=(",", ":")), tuple(sorted(identities)), sites, iteration_sites)
 
 
 def runtime_context_call_summaries(operation, inventory, capture):
@@ -405,4 +411,4 @@ def runtime_context_call_summaries(operation, inventory, capture):
     expected = next(row for row in parent.registry.operations if row["id"] == operation["id"])
     if operation != expected:
         raise CIGraphError("runtime context operation policy differs from protected source")
-    return frozenset((json.loads(identity)["caller"], raw_call) for identity, raw_call in capture.sites)
+    return frozenset((json.loads(identity)["caller"], raw_call) for identity, raw_call in (*capture.sites, *capture.iteration_sites))

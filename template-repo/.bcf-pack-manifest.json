@@ -748,7 +748,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_composition_operations.py": {
       "operation": "copy",
-      "sha256": "217e5e380c44d20b4df9b6fc24d7947c0841dea4d1734755b741d669b7fe37af"
+      "sha256": "cbbe464ccf77ed266e7b15d3a259766d65d721ec9173c93aa82208d59cc0aebe"
     },
     "scripts/_bcf_runtime/ci_graph_composition_populations.py": {
       "operation": "copy",
@@ -1815,7 +1815,7 @@
     },
     "scripts/_bcf_runtime/semantic_operation_effects.py": {
       "operation": "copy",
-      "sha256": "145aec117ac0838eee224f949b92b7ae0679bb3dce3afca7b136ad8e060b9085"
+      "sha256": "00ad977b7cab6adb0a3f0529c97b1b73390e9b8688e4e13fe46e872b015d4794"
     },
     "scripts/_bcf_runtime/semantic_operation_python.py": {
       "operation": "copy",
@@ -1839,7 +1839,7 @@
     },
     "scripts/_bcf_runtime/semantic_ownership_protocols.py": {
       "operation": "copy",
-      "sha256": "47c58c3eaad307419e51432345a4e7da5602aec299265e06b05381ac56bb7e9e"
+      "sha256": "9352e237fe2f0afed875be9132f8d4292efedb432e4411a4881faedf10ca16c5"
     },
     "scripts/_bcf_runtime/semantic_ownership_reference.py": {
       "operation": "copy",
