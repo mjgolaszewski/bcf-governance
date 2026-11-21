@@ -19,3 +19,8 @@ verification:
   counterfactual: Retain pre-fix boundary-test failure separately from ordinary strict rejection; no claim of complete operation acceptance.
 forbidden: [main or maintenance changes, new CLI selectors, source-only mode, new claim registry or receipt family, manual workflow or authority pins, actual native security approval from fixtures]
 status: {actual_native_context_qualified: false, whole_requirement_advancement: false, all_whole_requirements_open: 82, phase: P32}
+
+ledger_repair:
+  observed: Broad consumer suite exposed3 existing workplan schema failures from peer_failure_reporting_residual, already present in parent71ab8aef.
+  disposition: Preserve exact unverified peer report in maintenance-terminal-failure-intake.yml and cite it through existing allowed workplan evidence and next_action; no schema widening, maintenance change or authority promotion.
+  verification: Retain source397pass/3fail raw; recheck all5 affected schema cases and missing installed/checks, reuse unchanged395 source cases.

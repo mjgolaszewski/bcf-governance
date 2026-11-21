@@ -1,0 +1,22 @@
+document:
+  kind: peer_reported_residual
+  path: audits/issue-394/maintenance-terminal-failure-intake.yml
+  authority: false
+  execution_qualified: false
+disposition: Historical peer report preserved without implementation, independent
+  verification or maintenance custody claims.
+peer_failure_reporting_residual:
+  status: peer_reported_unverified
+  source: AgentBus cursors45473/45485; maintenance routed to Closure Engine at45476/45505
+  bcf_version: 2.3.5
+  sdk_source: f911f21c29114b8280866b75281673018a231c9c
+  wheel_sha256: bd3de5b9805a05c3af44a0921071b41cd924c4e1061ff059161c1b44a6039f9d
+  provider_run_id: 44780249753
+  reported_outcome: Three evidence shards succeeded and security-bundle failed; success-only
+    terminal fan-in suppressed truth generation, then unconditional upload failed
+    on missing truth-report.json.
+  recovery_scope: Audit canonical graph/render owners and retained-failure terminal
+    composition in isolated2.5; no generated YAML patch or success promotion.
+  maintenance_owner: Closure Engine; routing is accepted messaging, not proof of execution
+    or remediation.
+  whole_requirement_advancement: false
