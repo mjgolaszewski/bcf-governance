@@ -184,6 +184,13 @@ def capture_public_operation_bindings(
 def validate_public_operation_capture(repo_root: Path, inventory: dict[str, Any], capture, *, runtime_contexts=None) -> dict[str, Any]:
     """Reuse one local factory capture; no caller-supplied capture ingress."""
     registry = _reauthenticate_public_operation_capture(capture, repo_root=repo_root, inventory=inventory)
+    if runtime_contexts is not None:
+        operations = {row["id"] for row in registry.operations}
+        if (type(runtime_contexts) is not dict or set(runtime_contexts) - operations
+                or any(type(context) is not _OperationRuntimeContext
+                       or context.operation_id != operation or context.public_capture != capture
+                       for operation, context in runtime_contexts.items())):
+            raise CIGraphError("runtime context differs from consuming protected operation capture")
     metadata, relationship_roots = capture.metadata, capture.relationship_roots
     try:
         population = _required_operation_population(repo_root, registry.raw, inventory, metadata["registry_sha256"], runtime_contexts=runtime_contexts)
