@@ -440,7 +440,7 @@ def _validate_python_call_source_coverage(repo_root, inventory, functions, sourc
 def _validate_operations(
     repo_root: Path, payload: dict[str, Any], inventory: dict[str, Any], *,
     consumer_owned_schema: bool = False, source_language: str | None = None,
-    require_runtime_context: bool = True, collect_effect_obligations: bool = False,
+    require_runtime_context: bool = True, collect_effect_obligations: bool = False, runtime_contexts=None,
 ) -> list[dict[str, Any]]:
     from .semantic_authority_contracts import (
         SemanticAuthorityError,
@@ -457,6 +457,9 @@ def _validate_operations(
         raise SemanticAuthorityError("required operations cannot waive runtime effect context")
     _schema(repo_root, "application-operations.schema.json", payload, consumer_owned=consumer_owned_schema)
     _validate_operation_structure(payload)
+    if runtime_contexts is not None and (type(runtime_contexts) is not dict or not require_runtime_context
+            or set(runtime_contexts) - {row["id"] for row in payload["operations"]}):
+        raise SemanticAuthorityError("runtime context population differs from protected operations")
     try:
         source_subject = _inventory_source_subject(inventory)
         functions = _source_function_population(inventory)
@@ -531,6 +534,7 @@ def _validate_operations(
                 operation, str(function["symbol"]), inventory,
                 source_modules=tuple(str(row["source"]) for row in populations if row["id"] == population_id),
                 require_runtime_context=require_runtime_context,
+                runtime_context=(runtime_contexts or {}).get(operation["id"]),
             )
         except SemanticOperationEffectError as exc:
             if not collect_effect_obligations or not exc.effect_obligations:

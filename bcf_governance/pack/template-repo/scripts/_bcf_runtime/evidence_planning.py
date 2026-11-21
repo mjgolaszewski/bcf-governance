@@ -139,10 +139,9 @@ def parse_claim_model(payload: object) -> dict[str, Any]:
     return model
 
 
-def assurance_scope(repo_root: Path) -> str:
-    payload = yaml.safe_load(
-        (repo_root / "governance-profile.yml").read_text(encoding="utf-8")
-    )
+def assurance_scope(repo_root: Path, *, payload=None) -> str:
+    if payload is None:
+        payload = yaml.safe_load((repo_root / "governance-profile.yml").read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise EvidenceError("governance profile must be an object")
     declared = payload.get("assurance_scope")

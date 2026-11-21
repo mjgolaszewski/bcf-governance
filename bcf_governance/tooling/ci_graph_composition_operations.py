@@ -4,6 +4,8 @@ Copyright 2026 Michael Golaszewski. Licensed under the MIT License.
 """
 from __future__ import annotations
 
+import hashlib
+import json
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, NamedTuple
@@ -179,12 +181,12 @@ def capture_public_operation_bindings(
         tuple(sorted((pair, tuple(sorted(values))) for pair, values in roots.items())), runtime_policy_sha256, claims_sha)
 
 
-def validate_public_operation_capture(repo_root: Path, inventory: dict[str, Any], capture) -> dict[str, Any]:
+def validate_public_operation_capture(repo_root: Path, inventory: dict[str, Any], capture, *, runtime_contexts=None) -> dict[str, Any]:
     """Reuse one local factory capture; no caller-supplied capture ingress."""
     registry = _reauthenticate_public_operation_capture(capture, repo_root=repo_root, inventory=inventory)
     metadata, relationship_roots = capture.metadata, capture.relationship_roots
     try:
-        population = _required_operation_population(repo_root, registry.raw, inventory, metadata["registry_sha256"])
+        population = _required_operation_population(repo_root, registry.raw, inventory, metadata["registry_sha256"], runtime_contexts=runtime_contexts)
     except SemanticAuthorityError as exc:
         raise CIGraphError(f"public operation source conformance failed: {exc}") from exc
     relationships = dict(metadata["bindings"])
@@ -254,3 +256,146 @@ def validate_reconstructed_effects(compiled, public_operations, bindings):
     return dict(authority=False, execution_qualified=False,
                 scope="protected_public_operation_static_effects_only",
                 effects_checked=len(effects), bindings=tuple(sorted(effects)))
+
+
+class _OperationRuntimeContext(NamedTuple):
+    public_capture: Any
+    operation_id: str
+    evidence_root: Path
+    native_subject: tuple[str, str]
+    inventory_sha256: str
+    statement: str
+    receipts: tuple
+    sites: tuple
+
+
+def _runtime_inventory_digest(inventory):
+    """Freeze only native data; caller objects cannot run during qualification."""
+    pending, seen = [inventory], set()
+    while pending:
+        value = pending.pop()
+        if type(value) in {list, tuple, dict}:
+            if id(value) in seen:
+                continue
+            seen.add(id(value))
+            if type(value) is dict:
+                if any(type(key) is not str for key in value):
+                    raise CIGraphError("runtime context inventory has nonnative keys")
+                pending.extend(value.values())
+            else:
+                pending.extend(value)
+        elif type(value) not in {str, int, float, bool, type(None)}:
+            raise CIGraphError("runtime context inventory contains caller objects")
+    digest = hashlib.sha256()
+    try:
+        for chunk in json.JSONEncoder(sort_keys=True, separators=(",", ":"), allow_nan=False).iterencode(inventory):
+            digest.update(chunk.encode())
+    except (TypeError, ValueError, RecursionError) as exc:
+        raise CIGraphError("runtime context inventory is not closed native data") from exc
+    return digest.hexdigest()
+
+
+def capture_operation_runtime_context(repo_root, inventory, public_capture, *, operation_id, evidence_root, native_subject):
+    """Bind approved model evidence to scope; actor authenticates roots/native selection.
+
+    The actor must authenticate evidence collection custody and protected producer
+    source provenance, including model-premise evaluation for the selected native
+    implementation and namespace. Candidate receipts alone cannot establish this. This
+    constructor is not a candidate ingress or a native/runtime security approval.
+    """
+    from .evidence_claim_resolution import capture_claim_policy, _claim_policy_inputs, eligible_claim_receipts
+    from .evidence_gate_contracts import expected_evidence_kinds, expected_invocations
+    from .evidence_planning import assurance_scope
+    from .truth_receipts import load_receipts, ReceiptError
+    from .semantic_operation_effects import _source_function_population
+    from .semantic_authority_operations import _validate_python_call_source_coverage
+    from .semantic_authority_contracts import _function_for_entrypoint
+    from .semantic_source_paths import committed_regular_blob_capture
+    from .semantic_ownership_protocols import cli_snapshot_model_sites
+
+    keys = ("implementation_sha256", "namespace_sha256")
+    if (type(native_subject) is not dict or set(native_subject) != set(keys)
+            or any(type(native_subject[key]) is not str or len(native_subject[key]) != 64
+                   or any(character not in "0123456789abcdef" for character in native_subject[key]) for key in keys)):
+        raise CIGraphError("runtime context requires an exact selected native scope")
+    if not isinstance(evidence_root, Path):
+        raise CIGraphError("runtime context requires an authenticated evidence root")
+    inventory_sha = _runtime_inventory_digest(inventory)
+    registry = _reauthenticate_public_operation_capture(public_capture, repo_root=repo_root, inventory=inventory)
+    source_subject = dict(zip(("commit_sha", "tree_sha"), public_capture.runtime_subject))
+    policy_subject = dict(zip(("commit_sha", "tree_sha"), public_capture.policy_subject))
+    matches = [row for row in registry.operations if row["id"] == operation_id]
+    if len(matches) != 1:
+        raise CIGraphError("runtime context operation is absent or ambiguous")
+    operation = matches[0]
+    try:
+        policy = _claim_policy_inputs(capture_claim_policy(public_capture.policy_root, policy_subject))
+        scope = assurance_scope(public_capture.policy_root, payload=policy["profile"])
+        declarations = [row for row in operation.get("runtime_qualifications", []) if scope in row["profiles"]]
+        if (registry.raw["schema_version"] != "1.1" or len(declarations) != 1
+                or declarations[0]["model"] != "python.cli-string-snapshot" or declarations[0]["version"] != "1.0"):
+            raise CIGraphError("runtime context model policy is missing or unsupported")
+        functions = _source_function_population(inventory)
+        _validate_python_call_source_coverage(repo_root, inventory, functions, source_subject)
+        function = _function_for_entrypoint(repo_root, operation["entrypoints"][0], functions, source_subject=source_subject)
+        if function is None or function["symbol"].split("::")[-1] != "main":
+            raise CIGraphError("runtime context caller is unsupported")
+        caller = function["symbol"]
+        caller_path = caller.split("::")[0]
+        guard_path = str(Path(caller_path).parent / "nested_cli_runtime.py")
+        callee = guard_path + "::cli_arguments"
+        _, caller_raw = committed_regular_blob_capture(repo_root, path=caller_path, **source_subject)
+        _, guard_raw = committed_regular_blob_capture(repo_root, path=guard_path, **source_subject)
+        _, approved_guard = committed_regular_blob_capture(public_capture.policy_root, path=guard_path, **policy_subject)
+        sites = cli_snapshot_model_sites(caller_raw, guard_raw, approved_guard,
+            caller=caller, callee=callee, calls=function.get("calls", []))
+        target = dict(source_subject=source_subject, operation=operation_id, entrypoint=operation["entrypoints"][0],
+                      profile=scope, native_subject=dict(native_subject))
+        statement = dict(schema_version="1.0", model="python.cli-string-snapshot", model_version="1.0", target=target,
+            caller_sha256=hashlib.sha256(caller_raw).hexdigest(), guard_sha256=hashlib.sha256(guard_raw).hexdigest(),
+            call_sites=[json.loads(identity) for identity, _ in sites])
+        settings = policy["evidence_policy"].get("settings", {})
+        receipts = load_receipts(public_capture.policy_root, evidence_root, policy_subject,
+            policy_subject=policy_subject, require_negative_control=bool(settings.get("require_negative_control_for_required_gates", True)),
+            tree_independent_allowlist=set(settings.get("tree_independent_allowlist", [])),
+            expected_kinds=expected_evidence_kinds(public_capture.policy_root, source_subject=policy_subject),
+            invocations=expected_invocations(public_capture.policy_root, source_subject=policy_subject), require_session=True,
+            selected_profile=policy["profile"].get("profile", {}).get("selected", "standard"), contract_version="3.0")
+        identities = set()
+        for claim_id in declarations[0]["claims"]:
+            applicable = []
+            for row in eligible_claim_receipts(receipts, policy["model"], claim_id, set(), include_preflight=False):
+                receipt = row.get("receipt", {})
+                context = receipt.get("observations", {}).get("runtime_context")
+                if (row.get("result") == "verified" and row.get("admission_policy") == policy["identity"]
+                        and context == statement):
+                    applicable.append(row)
+            if not applicable:
+                raise CIGraphError("runtime context lacks an exact approved model qualification")
+            for row in applicable:
+                identities.add((row["receipt_path"], row["artifact_sha256"], row["evidence_id"]))
+        if _runtime_inventory_digest(inventory) != inventory_sha:
+            raise CIGraphError("runtime context source inventory changed during capture")
+    except (OSError, TypeError, ValueError, KeyError, ReceiptError) as exc:
+        if isinstance(exc, CIGraphError):
+            raise
+        raise CIGraphError(f"runtime context qualification failed: {exc}") from exc
+    return _OperationRuntimeContext(public_capture, operation_id, evidence_root.resolve(),
+        tuple(native_subject[key] for key in keys), inventory_sha,
+        json.dumps(statement, sort_keys=True, separators=(",", ":")), tuple(sorted(identities)), sites)
+
+
+def runtime_context_call_summaries(operation, inventory, capture):
+    """Reauthenticate the complete model capture; its class identity is not authority."""
+    if type(capture) is not _OperationRuntimeContext or capture.operation_id != operation["id"]:
+        raise CIGraphError("runtime context capture differs from the operation")
+    parent = capture.public_capture
+    fresh = capture_operation_runtime_context(parent.runtime_root, inventory, parent,
+        operation_id=capture.operation_id, evidence_root=capture.evidence_root,
+        native_subject=dict(zip(("implementation_sha256", "namespace_sha256"), capture.native_subject)))
+    if fresh != capture:
+        raise CIGraphError("runtime context capture changed before consumption")
+    expected = next(row for row in parent.registry.operations if row["id"] == operation["id"])
+    if operation != expected:
+        raise CIGraphError("runtime context operation policy differs from protected source")
+    return frozenset((json.loads(identity)["caller"], raw_call) for identity, raw_call in capture.sites)

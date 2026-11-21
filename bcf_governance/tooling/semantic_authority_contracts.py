@@ -720,10 +720,10 @@ def required_application_operation_population(
 
 
 def _required_operation_population(
-    repo_root: Path, payload: dict[str, Any], inventory: dict[str, Any], registry_sha256: str,
+    repo_root: Path, payload: dict[str, Any], inventory: dict[str, Any], registry_sha256: str, *, runtime_contexts=None,
 ) -> dict[str, Any]:
     """Interpret a fresh factory capture; this internal query authenticates no inputs."""
-    observations = _validate_operations(repo_root, payload, inventory, consumer_owned_schema=True)
+    observations = _validate_operations(repo_root, payload, inventory, consumer_owned_schema=True, runtime_contexts=runtime_contexts)
     rows = tuple(sorted(
         (row["operation"], row["kind"], row["entrypoint"], tuple(sorted(
             (port["classification"], port["target_kind"], port["symbol"])

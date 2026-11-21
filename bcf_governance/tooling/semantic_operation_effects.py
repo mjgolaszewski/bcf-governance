@@ -489,7 +489,7 @@ def validated_operation_effect_inventory(
     operation: dict[str, Any],
     entrypoint_symbol: str,
     inventory: dict[str, Any],
-    *, source_modules: tuple[str, ...] = (), require_runtime_context: bool = True,
+    *, source_modules: tuple[str, ...] = (), require_runtime_context: bool = True, runtime_context=None,
 ) -> tuple[tuple[str, str, str], ...]:
     """Trace effects; explicit source-only views retain unknown context as data."""
     if not isinstance(require_runtime_context, bool):
@@ -526,6 +526,16 @@ def validated_operation_effect_inventory(
     if read_ports & (mutation_ports | authority_ports | non_authoritative_ports):
         raise SemanticOperationEffectError("operation read ports must be disjoint from other effect roles")
     declared_ports = read_ports | mutation_ports | authority_ports | non_authoritative_ports
+    model_calls = frozenset()
+    if runtime_context is not None:
+        from .ci_graph_composition_operations import runtime_context_call_summaries
+        from .ci_graph_errors import CIGraphError
+        if not require_runtime_context:
+            raise SemanticOperationEffectError("qualified runtime context cannot enter source-only mode")
+        try:
+            model_calls = runtime_context_call_summaries(operation, inventory, runtime_context)
+        except CIGraphError as exc:
+            raise SemanticOperationEffectError(str(exc)) from exc
     reached: set[tuple[str, str]] = set()
     unresolved: set[tuple[str, str, str]] = set()
     blockers: set[tuple[str, str, str, str]] = set()
@@ -595,6 +605,12 @@ def validated_operation_effect_inventory(
                     reject(symbol, "unresolved_effect", f"{symbol}:{index}:{json.dumps(failure, sort_keys=True)}",
                            f"operation {operation['id']} contains an unresolved effect call path at {symbol}")
         for call_index, call in enumerate(function.get("calls", [])):
+            if (symbol, json.dumps(call, sort_keys=True, separators=(",", ":"))) in model_calls:
+                raw = str(call.get("called_symbol", ""))
+                target = _resolve_function(raw, functions)
+                if ("call", raw) in declared_ports or (target is not None and ("function", target) in declared_ports):
+                    raise SemanticOperationEffectError("runtime model cannot mask a declared effect port")
+                continue
             if _implicit_protocol(call, symbol):
                 if require_runtime_context:
                     marker = call["implicit_protocol"]

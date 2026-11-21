@@ -146,3 +146,124 @@ def implicit_runtime_protocols(
     if isinstance(node, ast.FormattedValue):
         return () if known(node.value) and (node.format_spec is None or known(node.format_spec)) else ("format",)
     return ()
+
+
+def cli_snapshot_model_sites(caller_source, guard_source, approved_guard_source, *, caller, callee, calls):
+    """Derive supported call sites; qualification and native binding live outside syntax."""
+    import hashlib
+    import json
+
+    if guard_source != approved_guard_source:
+        raise ValueError("snapshot guard implementation differs from protected model source")
+    guard_tree, caller_tree = ast.parse(guard_source), ast.parse(caller_source)
+    functions = [node for node in guard_tree.body if isinstance(node, ast.FunctionDef) and node.name == "cli_arguments"]
+    if len(functions) != 1:
+        raise ValueError("snapshot guard definition is ambiguous")
+    function = functions[0]
+    args = function.args
+    if (function.decorator_list or args.posonlyargs or args.kwonlyargs or args.vararg or args.kwarg
+            or len(args.args) != 1 or args.args[0].arg != "argv"
+            or len(args.defaults) != 1 or not isinstance(args.defaults[0], ast.Constant)
+            or args.defaults[0].value is not None):
+        raise ValueError("snapshot guard callable shape is unsupported")
+    # This is the model's independently checked source contract, not a claim
+    # of native purity or an authority flag on producer facts.
+    expected = ast.parse("""def guard(argv):
+    raw = sys.argv if argv is None else argv
+    kind = type(raw)
+    if kind is not list and kind is not tuple:
+        raise TypeError("CLI arguments must be an ordinary string list or tuple")
+    values = raw[:]
+    if any(type(value) is not str for value in values):
+        raise TypeError("CLI arguments must contain only ordinary strings")
+    if argv is None:
+        values = values[1:]
+    return values if kind is list else [value for value in values]
+""").body[0].body
+    body = function.body
+    if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) and isinstance(body[0].value.value, str):
+        body = body[1:]
+    if [ast.dump(node, include_attributes=False) for node in body] != [ast.dump(node, include_attributes=False) for node in expected]:
+        raise ValueError("snapshot guard body is outside qualified model")
+    reserved = {"type", "list", "tuple", "str", "any", "TypeError", "sys", "__builtins__"}
+    if any(isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)) and node.id in reserved
+           for node in ast.walk(guard_tree)):
+        raise ValueError("snapshot guard namespace contains rewritten model bindings")
+    for node in ast.walk(guard_tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name in reserved:
+            raise ValueError("snapshot guard namespace contains a shadow definition")
+        if isinstance(node, ast.arg) and node.arg in reserved:
+            raise ValueError("snapshot guard namespace contains a shadow parameter")
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            for name in node.names:
+                bound = name.asname or name.name.split(".")[0]
+                if bound in reserved and not (isinstance(node, ast.Import) and name.name == "sys" and bound == "sys"):
+                    raise ValueError("snapshot guard namespace imports a model override")
+    imports = [node for node in guard_tree.body if isinstance(node, ast.Import)
+               for name in node.names if name.name == "sys" and name.asname in {None, "sys"}]
+    if len(imports) != 1:
+        raise ValueError("snapshot guard sys binding is unsupported")
+    aliases = [name.asname or name.name for node in caller_tree.body if isinstance(node, ast.ImportFrom)
+               and node.module and node.module.split(".")[-1] == "nested_cli_runtime"
+               for name in node.names if name.name == "cli_arguments"]
+    if len(aliases) != 1:
+        raise ValueError("snapshot guard import binding is ambiguous")
+    alias = aliases[0]
+    if any((isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)) and node.id == alias)
+           or (isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name == alias)
+           or (isinstance(node, ast.arg) and node.arg == alias) for node in ast.walk(caller_tree)):
+        raise ValueError("snapshot guard caller rewrites its binding")
+    for node in ast.walk(caller_tree):
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            for name in node.names:
+                bound = name.asname or name.name.split(".")[0]
+                if bound == alias and not (isinstance(node, ast.ImportFrom) and node in caller_tree.body
+                        and node.module and node.module.split(".")[-1] == "nested_cli_runtime"
+                        and name.name == "cli_arguments"):
+                    raise ValueError("snapshot caller imports a rewritten guard binding")
+    roots = [node for node in caller_tree.body if isinstance(node, ast.FunctionDef) and node.name == caller.split("::")[-1]]
+    if len(roots) != 1 or roots[0].decorator_list:
+        raise ValueError("snapshot caller definition is unsupported")
+    root = roots[0]
+    locations = {(row.get("line"), row.get("column")): row for row in calls if row.get("called_symbol") == callee}
+    if len(locations) != len([row for row in calls if row.get("called_symbol") == callee]):
+        raise ValueError("snapshot call location is ambiguous")
+    registrations = [node for node in ast.walk(caller_tree) if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute) and node.func.attr == "add_argument"
+        and node.args and isinstance(node.args[0], ast.Constant) and node.args[0].value == "--adopter-python"]
+    sites = []
+    for node in ast.walk(root):
+        if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name) or node.func.id != alias:
+            continue
+        row = locations.get((node.lineno, node.col_offset))
+        if row is None:
+            # Other lexical frames remain ordinary obligations, not model credit.
+            continue
+        if len(node.args) != 1 or node.keywords:
+            raise ValueError("snapshot invocation has unsupported arguments")
+        value = node.args[0]
+        if isinstance(value, ast.Name) and value.id == "argv":
+            origin = "cli_entry_vector"
+        elif (isinstance(value, ast.Attribute) and isinstance(value.value, ast.Name)
+                and value.value.id == "args" and value.attr == "adopter_python"):
+            if len(registrations) != 1:
+                raise ValueError("snapshot parser source population is ambiguous")
+            settings = {keyword.arg: keyword.value for keyword in registrations[0].keywords}
+            if ("type" in settings or not isinstance(settings.get("action"), ast.Constant)
+                    or settings["action"].value != "append" or not isinstance(settings.get("default"), ast.List)
+                    or settings["default"].elts):
+                raise ValueError("snapshot parser append vector is unsupported")
+            origin = "parser_append_vector"
+        else:
+            raise ValueError("snapshot argument origin is outside qualified model")
+        contract = row.get("call_contract")
+        digest = hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest()
+        if not isinstance(contract, dict) or contract.get("expression_sha256") != digest:
+            raise ValueError("snapshot call contract differs from source")
+        identity = dict(caller=caller, callee=callee, line=node.lineno, column=node.col_offset,
+                        expression_sha256=digest, occurrence=contract.get("occurrence"), input_origin=origin)
+        sites.append((json.dumps(identity, sort_keys=True, separators=(",", ":")),
+                      json.dumps(row, sort_keys=True, separators=(",", ":"))))
+    if not sites or len(sites) != len(locations):
+        raise ValueError("snapshot model omits or invents source call contexts")
+    return tuple(sorted(sites))
