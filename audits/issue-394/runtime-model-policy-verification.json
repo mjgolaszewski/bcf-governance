@@ -1,0 +1,77 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "whole_requirement_advancement": false,
+  "baseline_subject": "858fd6c82fcefba542b1b26f1fcce34e91e972b0",
+  "contract_subject": "a3185d7e36436d5dd9e026f6f71fc2f4aa2c7e6d",
+  "implementation_subject": "37b072ab5ef1b75ddd79b71d15b41744d605240a",
+  "before": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source": {
+    "tests": 108,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 16,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "338ac3ceb606237bf4883736aac5b4bbdaffa8441fa340927e3362cf08f56161",
+    "source": "ed573cd83b0b110471478df08cd6b3fdf8c9509f0e28b18c0c37e5a9f093689b",
+    "installed": "e1269144b07ce45c2ebc04416d0c59ea89cc84aba2db8a12350e5980583f8aee",
+    "architecture": "90b8aca15bf1d54a161675b2166b98654242435b1db0ac817f14737c4414aede"
+  },
+  "scope": "Versioned optional native-model declarations resolve only through committed protected canonical gate claims; reauthenticated at operation capture consumers. No model/evidence/frame/effective-native binding or runtime effect credit. Current policy remains1.0 unchanged.",
+  "limits": "SDK-absent fresh/upgrade fixtures only; no native runtime approval, full installed profile conformance, performance or custody credit. All82wholeOPEN/P32active.",
+  "compatibility_repair": {
+    "contract_subject": "9e2bce20bbe09ec8e91612f178fea9ee94426ff2",
+    "implementation_subject": "bf94720a91a5a97f65661c1b5553d32984029945",
+    "before": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "public_contracts": {
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "original_governance_stderr_sha256": "f08186e101091a4490a9dcd83b2143f7a77382abf83280a916ea48de1cfb8868",
+    "unchanged_implementation_subject": "37b072ab5ef1b75ddd79b71d15b41744d605240a",
+    "evidence_reuse": "Source108/installed16/architecture5 unchanged exact implementation/test files; separate executions, not a full combined train.",
+    "junit_sha256": {
+      "before": "347cd9e6848cbeba8050e7f46308d91d5e9dadb4e22876d676bf73eda8804c63",
+      "public": "cfa48831013cad4d34f910b529cef9a1a3b26f6662dd2b1cf016ffb58c8f31a5"
+    }
+  },
+  "unwaived_governance_runs": {
+    "first": {
+      "stderr_sha256": "f08186e101091a4490a9dcd83b2143f7a77382abf83280a916ea48de1cfb8868",
+      "returncode": 1,
+      "disposition": "Missing readable-version inventory corrected; original failure retained"
+    },
+    "compatibility": {
+      "stderr_sha256": "805a139f77c9a5c23ef013f206356590dd800761b6b79243f4763f024e89f40d",
+      "returncode": 1,
+      "disposition": "Current CI graph public-contracts source digest mismatch; canonical submission/reconciliation required, no manual pin or authority edits"
+    }
+  },
+  "governance_qualified": false,
+  "checkpoint_scope": "Implemented protected policy prerequisites only, not a positive authenticated runtime-context factory or native approval. Source/private/installed conformance and compatibility evidence remain separately scoped. P32active/all82OPEN."
+}
