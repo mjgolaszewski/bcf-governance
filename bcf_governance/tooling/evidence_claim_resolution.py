@@ -162,3 +162,90 @@ def resolved_session_claims(
         ), None)
         is not None
     }
+
+
+def _multi_claim_test_issues(
+    repo_root: Path, receipt: dict[str, Any]
+) -> list[str]:
+    if receipt.get("schema_version") != "3.0" or receipt.get("kind") != "test_suite":
+        return []
+    observations = receipt.get("observations")
+    observed = {
+        str(value)
+        for value in (
+            observations.get("test_node_ids", [])
+            if isinstance(observations, dict)
+            else []
+        )
+    }
+    try:
+        projection = load_claim_gate_projection(repo_root, receipt.get("claims", []))
+    except (OSError, yaml.YAMLError, ValueError):
+        return ["claim_contract_unreadable"]
+    issues: list[str] = []
+    for claim_id in receipt.get("claims", []):
+        claim_contract = projection.get(str(claim_id))
+        if not isinstance(claim_contract, dict):
+            issues.append(f"claim_{claim_id}_not_declared")
+            continue
+        gate = claim_contract["gate"]
+        evidence = gate.get("evidence") if isinstance(gate, dict) else None
+        test_contract = evidence.get("test_contract") if isinstance(evidence, dict) else None
+        manifest_value = (
+            test_contract.get("expected_node_manifest")
+            if isinstance(test_contract, dict)
+            else None
+        )
+        if not isinstance(manifest_value, str):
+            if isinstance(evidence, dict) and evidence.get("kind") == "test_suite":
+                issues.append(f"claim_{claim_id}_test_manifest_undeclared")
+            continue
+        manifest = repo_root / manifest_value
+        if not manifest.is_file() or manifest.is_symlink():
+            issues.append(f"claim_{claim_id}_test_manifest_missing")
+            continue
+        expected = {
+            line.strip()
+            for line in manifest.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        }
+        if not expected.issubset(observed):
+            issues.append(f"claim_{claim_id}_expected_test_nodes_missing")
+    return issues
+
+
+def _qualification_issues(repo_root: Path, receipt: dict[str, Any]) -> list[str]:
+    if receipt.get("schema_version") != "3.0":
+        return []
+    qualification = receipt.get("qualification")
+    references = receipt.get("qualification_refs")
+    referenced_claims = {
+        str(value.get("claim_id"))
+        for value in references
+        if isinstance(value, dict) and isinstance(value.get("claim_id"), str)
+    } if isinstance(references, list) else set()
+    if isinstance(qualification, dict) and qualification.get("satisfied") is True:
+        try:
+            projection = load_claim_gate_projection(repo_root, receipt.get("claims", []))
+            expected = {
+                str(control.get("id"))
+                for claim_id in receipt.get("claims", [])
+                if claim_id not in referenced_claims
+                for gate in [projection.get(str(claim_id), {}).get("gate")]
+                if isinstance(gate, dict)
+                for control in gate.get("negative_controls", [])
+                if isinstance(control, dict) and isinstance(control.get("id"), str)
+            }
+        except (OSError, yaml.YAMLError, ValueError, KeyError, TypeError):
+            return ["qualification_contract_unreadable"]
+        actual = qualification.get("control_ids")
+        if not isinstance(actual, list) or set(actual) != expected:
+            return ["qualification_control_inventory_incomplete"]
+        return []
+    if (
+        isinstance(references, list)
+        and references
+        and referenced_claims == set(receipt.get("claims", []))
+    ):
+        return []
+    return ["qualification_missing"]
