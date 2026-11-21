@@ -1,0 +1,21 @@
+schema_version: '1.0'
+document: {kind: affected_surface_contract, status: planned, authority: false, path: audits/issue-394/runtime-context-consumer-binding-contract.yml}
+source_subject: 71ab8aef68005b4113ced89375f43a2ab3013ec5
+parent: audits/issue-394/runtime-context-factory-contract.yml
+workitem: P32-P0-04
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: query
+targets: [bcf_governance/tooling/ci_graph_composition_operations.py]
+purpose: Bind each supplied qualified context to the exact protected public-operation capture at the consuming boundary before semantic effect traversal.
+contract:
+  authority: A context captured under another protected policy, source repository, operation or lifecycle relationship cannot supply credit to this consumer even when operation declaration bytes match.
+  population: Optional context input is an exact native dict keyed only by declared protected operations; every value is the matching canonical context and has the same complete reauthenticated public operation capture. Malformed or cross-scope values block before source/effect traversal.
+  reauthentication: Existing factory consumption still reauthenticates exact inventory, canonical claim policy, receipt/native target and complete call scope. Matching the ambient capture is an additional prerequisite, not approval by class identity.
+  compatibility: Absent contexts retain strict missing-context behavior. A valid scoped guard context can remove only its own guard obligations; surrounding CLI obligations still block the required public operation. Current operation policy remains1.0.
+verification:
+  positive: Actual required public-operation consumer traverses the real CI source under matching fixture context and retains unrelated blockers.
+  negative: Legitimately recaptured changed protected claim policy, different relationship roots, wrong operation key, invalid context and nonnative population reject at the ambient boundary; installed fresh/upgrade consumers enforce the same rule.
+  counterfactual: Retain pre-fix boundary-test failure separately from ordinary strict rejection; no claim of complete operation acceptance.
+forbidden: [main or maintenance changes, new CLI selectors, source-only mode, new claim registry or receipt family, manual workflow or authority pins, actual native security approval from fixtures]
+status: {actual_native_context_qualified: false, whole_requirement_advancement: false, all_whole_requirements_open: 82, phase: P32}
