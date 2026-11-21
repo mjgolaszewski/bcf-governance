@@ -75,12 +75,24 @@ def evidence_session_schema_path(root: Path, version: object) -> Path:
 
 
 def load_evidence_session_schema(
-    root: Path, payload: Mapping[str, Any]
+    root: Path, payload: Mapping[str, Any], *, source_subject=None,
 ) -> dict[str, Any]:
-    path = evidence_session_schema_path(root, payload.get("schema_version"))
+    if source_subject is None:
+        path = evidence_session_schema_path(root, payload.get("schema_version"))
+    else:
+        name = {"1.0": "evidence-session.schema.json", "2.0": "evidence-session.schema.json",
+                "3.0": "evidence-session-v3.schema.json"}.get(payload.get("schema_version"))
+        if name is None:
+            raise EvidenceSessionSchemaError("evidence session schema version is unsupported")
+        path = root / "schemas" / name
     try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        if source_subject is None:
+            raw = path.read_bytes()
+        else:
+            from .semantic_source_paths import committed_regular_blob_capture
+            _, raw = committed_regular_blob_capture(root, path="schemas/" + path.name, **source_subject)
+        value = json.loads(raw)
+    except (OSError, UnicodeError, ValueError) as exc:
         raise EvidenceSessionSchemaError(
             f"cannot load evidence session schema {path.name}: {exc}"
         ) from exc

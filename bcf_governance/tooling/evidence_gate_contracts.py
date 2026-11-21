@@ -26,7 +26,12 @@ TEST_POLICIES = {
 }
 
 
-def _load_yaml(path: Path) -> dict[str, Any]:
+def _load_yaml(path: Path, *, repo_root=None, source_subject=None) -> dict[str, Any]:
+    if source_subject is not None:
+        from .semantic_source_paths import committed_regular_blob_capture
+        from .semantic_yaml import load_unique_mapping_text
+        _, raw = committed_regular_blob_capture(repo_root, path=path.relative_to(repo_root).as_posix(), **source_subject)
+        return load_unique_mapping_text(raw)
     if not path.exists():
         raise EvidenceError(f"missing required path {path}")
     payload = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -35,8 +40,8 @@ def _load_yaml(path: Path) -> dict[str, Any]:
     return payload
 
 
-def _profile_gate(repo_root: Path, gate_id: str) -> tuple[str, dict[str, Any]]:
-    profile = _load_yaml(repo_root / "governance-profile.yml")
+def _profile_gate(repo_root: Path, gate_id: str, *, source_subject=None) -> tuple[str, dict[str, Any]]:
+    profile = _load_yaml(repo_root / "governance-profile.yml", repo_root=repo_root, source_subject=source_subject)
     release_profile = profile.get("release_gate_profile")
     gates = release_profile.get("gates") if isinstance(release_profile, dict) else None
     if not isinstance(gates, dict):
@@ -52,17 +57,17 @@ def _profile_gate(repo_root: Path, gate_id: str) -> tuple[str, dict[str, Any]]:
     raise EvidenceError(f"unknown governance gate {gate_id!r}")
 
 
-def _gate_contract(repo_root: Path, gate_id: str) -> dict[str, Any]:
-    configured_id, gate = _profile_gate(repo_root, gate_id)
-    profile = _load_yaml(repo_root / "governance-profile.yml")
-    policy = _load_yaml(repo_root / "governance/evidence-policy.yml")
+def _gate_contract(repo_root: Path, gate_id: str, *, source_subject=None) -> dict[str, Any]:
+    configured_id, gate = _profile_gate(repo_root, gate_id, source_subject=source_subject)
+    profile = _load_yaml(repo_root / "governance-profile.yml", repo_root=repo_root, source_subject=source_subject)
+    policy = _load_yaml(repo_root / "governance/evidence-policy.yml", repo_root=repo_root, source_subject=source_subject)
     overrides = policy.get("gate_overrides")
     override: dict[str, Any] = {}
     if isinstance(overrides, dict):
         candidate = overrides.get(gate.get("target"), overrides.get(configured_id, {}))
         if isinstance(candidate, dict):
             override = candidate
-    registry = _load_yaml(repo_root / "governance/gate-contracts.yml")
+    registry = _load_yaml(repo_root / "governance/gate-contracts.yml", repo_root=repo_root, source_subject=source_subject)
     registry_gates = registry.get("gates")
     if gate.get("status") != "required":
         raise EvidenceError(f"gate {gate_id!r} is not applicable to the selected profile")
@@ -140,16 +145,16 @@ def _gate_contract(repo_root: Path, gate_id: str) -> dict[str, Any]:
     }
 
 
-def expected_evidence_kinds(repo_root: Path) -> dict[str, str]:
+def expected_evidence_kinds(repo_root: Path, *, source_subject=None) -> dict[str, str]:
     """Return the contract-derived evidence kind for each required gate target."""
-    profile = _load_yaml(repo_root / "governance-profile.yml")
+    profile = _load_yaml(repo_root / "governance-profile.yml", repo_root=repo_root, source_subject=source_subject)
     release_profile = profile.get("release_gate_profile")
     gates = release_profile.get("gates") if isinstance(release_profile, dict) else {}
     if not isinstance(gates, dict):
         return {}
     return {
         str(gate["target"]): str(
-            _gate_contract(repo_root, str(gate["target"]))["evidence_kind"]
+            _gate_contract(repo_root, str(gate["target"]), source_subject=source_subject)["evidence_kind"]
         )
         for gate in gates.values()
         if isinstance(gate, dict)
@@ -158,9 +163,9 @@ def expected_evidence_kinds(repo_root: Path) -> dict[str, str]:
     }
 
 
-def expected_invocations(repo_root: Path) -> dict[str, dict[str, Any]]:
+def expected_invocations(repo_root: Path, *, source_subject=None) -> dict[str, dict[str, Any]]:
     """Return canonical invocations for exact receipt revalidation."""
-    registry = _load_yaml(repo_root / "governance/gate-contracts.yml")
+    registry = _load_yaml(repo_root / "governance/gate-contracts.yml", repo_root=repo_root, source_subject=source_subject)
     gates = registry.get("gates")
     if not isinstance(gates, dict):
         return {}

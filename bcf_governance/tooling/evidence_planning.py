@@ -398,13 +398,17 @@ def receipt_applicability(
 
 
 def qualification_applicability(
-    repo_root: Path, receipt: Mapping[str, Any], claim_id: str
+    repo_root: Path, receipt: Mapping[str, Any], claim_id: str, *,
+    model=None, tree_entries=None, current_subject=None,
 ) -> bool:
     """Return whether one detector-scoped qualification remains applicable."""
 
     if receipt.get("schema_version") != "3.0":
         return False
-    model = load_claim_model(repo_root)
+    context = (model, tree_entries, current_subject)
+    if any(value is not None for value in context) and any(value is None for value in context):
+        raise EvidenceError("provider qualification context must be complete")
+    model = load_claim_model(repo_root) if model is None else model
     claim = model["claims"].get(claim_id)
     qualifications = receipt.get("qualifications")
     qualification = (
@@ -445,7 +449,7 @@ def qualification_applicability(
             return False
         if raw["patterns"] != declared_patterns[dependency_class]:
             return False
-        fingerprint, paths = dependency_fingerprint(repo_root, raw["patterns"])
+        fingerprint, paths = dependency_fingerprint(repo_root, raw["patterns"], tree_entries=tree_entries)
         if raw.get("fingerprint") != fingerprint or raw.get("paths") != paths:
             return False
     limit = claim.get("freshness_limit_seconds")
@@ -538,9 +542,10 @@ def plan_verification(
         ]
         declared_patterns = _patterns_for_claims(model, routable_claims)
         all_patterns = [pattern for values in declared_patterns.values() for pattern in values]
-        known_nonbehavior = lambda path: path.startswith(
-            ("docs/", "plans/", "phases/", "audits/")
-        ) or path in {"README.md", "CHANGELOG.md", "MEMORY.yml"}
+        def known_nonbehavior(path):
+            return path.startswith(("docs/", "plans/", "phases/", "audits/")) or path in {
+                "README.md", "CHANGELOG.md", "MEMORY.yml",
+            }
         unknown_paths = [
             path for path in changed
             if not any(_matches(path, pattern) for pattern in all_patterns)

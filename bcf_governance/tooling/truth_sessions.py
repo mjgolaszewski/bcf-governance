@@ -167,6 +167,7 @@ def apply_session_validation(
     selected_profile: str,
     contract_version: str,
     expected_gates: set[str],
+    policy_subject=None,
 ) -> None:
     """Mutate receipt results with independently recomputed session failures."""
     material: list[tuple[dict[str, Any], dict[str, Any] | None, str | None]] = []
@@ -178,7 +179,8 @@ def apply_session_validation(
         )
         try:
             payload = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path else {}
-            schema = load_evidence_session_schema(repo_root, payload)
+            schema = (load_evidence_session_schema(repo_root, payload) if policy_subject is None
+                      else load_evidence_session_schema(repo_root, payload, source_subject=policy_subject))
         except (OSError, UnicodeError, json.JSONDecodeError, EvidenceSessionSchemaError):
             schema = {"not": {}}
         issues, manifest, digest = _manifest_issues(

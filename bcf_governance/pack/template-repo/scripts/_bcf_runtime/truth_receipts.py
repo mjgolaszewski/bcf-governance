@@ -15,7 +15,10 @@ import yaml  # type: ignore[import-untyped]
 from jsonschema import Draft202012Validator
 
 from .evidence_test_adapters import recompute_test_artifact_observations
-from .evidence_claim_resolution import _multi_claim_test_issues, _qualification_issues
+from .evidence_claim_resolution import (
+    _multi_claim_test_issues, _qualification_issues, capture_claim_policy, _claim_policy_inputs,
+    _require_receipt_policy_settings,
+)
 from .evidence_planning import qualification_applicability, receipt_applicability
 from .governance_truth_support import artifact_issues
 from .truth_sessions import apply_session_validation
@@ -126,6 +129,7 @@ def _subject_issues(
     receipt: dict[str, Any],
     current: dict[str, Any],
     tree_independent_allowlist: set[str],
+    *, policy_inputs=None,
 ) -> tuple[list[str], dict[str, Any]]:
     issues: list[str] = []
     subject = receipt.get("subject")
@@ -142,7 +146,9 @@ def _subject_issues(
         reasons: set[str] = set()
         for claim_id in claims:
             applicable, claim_reasons = receipt_applicability(
-                repo_root, receipt, str(claim_id)
+                repo_root, receipt, str(claim_id),
+                **({} if policy_inputs is None else dict(model=policy_inputs["model"],
+                    current_subject=policy_inputs["subject"], tree_entries=policy_inputs["tree_entries"]))
             )
             if not applicable:
                 reasons.update(claim_reasons)
@@ -376,6 +382,7 @@ def _receipt_result(
     receipt_schema: dict[str, Any],
     expected_kinds: dict[str, str],
     invocations: dict[str, dict[str, Any]],
+    policy_inputs=None,
 ) -> dict[str, Any]:
     required_fields = {
         "schema_version", "kind", "evidence_id", "gate_id", "producer", "invocation",
@@ -411,7 +418,7 @@ def _receipt_result(
         issues.append("receipt_recomputed_result_failed")
     issues.extend(artifact_issues(receipt_path, receipt))
     subject_issues, invalidation = _subject_issues(
-        repo_root, receipt, current, tree_independent_allowlist
+        repo_root, receipt, current, tree_independent_allowlist, policy_inputs=policy_inputs
     )
     issues.extend(subject_issues)
     issues.extend(
@@ -422,8 +429,8 @@ def _receipt_result(
         )
     )
     issues.extend(_test_issues(receipt_path, receipt))
-    issues.extend(_multi_claim_test_issues(repo_root, receipt))
-    issues.extend(_qualification_issues(repo_root, receipt))
+    issues.extend(_multi_claim_test_issues(repo_root, receipt, policy_inputs=policy_inputs))
+    issues.extend(_qualification_issues(repo_root, receipt, policy_inputs=policy_inputs))
     issues.extend(_environment_issues(receipt))
     issues.extend(_output_requirement_issues(receipt))
     issues.extend(_freshness_issues(receipt))
@@ -599,7 +606,7 @@ def _apply_receipt_identity_validation(results: list[dict[str, Any]]) -> None:
 
 
 def _apply_qualification_reference_validation(
-    repo_root: Path, results: list[dict[str, Any]]
+    repo_root: Path, results: list[dict[str, Any]], *, policy_inputs=None,
 ) -> None:
     indexed = {
         (str(result.get("evidence_id")), str(result.get("artifact_sha256"))): result
@@ -638,7 +645,9 @@ def _apply_qualification_reference_validation(
             )
             claim_id = str(reference.get("claim_id", ""))
             if selected is None or not qualification_applicability(
-                repo_root, selected.get("receipt", {}), claim_id
+                repo_root, selected.get("receipt", {}), claim_id,
+                **({} if policy_inputs is None else dict(model=policy_inputs["model"],
+                    current_subject=policy_inputs["subject"], tree_entries=policy_inputs["tree_entries"]))
             ):
                 reference_issues.append(
                     f"qualification_reference_{claim_id or 'unknown'}_not_applicable"
@@ -668,10 +677,27 @@ def load_receipts(
     require_session: bool = False,
     selected_profile: str = "standard",
     contract_version: str = "1.0",
+    policy_subject=None,
 ) -> dict[str, list[dict[str, Any]]]:
+    capture = None
+    policy_inputs = None
+    if policy_subject is not None:
+        if (type(policy_subject) is not dict or set(policy_subject) != {"commit_sha", "tree_sha"}
+                or any(current.get(key) != value for key, value in policy_subject.items())):
+            raise ReceiptError("protected receipt policy subject differs from evaluation")
+        try:
+            capture = capture_claim_policy(repo_root, policy_subject)
+            policy_inputs = _claim_policy_inputs(capture)
+            _require_receipt_policy_settings(policy_inputs, require_negative_control=require_negative_control,
+                tree_independent_allowlist=tree_independent_allowlist, expected_kinds=expected_kinds,
+                invocations=invocations, require_session=require_session, selected_profile=selected_profile,
+                contract_version=contract_version)
+        except (OSError, TypeError, ValueError) as exc:
+            raise ReceiptError(f"protected receipt policy capture failed: {exc}") from exc
     results: list[dict[str, Any]] = []
     schema_path = repo_root / "schemas/evidence-receipt.schema.json"
-    receipt_schema = yaml.safe_load(schema_path.read_text(encoding="utf-8"))
+    receipt_schema = (yaml.safe_load(schema_path.read_text(encoding="utf-8")) if policy_inputs is None
+                      else policy_inputs["schema"])
     if not isinstance(receipt_schema, dict):
         raise ReceiptError(f"{schema_path} must deserialize to a mapping")
     for path in sorted(evidence_dir.rglob(f"*{RECEIPT_SUFFIX}")):
@@ -690,16 +716,24 @@ def load_receipts(
             tree_independent_allowlist=tree_independent_allowlist,
             receipt_schema=receipt_schema,
             expected_kinds=expected_kinds,
-            invocations=invocations,
+            invocations=invocations, policy_inputs=policy_inputs,
         )
         results.append(result)
     _apply_receipt_identity_validation(results)
-    _apply_qualification_reference_validation(repo_root, results)
+    _apply_qualification_reference_validation(repo_root, results, policy_inputs=policy_inputs)
     if require_session:
         apply_session_validation(
             repo_root, results, current=current, selected_profile=selected_profile,
             contract_version=contract_version, expected_gates=set(expected_kinds),
+            **({} if capture is None else dict(policy_subject=policy_inputs["subject"])),
         )
+    if capture is not None:
+        try:
+            _claim_policy_inputs(capture)
+        except (OSError, TypeError, ValueError) as exc:
+            raise ReceiptError(f"protected receipt policy changed during evaluation: {exc}") from exc
+        for result in results:
+            result["admission_policy"] = policy_inputs["identity"]
     by_gate: dict[str, list[dict[str, Any]]] = {}
     for result in results:
         gate_id = str(result.get("gate_id") or "")

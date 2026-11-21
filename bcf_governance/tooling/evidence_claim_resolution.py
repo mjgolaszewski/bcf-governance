@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
-from typing import Any, Iterable, Iterator, Mapping
+from typing import Any, Iterable, Iterator, Mapping, NamedTuple
 
 import yaml  # type: ignore[import-untyped]
 
@@ -165,7 +167,7 @@ def resolved_session_claims(
 
 
 def _multi_claim_test_issues(
-    repo_root: Path, receipt: dict[str, Any]
+    repo_root: Path, receipt: dict[str, Any], *, policy_inputs=None,
 ) -> list[str]:
     if receipt.get("schema_version") != "3.0" or receipt.get("kind") != "test_suite":
         return []
@@ -179,7 +181,7 @@ def _multi_claim_test_issues(
         )
     }
     try:
-        projection = load_claim_gate_projection(repo_root, receipt.get("claims", []))
+        projection = _receipt_claim_projection(repo_root, receipt.get("claims", []), policy_inputs)
     except (OSError, yaml.YAMLError, ValueError):
         return ["claim_contract_unreadable"]
     issues: list[str] = []
@@ -200,21 +202,18 @@ def _multi_claim_test_issues(
             if isinstance(evidence, dict) and evidence.get("kind") == "test_suite":
                 issues.append(f"claim_{claim_id}_test_manifest_undeclared")
             continue
-        manifest = repo_root / manifest_value
-        if not manifest.is_file() or manifest.is_symlink():
+        try:
+            text = _receipt_manifest_text(repo_root, manifest_value, policy_inputs)
+        except (OSError, UnicodeError, ValueError):
             issues.append(f"claim_{claim_id}_test_manifest_missing")
             continue
-        expected = {
-            line.strip()
-            for line in manifest.read_text(encoding="utf-8").splitlines()
-            if line.strip()
-        }
+        expected = {line.strip() for line in text.splitlines() if line.strip()}
         if not expected.issubset(observed):
             issues.append(f"claim_{claim_id}_expected_test_nodes_missing")
     return issues
 
 
-def _qualification_issues(repo_root: Path, receipt: dict[str, Any]) -> list[str]:
+def _qualification_issues(repo_root: Path, receipt: dict[str, Any], *, policy_inputs=None) -> list[str]:
     if receipt.get("schema_version") != "3.0":
         return []
     qualification = receipt.get("qualification")
@@ -226,7 +225,7 @@ def _qualification_issues(repo_root: Path, receipt: dict[str, Any]) -> list[str]
     } if isinstance(references, list) else set()
     if isinstance(qualification, dict) and qualification.get("satisfied") is True:
         try:
-            projection = load_claim_gate_projection(repo_root, receipt.get("claims", []))
+            projection = _receipt_claim_projection(repo_root, receipt.get("claims", []), policy_inputs)
             expected = {
                 str(control.get("id"))
                 for claim_id in receipt.get("claims", [])
@@ -249,3 +248,101 @@ def _qualification_issues(repo_root: Path, receipt: dict[str, Any]) -> list[str]
     ):
         return []
     return ["qualification_missing"]
+
+
+
+class _ClaimPolicyCapture(NamedTuple):
+    root: Path
+    subject: tuple[str, str]
+    gate_bytes: bytes
+    schema_bytes: bytes
+    profile_bytes: bytes
+    evidence_policy_bytes: bytes
+    tree_entries: tuple
+
+
+def capture_claim_policy(repo_root: Path, subject):
+    """Capture exact policy inputs; the consuming actor authenticates selection."""
+    from .semantic_source_paths import committed_regular_blob_capture, committed_source_tree_population
+    from .semantic_yaml import load_unique_mapping_text
+    from .evidence_planning import parse_claim_model
+
+    if type(subject) is not dict or set(subject) != {"commit_sha", "tree_sha"}:
+        raise ValueError("protected receipt policy requires an exact subject")
+    root = repo_root.resolve()
+    population = committed_source_tree_population(root, **subject)
+    if population["unresolved_entries"]:
+        raise ValueError("protected receipt policy contains unresolved source entries")
+    _, gates = committed_regular_blob_capture(root, path="governance/gate-contracts.yml", **subject)
+    _, schema = committed_regular_blob_capture(root, path="schemas/evidence-receipt.schema.json", **subject)
+    _, profile = committed_regular_blob_capture(root, path="governance-profile.yml", **subject)
+    _, policy = committed_regular_blob_capture(root, path="governance/evidence-policy.yml", **subject)
+    load_unique_mapping_text(profile)
+    load_unique_mapping_text(policy)
+    parse_claim_model(load_unique_mapping_text(gates))
+    if not isinstance(json.loads(schema), dict):
+        raise ValueError("protected receipt schema must be a mapping")
+    return _ClaimPolicyCapture(root, tuple(subject[key] for key in ("commit_sha", "tree_sha")),
+        gates, schema, profile, policy, tuple((path, oid) for path, _, oid in population["regular_blobs"]))
+
+
+def _claim_policy_inputs(capture):
+    """Re-read committed bindings before any consumer uses their decoded policy."""
+    from .semantic_yaml import load_unique_mapping_text
+    from .evidence_planning import parse_claim_model
+
+    if type(capture) is not _ClaimPolicyCapture:
+        raise ValueError("protected receipt policy capture is incompatible")
+    subject = dict(zip(("commit_sha", "tree_sha"), capture.subject))
+    if capture_claim_policy(capture.root, subject) != capture:
+        raise ValueError("protected receipt policy differs from capture")
+    gates = load_unique_mapping_text(capture.gate_bytes)
+    return dict(root=capture.root, subject=subject, model=parse_claim_model(gates),
+        gates=gates, schema=json.loads(capture.schema_bytes), tree_entries=capture.tree_entries,
+        profile=load_unique_mapping_text(capture.profile_bytes),
+        evidence_policy=load_unique_mapping_text(capture.evidence_policy_bytes),
+        identity=dict(subject=subject, gate_contracts_sha256=hashlib.sha256(capture.gate_bytes).hexdigest(),
+                      receipt_schema_sha256=hashlib.sha256(capture.schema_bytes).hexdigest(),
+                      profile_sha256=hashlib.sha256(capture.profile_bytes).hexdigest(),
+                      evidence_policy_sha256=hashlib.sha256(capture.evidence_policy_bytes).hexdigest()))
+
+
+def _receipt_claim_projection(repo_root, claims, policy_inputs):
+    return (load_claim_gate_projection(repo_root, claims) if policy_inputs is None
+            else claim_gate_projection(policy_inputs["gates"], claims))
+
+
+def _receipt_manifest_text(repo_root, value, policy_inputs):
+    if policy_inputs is None:
+        manifest = repo_root / value
+        if not manifest.is_file() or manifest.is_symlink():
+            raise OSError("test manifest is unavailable")
+        return manifest.read_text(encoding="utf-8")
+    from .semantic_source_paths import committed_regular_blob_capture
+    _, raw = committed_regular_blob_capture(policy_inputs["root"], path=value, **policy_inputs["subject"])
+    return raw.decode("utf-8")
+
+
+def _require_receipt_policy_settings(inputs, *, require_negative_control, tree_independent_allowlist,
+                                     expected_kinds, invocations, require_session, selected_profile, contract_version):
+    """Keep every receipt-admission setting attached to the same protected policy."""
+    from .evidence_gate_contracts import expected_evidence_kinds, expected_invocations
+
+    profile = inputs["profile"]
+    settings = inputs["evidence_policy"].get("settings", {})
+    if not isinstance(settings, dict):
+        raise ValueError("protected receipt evidence settings are invalid")
+    block = profile.get("profile", {})
+    allowlist = settings.get("tree_independent_allowlist", [])
+    if (not isinstance(block, dict) or not isinstance(allowlist, list)
+            or any(not isinstance(value, str) for value in allowlist)):
+        raise ValueError("protected receipt profile or allowlist is invalid")
+    root, subject = inputs["root"], inputs["subject"]
+    if (contract_version != "3.0" or profile.get("profile_contract_version") != "3.0"
+            or require_session is not True
+            or selected_profile != block.get("selected", "standard")
+            or require_negative_control != bool(settings.get("require_negative_control_for_required_gates", True))
+            or tree_independent_allowlist != set(allowlist)
+            or expected_kinds != expected_evidence_kinds(root, source_subject=subject)
+            or invocations != expected_invocations(root, source_subject=subject)):
+        raise ValueError("protected receipt admission settings differ from canonical policy")

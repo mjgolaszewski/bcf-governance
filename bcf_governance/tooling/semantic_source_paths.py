@@ -108,10 +108,10 @@ def _validate_committed_subject(repo_root: Path, subject: dict[str, str]) -> Non
         raise ValueError("source subject commit and tree differ")
 
 
-def committed_python_source_population(
+def committed_source_tree_population(
     repo_root: Path, *, commit_sha: str, tree_sha: str,
 ) -> dict[str, Any]:
-    """Observe all exact-tree Python blobs; caller authenticates repository/subject.
+    """Observe all exact-tree regular blobs; caller authenticates repository/subject.
 
     No candidate source is evaluated. Git object identity is an observation, not
     provider authority or a complete interpretation of runtime effects.
@@ -141,13 +141,19 @@ def committed_python_source_population(
         if (mode, kind) in {("120000", "blob"), ("160000", "commit")}:
             unresolved.append((path, mode, oid))
         elif (mode, kind) in {("100644", "blob"), ("100755", "blob")}:
-            if path.endswith(".py"):
-                blobs.append((path, mode, oid))
+            blobs.append((path, mode, oid))
         else:
             raise ValueError("committed source tree entry kind is unsupported")
     return dict(authority=False, execution_qualified=False, subject=subject,
-                scope="all_python_blobs_in_exact_git_tree",
-                python_blobs=tuple(sorted(blobs)), unresolved_entries=tuple(sorted(unresolved)))
+                scope="all_regular_blobs_in_exact_git_tree",
+                regular_blobs=tuple(sorted(blobs)), unresolved_entries=tuple(sorted(unresolved)))
+
+def committed_python_source_population(repo_root: Path, *, commit_sha: str, tree_sha: str) -> dict[str, Any]:
+    """Retain the Python projection of the same exact complete source tree."""
+    population = committed_source_tree_population(repo_root, commit_sha=commit_sha, tree_sha=tree_sha)
+    blobs = population.pop("regular_blobs")
+    return dict(population, scope="all_python_blobs_in_exact_git_tree",
+                python_blobs=tuple(row for row in blobs if row[0].endswith(".py")))
 
 
 def committed_python_source_delta(
