@@ -1,0 +1,61 @@
+{
+  "authority": false,
+  "actual_native_context_qualified": false,
+  "whole_requirement_advancement": false,
+  "baseline_subject": "71ab8aef68005b4113ced89375f43a2ab3013ec5",
+  "contract_subject": "becf13f1406c14beb904c5de1fad8812fb64ad5d",
+  "implementation_subject": "e7019f8f6a2cdc711ea4db8ae0ec48817491131e",
+  "before": {
+    "tests": 7,
+    "failures": 6,
+    "errors": 0,
+    "skipped": 0
+  },
+  "baseline_scope": "Six ambient boundary controls failed; ordinary surrounding strict CLI failures remained. This is not six complete unsafe operation acceptances.",
+  "source": {
+    "tests": 400,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_evidence_reuse": {
+    "original_subject": "e7019f8f6a2cdc711ea4db8ae0ec48817491131e",
+    "original": {
+      "tests": 400,
+      "failures": 3,
+      "errors": 0,
+      "skipped": 0
+    },
+    "rechecked": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "unchanged_passes_reused": 395,
+    "scope": "Only governed record location and citation changed; every Python/schema/pack byte unchanged; 5 schema cases rechecked, other395 retained"
+  },
+  "installed": {
+    "tests": 16,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "400af95616782a64f21b4dc4852d56c802561c1ec7ea9ec371d9d776458b9898",
+    "source": "6fdf950abe1434478fff2d749ca452a58865ffa5ea8a960b119335985819b2eb",
+    "installed": "b2a597503a3aa26285a0bbcd100c99a281cdc844e884d09f2856f8f3c930f367",
+    "architecture": "1c9ad23ae85a11e06fe4f942893784e3e85282df73577b5b7af2fb705f6269a9"
+  },
+  "scope": "Qualified contexts must match the entire reauthenticated ambient public-operation capture at consuming boundary, including protected claim-policy and lifecycle relationship identity. The actual required public consumer discharges only its guard calls; unrelated strict CLI obligations remain.",
+  "limits": "Simulated fixture producer/native selectors only; actual native/model approval, CI source-pin governance, performance and custody remain OPEN. P32active/all82wholeOPEN.",
+  "governance_stderr_sha256": "805a139f77c9a5c23ef013f206356590dd800761b6b79243f4763f024e89f40d",
+  "governance_qualified": false,
+  "unwaived_governance_block": "CI graph public-contracts value source digest requires canonical submission/reconciliation; no manual pins."
+}
