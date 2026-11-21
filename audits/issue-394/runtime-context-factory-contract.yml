@@ -1,0 +1,36 @@
+schema_version: '1.0'
+document: {kind: affected_surface_contract, status: planned, authority: false, path: audits/issue-394/runtime-context-factory-contract.yml}
+source_subject: 9884cfb3fc639a80868b07e460a0c75c5c419b71
+parent: audits/issue-394/runtime-effect-context-foundation-contract.yml
+workitem: P32-P0-04
+bounded_context: ci_authority_and_semantic_ownership
+architectural_layer: tooling
+operation_side: query
+purpose: Construct and consume the first positively qualified runtime context through existing protected operation, canonical evidence and strict semantic owners.
+pre_edit:
+  targets: [bcf_governance/tooling/ci_graph_composition_operations.py, bcf_governance/tooling/semantic_ownership_protocols.py, bcf_governance/tooling/semantic_operation_effects.py, bcf_governance/tooling/semantic_authority_operations.py, bcf_governance/tooling/semantic_authority_contracts.py, bcf_governance/tooling/evidence_planning.py]
+  model_target: bcf_governance/tooling/ci_commands.py::main guarded cli_arguments(args.adopter_python) call in qualify-release
+  forbidden: [main, maintenance, adopters, new CLI context selector, required-context waiver, manual workflow/authority pins, parallel claim registry or receipt family]
+contract:
+  authority_root: The existing consuming actor authenticates protected policy/evaluator/repository selection and selected native implementation/namespace subject. These are scope selectors, not approval; a caller mapping or private class alone cannot grant model authority.
+  policy: Use only committed operation1.1 runtime_qualifications and the same protected canonical gate claim model. Derive assurance profile from protected profile bytes. Missing/old/unsupported model policy remains a typed block.
+  evidence: Resolve every required model claim through existing protected receipt admission, exact dependency applicability, actual control/oracle/artifact binding and independent qualification/session rules. No preflight synthetic, provisional reuse, diagnostic observation or caller verified boolean may satisfy the context.
+  contextual_statement: Consume a versioned runtime_context observation within the existing3.0 qualified receipt, not a new receipt envelope. Its exact target binds candidate commit/tree, operation/entrypoint/profile and both selected effective-native implementation and namespace digests. The qualified producer attests those scoped model premises; output data without canonical approved claim evidence is not authority. The actor must also authenticate collection custody and protected producer source provenance; candidate-selected evidence roots or producers cannot grant approval.
+  source: Independently reconcile source call/store/protocol populations. Reconstruct the actual guarded call from committed source and validate supported guard implementation and caller/import structure. Match exact call contract span/expression/occurrence and implementation source identities; do not trust candidate context rows or annotations.
+  first_model: python.cli-string-snapshot1.0 certifies only the actual guard call under the qualified ordinary CLI/native parser append-vector context. Its model preconditions include actual callable/builtin bindings, native implementation, namespace and input origin. Python object API invocations, rewritten bindings, callbacks or error alternatives outside that context remain unresolved.
+  consumer: The existing strict effect owner may use this model boundary only for its exact covered call, without suppressing or masking declared effect ports. All other call/store/protocol/construction/initialization/recovery/error obligations remain required. The guard result is not a purity claim for Path or the surrounding loop.
+  reauthentication: At consumption re-read protected policy/profile/receipts and compare exact proof/native/source targets and cold source identities. Modified captures, missing/moved objects, changed qualification artifacts, source rewrites, profile changes and contradictory native selectors block.
+  separation: Model qualification permits scoped semantic reasoning, not phase/controller/release progress or runtime security approval. Current unapproved native experimental inputs and diagnostic cookie/cache reports cannot instantiate a production context.
+compatibility:
+  existing_receipt_schema: 3.0 unchanged; optional observation runtime_context has its own1.0 payload contract, consumed only by an explicitly selected protected model.
+  existing_operation_schema: Use the already versioned optional1.1 qualification references; do not activate current1.0 policy automatically.
+  ordinary_cli: No grammar change or context selector. Absent optional context preserves existing ordinary behavior and strict missing-context failures.
+verification:
+  positive: Real committed CI/guard source, qualified protected fixture policy and actual canonical receipt/control/session path, exact bound native scope and call contract; source/private/installed parity. Fixtures qualify factory behavior only, not an actual native profile.
+  negative: Forged/missing/provisional qualifications, candidate policy, wrong repository/source/profile/model/native implementation/namespace, changed guard/caller source, missing/duplicate/extra scope rows, rewritten import/call binding, changed receipts and capture tampering, model attempts to mask declared ports.
+  original_gate: Keep required ci_commands.main strict context validation true. Actual current missing native/model evidence and all other unresolved calls remain blocking; no source-only-green substitution.
+status: {implementation_complete: false, actual_native_context_qualified: false, whole_requirement_advancement: false, all_whole_requirements_open: 82, phase: P32}
+scope_clarification:
+  native_selector: Effective implementation and namespace digests identify the authenticated consuming scope, not approval flags. The existing actor must bind these to the actual approved target/launch context. Factory admission additionally requires exact protected model evidence for that same scope.
+  model_output_authority: The qualified protected producer attests the scoped model premises. The factory independently verifies actual source model shape and complete covered call identities. Arbitrary diagnostic observations and candidate-selected evidence roots have no such authority.
+  first_model_coverage: Support the real main CLI entry-vector and post-parsed adopter append-vector guard calls. Do not generalize the summary to other lexical frames, loop/Path behavior, opaque effect ports, unknown namespaces or arbitrary Python object API invocations.
