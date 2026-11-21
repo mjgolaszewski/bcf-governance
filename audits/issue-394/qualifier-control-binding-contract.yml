@@ -1,0 +1,28 @@
+schema_version: '1.0'
+document: {kind: affected_surface_contract, status: planned, authority: false, path: audits/issue-394/qualifier-control-binding-contract.yml}
+source_subject: ab9bcd879bc26cad872aaf7d5ba11246558e2478
+parent: audits/issue-394/runtime-effect-context-foundation-contract.yml
+workitem: P32-P0-04
+bounded_context: evidence
+architectural_layer: tooling
+operation_side: query
+purpose: Require actual declared control traces when admitting protected native-model qualifier evidence, before any positive runtime-context credit.
+problem:
+  status: source_review_hypothesis_not_executed
+  observation: Existing qualification metadata compares control_ids with policy, while probe recomputation uses the receipt's supplied IDs/oracles and optional v3 presence. Establish whether those two populations can diverge through executable counterfactuals before declaring a defect.
+pre_edit:
+  targets: [bcf_governance/tooling/evidence_claim_resolution.py, bcf_governance/tooling/governance_truth_support.py, bcf_governance/tooling/truth_receipts.py]
+  tests: [tests/test_qualifier_control_binding.py, tests/test_installed_qualifier_control_binding.py, tests/test_protected_receipt_policy.py, tests/test_truth_receipts_adversarial.py, tests/test_governance_truth.py]
+  forbidden: [main, maintenance, adopters, manual CI digest or authority pins, gate waivers, alternate receipt verifier or claim registry]
+contract:
+  authority: Existing protected policy capture and canonical producer/claim/receipt/session/artifact owners remain authoritative for their scopes; the consuming actor authenticates source selection.
+  population: For inline subject qualification in protected mode, reconstruct required control IDs and oracles from the same committed canonical gate contracts. Match both directions between the complete inline required controls and actual probes; reject missing, duplicate, contradictory or substituted traces.
+  oracle: Probe oracle must equal the protected declared oracle. Reuse existing raw-artifact oracle recomputation, mutation-applied, exit and unexpected-source-change checks; do not replace them with satisfied booleans.
+  artifact_binding: Probe raw-artifact references must be canonical relative members of the receipt's declared artifact population. Existing artifact and raw-result owners remain sole verifiers. Bound artifact admission rejects symlink files/directories and noncanonical or escaping paths while legacy unbound behavior remains unchanged.
+  compatibility: Absent protected context retains ordinary behavior. Required native-model admission uses protected mode only; stronger rejection is not a backdoor legacy authority claim.
+  earliest_boundary: Reject invalid bound qualification populations/oracles/artifact bindings before executing receipt-supplied oracle logic or reparsing raw test files. Legacy evaluation order remains unchanged.
+  referenced_qualification: Preserve independent detector-reference applicability and canonical reference checks; no inline metadata may replace referenced evidence.
+verification:
+  baseline: Execute real existing v3 receipt/session fixture counterfactuals; record each accepted omission/substitution separately from already rejected controls and the valid fixture. No native runtime approval from fixture results.
+  scope: Source/private/installed fresh and upgrade parity; affected claim/receipt/planning suites, architecture, lint/pack and governance. Keep existing canonical-reconciliation and runtime blocks unwaived.
+status: {implementation_complete: false, runtime_context_qualified: false, all_whole_requirements_open: 82, phase: P32}

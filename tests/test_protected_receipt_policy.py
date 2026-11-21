@@ -21,8 +21,18 @@ def bundle(tmp_path):
     gate = yaml.safe_load(gate_path.read_text())
     gate['gates']['test']['evidence'] = {'kind':'test_suite', 'test_contract':{
         'expected_node_manifest':'governance/test-manifests/qualifier.txt'}}
+    for gate_id in ['test','security-review','reconcile']:
+        gate['gates'][gate_id]['negative_controls']=[dict(
+            id='assertion-removed' if gate_id=='test' else 'gate-broken',
+            mutation=dict(path='plans/phase-01-workitems.yml',yaml_path='workitems[0].status',value='TODO'),
+            oracle=(dict(kind='test_node_failure',node_ids=['tests/test_security.py::test_auth'])
+                if gate_id=='test' else dict(kind='diagnostic',exit_codes=[1],stream='stdout',regex='expected mutation failure')))]
     gate_path.write_text(yaml.safe_dump(gate))
     evidence = _enable_v3_grouped_session(root, session_version='3.0')
+    for path in evidence.glob('*.evidence.json'):
+        receipt = json.loads(path.read_bytes())
+        receipt['qualification']['control_ids']=[row['id'] for row in receipt['behavioral_probes']]
+        path.write_text(json.dumps(receipt))
     current = current_subject(root)
     policy = yaml.safe_load((root / 'governance/evidence-policy.yml').read_text())
     settings = policy.get('settings', {})
