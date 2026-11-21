@@ -1,0 +1,35 @@
+schema_version: '1.0'
+document: {kind: affected_surface_contract, status: planned, authority: false, path: audits/issue-394/receipt-protected-policy-contract.yml}
+source_subject: c2a51aea909cff90ebf6c185598ee3c598d64c82
+parent: audits/issue-394/runtime-effect-context-foundation-contract.yml
+workitem: P32-P0-04
+bounded_context: evidence
+architectural_layer: tooling
+operation_side: query
+purpose: Admit qualifier evidence through the existing receipt validator using exact protected policy objects, not candidate or dirty working policy.
+pre_edit:
+  targets: [bcf_governance/tooling/truth_receipts.py, bcf_governance/tooling/evidence_claim_resolution.py, bcf_governance/tooling/evidence_planning.py, bcf_governance/tooling/evidence_session_schema.py, bcf_governance/tooling/truth_sessions.py, bcf_governance/tooling/semantic_source_paths.py, bcf_governance/tooling/evidence_gate_contracts.py]
+  tests: [tests/test_protected_receipt_policy.py, tests/test_truth_receipts_adversarial.py, tests/test_governance_truth.py, tests/test_receipt_inert_impact.py, tests/test_installed_protected_receipt_policy.py]
+  forbidden: [main, maintenance, adopter source, manual workflow or authority pins, gate waivers, new claim registry or receipt family]
+deconstruction:
+  subject: truth_receipts.py at794lines
+  sequence: Characterize existing claim-population and qualification-control behavior before moving those functions unchanged to the existing canonical evidence_claim_resolution owner. Preserve legacy aliases, CLI ingress, both real receipt consumers and behavior. Then extend protected inputs.
+  max_source_loc: 800
+contract:
+  selection: The existing trusted caller authenticates repository and exact protected commit/tree. New optional policy_subject is not authority and must equal the receipt evaluation subject; no candidate override or implicit HEAD substitution.
+  source: Read exact committed receipt schema, canonical gate contract, profile, evidence policy, dependency tree entries, test-node manifests and session schemas through the existing inert Git owner. Validate object type, membership, subject and blob identity.
+  evaluation: Reuse canonical claim parsing, receipt applicability, artifact/test/control recomputation, identity/session/qualification-reference verification and freshness. Preserve complete source/detector/test/toolchain/trust dependency closure.
+  admission_settings: Bound mode requires canonical profile3.0, session enforcement, expected kinds/invocations and negative-control/allowlist settings from the same exact protected policy. Caller overrides cannot weaken them.
+  consumption: Reauthenticate the protected receipt/gate policy capture before returning admitted results. Reject missing, modified or contradictory context. A class identity or caller verified flag grants no authority.
+  compatibility: Optional internal query context only; ordinary CLI grammar, absent-context receipt behavior and existing receipt/session schemas remain unchanged.
+  runtime_limit: This admits protected qualifier evidence policy. It does not bind executing native code, source frames or actual model applicability and cannot discharge operation effects by itself.
+controls:
+- Old unbound behavior remains compatible.
+- Valid committed policy remains usable when candidate/dirty working schema, gate contract, test manifest or session schema differs or is absent.
+- Unknown or incomplete protected subjects and wrong current subject fail before evidence discovery.
+- Missing or substituted committed objects, stale dependency closure, forged qualification flags and incorrect producer/profile/session/test/control bindings remain rejected.
+- Independent extraction characterization and installed fresh/upgrade aliases preserve existing required receipt behavior.
+verification:
+  gates: [affected behavioral and cause-specific controls, canonical pack generation/check, affected architecture, lint, required governance]
+  known_unwaived_governance_block: CI graph public-contracts value source digest requires canonical submission/reconciliation; do not hand-edit pins or claim whole governance green.
+status: {implementation_complete: false, native_context_qualified: false, all_whole_requirements_open: 82, phase: P32}
